@@ -1,583 +1,551 @@
-
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   Alert,
+  Modal,
   Pressable,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   View,
-  useWindowDimensions
+  useWindowDimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { Colors } from '@/constants/theme';
 
 const COLORS = {
-  primary: '#087F8C',
-  primaryDark: '#075D68',
-  primaryLight: '#E5F5F4',
-  background: '#F5F8FA',
+  background: '#F6F4F7',
   white: '#FFFFFF',
-  text: '#18343B',
-  muted: '#71848A',
-  border: '#E4EBEE',
-  warning: '#9A5A08',
-  warningBg: '#FFF3DD',
-  success: '#26734D',
-  successBg: '#E7F6ED',
-  coral: '#D96C56',
-  lavender: '#F0ECFF',
+  text: '#29252D',
+  muted: '#79747D',
+  border: '#E8E3EA',
+  purple: Colors.light.accent,
+  purpleLight: '#F5E9FB',
+  peach: '#F4D6CA',
+  green: '#438875',
+  greenLight: '#E8F4EF',
+  blue: '#568AB8',
+  blueLight: '#EAF2F9',
 };
 
-type IconName = React.ComponentProps<typeof Ionicons>['name'];
+type ViewMode = 'Weeks' | 'Months' | 'Trimesters';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const PREGNANCY_DAYS = 280;
+
+function dateOnly(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function addDays(date: Date, days: number) {
+  const result = dateOnly(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+function formatDate(date: Date) {
+  return date.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+function formatDateInput(date: Date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+function parseDateInput(value: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const parsed = new Date(year, month - 1, day);
+
+  if (
+    parsed.getFullYear() !== year ||
+    parsed.getMonth() !== month - 1 ||
+    parsed.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return dateOnly(parsed);
+}
+
+function getPregnancyProgress(dueDate: Date) {
+  const today = dateOnly(new Date());
+  const daysUntilDue = Math.round((dueDate.getTime() - today.getTime()) / DAY_MS);
+  const elapsedDays = PREGNANCY_DAYS - daysUntilDue;
+  const gestationDays = Math.min(Math.max(elapsedDays, 0), 294);
+  const weeks = Math.floor(gestationDays / 7);
+  const days = gestationDays % 7;
+
+  return {
+    daysUntilDue,
+    weeks,
+    days,
+    weeksRemaining: Math.max(0, Math.ceil(Math.max(daysUntilDue, 0) / 7)),
+    progress: Math.min(Math.max(gestationDays / PREGNANCY_DAYS, 0), 1),
+  };
+}
 
 export default function HomeScreen() {
-  const [language, setLanguage] = useState<'EN' | 'RW'>('EN');
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const isWide = width >= 700;
+  const [viewMode, setViewMode] = useState<ViewMode>('Weeks');
+  const [dueDate, setDueDate] = useState(() => addDays(new Date(), 105));
+  const [profileMenuVisible, setProfileMenuVisible] = useState(false);
+  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [chartVisible, setChartVisible] = useState(false);
+  const [dateInput, setDateInput] = useState('');
+  const progress = getPregnancyProgress(dueDate);
 
-  const copy = {
-    EN: {
-      greeting: 'Hello, welcome to',
-      subtitle: 'Your maternal health companion',
-      healthTitle: 'Your health matters',
-      healthDescription:
-        'Have a health concern? Share it with your healthcare team.',
-      report: 'Report a concern',
-      support: 'Professional support',
-      education: 'Health education',
-      followup: 'My follow-ups',
-      quickActions: 'How can we help you?',
-      quickDescription:
-        'Choose a service to get started.',
-      careTitle: 'Your care and follow-up',
-      careDescription:
-        'Keep track of your reported concerns and referrals.',
-      viewDetails: 'View details',
-      educationTitle: 'Learn about your health',
-      educationDescription:
-        'Explore pregnancy and postnatal health information.',
-      pregnancy: 'Pregnancy care',
-      nutrition: 'Nutrition',
-      postnatal: 'Postnatal care',
-      supportTitle: 'Need someone to talk to?',
-      supportDescription:
-        'Connect with a qualified healthcare professional for guidance.',
-      chatNow: 'Contact a professional',
-      privacy: 'Your privacy matters',
-      privacyDescription:
-        'Your health information should only be accessible to authorized people.',
-      demo: 'Prototype preview',
-      demoDescription:
-        'This screen uses sample information. Health services and alerts must be connected and verified before real-world use.',
-      status: 'No live updates',
-    },
-    RW: {
-      greeting: 'Muraho, karibu kuri',
-      subtitle: 'Umufasha wawe mu buzima bw’umubyeyi',
-      healthTitle: 'Ubuzima bwawe ni ingenzi',
-      healthDescription:
-        'Ufite ikibazo cy’ubuzima? Kigeze ku itsinda ry’abaganga bakwitaho.',
-      report: 'Tanga amakuru',
-      support: 'Ubufasha bw’abaganga',
-      education: 'Inyigisho z’ubuzima',
-      followup: 'Gukurikirana ubuvuzi',
-      quickActions: 'Twagufasha dute?',
-      quickDescription: 'Hitamo serivisi ukeneye.',
-      careTitle: 'Ubuvuzi bwawe',
-      careDescription:
-        'Kurikirana ibibazo watanze n’uburyo bwo koherezwa ku yindi serivisi.',
-      viewDetails: 'Reba ibisobanuro',
-      educationTitle: 'Menya ibijyanye n’ubuzima bwawe',
-      educationDescription:
-        'Soma amakuru ajyanye no gutwita no kwita ku mwana nyuma yo kubyara.',
-      pregnancy: 'Kwita ku utwite',
-      nutrition: 'Imirire',
-      postnatal: 'Kwita ku mubyeyi nyuma yo kubyara',
-      supportTitle: 'Ukeneye umuntu muganira?',
-      supportDescription:
-        'Vugana n’umuganga ubifitiye ubumenyi kugira ngo akugire inama.',
-      chatNow: 'Vugana n’umuganga',
-      privacy: 'Ibanga ry’amakuru yawe ni ingenzi',
-      privacyDescription:
-        'Amakuru y’ubuzima bwawe agomba kubonwa n’ababyemerewe gusa.',
-      demo: 'Urugero rw’imikorere ya porogaramu',
-      demoDescription:
-        'Aya makuru ni ayo kugerageza. Serivisi z’ubuzima n’amatangazo bigomba kubanza guhuzwa no kugenzurwa mbere yo gukoreshwa.',
-      status: 'Nta makuru mashya ahari',
-    },
-  }[language];
-
-  const navigate = (path: string) => {
-    // Connect these destinations to the corresponding screens
-    // when their Expo Router files are implemented.
-    try {
-      router.push(path as never);
-    } catch {
-      Alert.alert(
-        'Coming soon',
-        'This service will be available when its screen is connected.',
-      );
-    }
+  const openDateEditor = () => {
+    setDateInput(formatDateInput(dueDate));
+    setDateModalVisible(true);
   };
 
-  const ActionCard = ({
-    icon,
-    title,
-    description,
-    background,
-    iconColor,
-    onPress,
-  }: {
-    icon: IconName;
-    title: string;
-    description: string;
-    background: string;
-    iconColor: string;
-    onPress: () => void;
-  }) => (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${title}. ${description}`}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.actionCard,
-        isWide && styles.actionCardWide,
-        pressed && styles.pressed,
-      ]}
-    >
-      <View style={[styles.actionIcon, { backgroundColor: background }]}>
-        <Ionicons name={icon} size={23} color={iconColor} />
-      </View>
-      <View style={styles.actionText}>
-        <Text style={styles.actionTitle}>{title}</Text>
-        <Text style={styles.actionDescription}>{description}</Text>
-      </View>
-      <Ionicons name="chevron-forward" size={19} color={COLORS.muted} />
-    </Pressable>
-  );
+  const saveDueDate = () => {
+    const parsedDate = parseDateInput(dateInput);
+    if (!parsedDate) {
+      Alert.alert('Check the date', 'Enter a valid date in YYYY-MM-DD format.');
+      return;
+    }
 
-  const EducationCard = ({
-    icon,
-    title,
-    background,
-    iconColor,
-    onPress,
-  }: {
-    icon: IconName;
-    title: string;
-    background: string;
-    iconColor: string;
-    onPress: () => void;
-  }) => (
-    <Pressable
-      accessibilityRole="button"
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.educationCard,
-        { backgroundColor: background },
-        pressed && styles.pressed,
-      ]}
-    >
-      <Ionicons name={icon} size={27} color={iconColor} />
-      <Text style={styles.educationCardTitle}>{title}</Text>
-      <Ionicons
-        name="arrow-forward"
-        size={18}
-        color={iconColor}
-        style={styles.educationArrow}
-      />
-    </Pressable>
-  );
+    const dayDifference = Math.round(
+      (parsedDate.getTime() - dateOnly(new Date()).getTime()) / DAY_MS,
+    );
+    if (dayDifference < -294 || dayDifference > 315) {
+      Alert.alert(
+        'Date outside the supported range',
+        'Enter an expected due date within about 42 weeks before or 45 weeks after today.',
+      );
+      return;
+    }
+
+    setDueDate(parsedDate);
+    setDateModalVisible(false);
+  };
+
+  const currentStage = () => {
+    if (viewMode === 'Months') {
+      return `${Math.min(Math.floor(progress.weeks / 4.35) + 1, 10)} months`;
+    }
+    if (viewMode === 'Trimesters') {
+      const trimester = progress.weeks < 13 ? 1 : progress.weeks < 28 ? 2 : 3;
+      return `${trimester}${trimester === 1 ? 'st' : trimester === 2 ? 'nd' : 'rd'} trimester`;
+    }
+    return `Week ${progress.weeks}`;
+  };
+
+  const milestones = [12, 16, 20, 24, 28, 32, 36, 40];
+  const visibleMilestones = isWide ? milestones : milestones.slice(0, 5);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-     <StatusBar barStyle="dark-content" />
-
+      <StatusBar barStyle="dark-content" />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 105 + insets.bottom }]}
       >
         <View style={[styles.page, isWide && styles.pageWide]}>
-          {/* Header */}
           <View style={styles.header}>
-            <View style={styles.brand}>
-              <View style={styles.logo}>
-                <Ionicons
-                  name="heart"
-                  size={23}
-                  color={COLORS.white}
-                />
-                <View style={styles.logoPlus}>
-                  <Ionicons name="add" size={12} color={COLORS.primary} />
-                </View>
-              </View>
-
-              <View>
-                <Text style={styles.brandName}>M-CARE</Text>
-                <Text style={styles.brandSubtitle}>Maternal care & support</Text>
-              </View>
+            <View>
+              <Text style={styles.pageTitle}>Pregnancy</Text>
+              <Text style={styles.pageTitle}>Monitor</Text>
             </View>
-<Pressable
-  accessibilityRole="button"
-  accessibilityLabel="Open profile menu"
-  // onPress={() => setProfileMenuVisible((visible) => !visible)}
-  // style={styles.profileButton}
->
-  <Ionicons name="person-outline" size={23} color="#087F8C" />
-</Pressable>
             <View style={styles.headerActions}>
-              <View style={styles.languageToggle}>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Use English"
-                  onPress={() => setLanguage('EN')}
-                  style={[
-                    styles.languageButton,
-                    language === 'EN' && styles.languageActive,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.languageText,
-                      language === 'EN' && styles.languageTextActive,
-                    ]}
-                  >
-                    EN
-                  </Text>
-                </Pressable>
-
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Use Kinyarwanda"
-                  onPress={() => setLanguage('RW')}
-                  style={[
-                    styles.languageButton,
-                    language === 'RW' && styles.languageActive,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.languageText,
-                      language === 'RW' && styles.languageTextActive,
-                    ]}
-                  >
-                    RW
-                  </Text>
-                </Pressable>
-              </View>
-
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Profile options"
+                onPress={() => setProfileMenuVisible(true)}
+                style={styles.avatar}
+              >
+                <Ionicons name="person" size={27} color={COLORS.purple} />
+              </Pressable>
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Notifications"
                 onPress={() =>
                   Alert.alert(
                     'Notifications',
-                    'Live notifications are not connected in this prototype.',
+                    'Appointment reminders and notifications will appear here when enabled.',
                   )
                 }
                 style={styles.notificationButton}
               >
-                <Ionicons
-                  name="notifications-outline"
-                  size={23}
-                  color={COLORS.text}
-                />
+                <Ionicons name="notifications-outline" size={22} color={COLORS.text} />
               </Pressable>
             </View>
           </View>
 
-          {/* Welcome */}
-          <View style={styles.welcome}>
-            <Text style={styles.greeting}>{copy.greeting}</Text>
-            <Text style={styles.welcomeTitle}>M-CARE</Text>
-            <Text style={styles.welcomeSubtitle}>{copy.subtitle}</Text>
-          </View>
-
-          {/* Main hero */}
-          <View style={styles.heroCard}>
-            <View style={styles.heroContent}>
-              <View style={styles.heroBadge}>
-                <Ionicons
-                  name="heart-circle-outline"
-                  size={17}
-                  color={COLORS.primaryDark}
-                />
-                <Text style={styles.heroBadgeText}>Care starts with you</Text>
-              </View>
-
-              <Text style={styles.heroTitle}>{copy.healthTitle}</Text>
-              <Text style={styles.heroDescription}>
-                {copy.healthDescription}
-              </Text>
-
+          <View style={styles.modeSelector} accessibilityRole="tablist">
+            {(['Weeks', 'Months', 'Trimesters'] as const).map((mode) => (
               <Pressable
-                accessibilityRole="button"
-                onPress={() => navigate('/report-symptoms')}
-                style={({ pressed }) => [
-                  styles.primaryButton,
-                  pressed && styles.buttonPressed,
-                ]}
+                key={mode}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: viewMode === mode }}
+                onPress={() => setViewMode(mode)}
+                style={[styles.modeButton, viewMode === mode && styles.modeButtonActive]}
               >
-                <Ionicons
-                  name="chatbox-ellipses-outline"
-                  size={20}
-                  color={COLORS.white}
-                />
-                <Text style={styles.primaryButtonText}>{copy.report}</Text>
-                <Ionicons
-                  name="arrow-forward"
-                  size={18}
-                  color={COLORS.white}
-                />
+                <Text style={[styles.modeText, viewMode === mode && styles.modeTextActive]}>
+                  {mode}
+                </Text>
               </Pressable>
-            </View>
+            ))}
+          </View>
 
-            <View style={styles.heroIllustration}>
-              <View style={styles.heroCircle}>
-                <Ionicons
-                  name="heart"
-                  size={66}
-                  color={COLORS.primary}
-                />
-                <View style={styles.heroSparkle}>
-                  <Ionicons
-                    name="medical"
-                    size={24}
-                    color={COLORS.coral}
+          <View style={styles.sectionHeading}>
+            <View style={styles.sectionTitleBlock}>
+              <Text style={styles.sectionTitle}>Mother&apos;s Health</Text>
+              <Text style={styles.sectionTitle}>Monitor</Text>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Edit expected due date"
+              onPress={openDateEditor}
+              style={styles.stageButton}
+            >
+              <Text style={styles.stageText}>{currentStage()}</Text>
+              <Ionicons name="chevron-down" size={16} color={COLORS.muted} />
+            </Pressable>
+          </View>
+
+          <View style={styles.timelineCard}>
+            <View style={styles.timelineArtwork}>
+              <View style={styles.artworkBackdrop} />
+              <View style={styles.heartBadge}>
+                <Ionicons name="heart" size={18} color={COLORS.purple} />
+              </View>
+              <View style={styles.artworkCaption}>
+                <Text style={styles.artworkTitle}>Pregnancy</Text>
+                <Text style={styles.artworkTitle}>Timeline</Text>
+              </View>
+              <Text style={styles.motherIllustration} accessibilityLabel="Pregnancy illustration">
+                🤰🏽
+              </Text>
+              <View style={styles.timelineOverlay}>
+                <View style={styles.milestoneRow}>
+                  {visibleMilestones.map((week) => (
+                    <Text key={week} style={styles.milestoneText}>
+                      {week}W
+                    </Text>
+                  ))}
+                </View>
+                <View
+                  accessibilityLabel={`${Math.round(progress.progress * 100)} percent of pregnancy timeline`}
+                  style={styles.progressTrack}
+                >
+                  <View
+                    style={[
+                      styles.progressFill,
+                      { width: `${Math.max(progress.progress * 100, 4)}%` },
+                    ]}
                   />
+                  <View
+                    style={[
+                      styles.progressMarker,
+                      { left: `${Math.min(Math.max(progress.progress * 100, 4), 96)}%` },
+                    ]}
+                  >
+                    <Text style={styles.progressMarkerText}>{progress.weeks}</Text>
+                  </View>
+                  <View style={styles.timelineArrow}>
+                    <Ionicons name="chevron-forward" size={15} color={COLORS.white} />
+                  </View>
                 </View>
               </View>
-              <View style={styles.heroSmallCircle}>
-                <Ionicons
-                  name="shield-checkmark"
-                  size={24}
-                  color={COLORS.success}
-                />
+            </View>
+            <View style={styles.timelineDetails}>
+              <View style={styles.detailItem}>
+                <Text style={styles.detailLabel}>CURRENTLY</Text>
+                <Text style={styles.detailValue}>
+                  {progress.weeks}w {progress.days}d
+                </Text>
               </View>
+              <View style={styles.detailDivider} />
+              <View style={styles.detailItem}>
+                <Text style={styles.detailLabel}>REMAINING</Text>
+                <Text style={styles.detailValue}>{progress.weeksRemaining} weeks</Text>
+              </View>
+              <View style={styles.detailDivider} />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Expected due date ${formatDate(dueDate)}. Edit date`}
+                onPress={openDateEditor}
+                style={styles.dueDateItem}
+              >
+                <Text style={styles.detailLabel}>EXPECTED DATE</Text>
+                <Text style={styles.dueDateValue}>{formatDate(dueDate)}</Text>
+                <Ionicons name="create-outline" size={14} color={COLORS.purple} />
+              </Pressable>
             </View>
           </View>
 
-          {/* Prototype status */}
-          <View style={styles.demoNotice}>
-            <Ionicons
-              name="information-circle-outline"
-              size={20}
-              color={COLORS.warning}
+          <View style={styles.sampleNotice}>
+            <Ionicons name="information-circle-outline" size={18} color="#8F60A5" />
+            <Text style={styles.sampleNoticeText}>
+              Sample timeline for preview. Update the due date to see an estimate; confirm dates
+              and care with your healthcare professional.
+            </Text>
+          </View>
+
+          <View style={styles.sectionHeadingCards}>
+            <View>
+              <Text style={styles.sectionTitle}>Your health checks</Text>
+              <Text style={styles.sectionSubtitle}>Common pregnancy monitoring topics</Text>
+            </View>
+          </View>
+
+          <View style={[styles.healthGrid, isWide && styles.healthGridWide]}>
+            <HealthCard
+              icon="🫄🏽"
+              title="Glucose screening"
+              subtitle="Ask your care team about timing"
+              tint={COLORS.purpleLight}
+              onPress={() =>
+                Alert.alert(
+                  'Glucose screening',
+                  'Screening timing depends on your health history and local guidance. Ask your healthcare professional when it is recommended for you.',
+                )
+              }
             />
-            <View style={styles.noticeContent}>
-              <Text style={styles.noticeTitle}>{copy.demo}</Text>
-              <Text style={styles.noticeDescription}>
-                {copy.demoDescription}
+            <HealthCard
+              icon="🩺"
+              title="Blood pressure"
+              subtitle="Discuss checks at your visits"
+              tint="#FFF0E8"
+              onPress={() =>
+                Alert.alert(
+                  'Blood pressure monitoring',
+                  'Blood pressure is commonly checked during prenatal care. Follow the schedule recommended by your healthcare professional.',
+                )
+              }
+            />
+          </View>
+
+          <View style={styles.sectionHeadingCards}>
+            <View>
+              <Text style={styles.sectionTitle}>Nutrition for you</Text>
+              <Text style={styles.sectionSubtitle}>Everyday ideas for a balanced diet</Text>
+            </View>
+            <Ionicons name="nutrition-outline" size={22} color={COLORS.green} />
+          </View>
+
+          <View style={styles.nutritionCard}>
+            <View style={styles.nutritionIcon}>
+              <Ionicons name="leaf-outline" size={24} color={COLORS.green} />
+            </View>
+            <View style={styles.nutritionContent}>
+              <Text style={styles.nutritionTitle}>Build a nourishing plate</Text>
+              <Text style={styles.nutritionDescription}>
+                Include vegetables and fruit, beans or other protein, whole grains, and water
+                throughout the day.
+              </Text>
+              <View style={styles.nutritionTags}>
+                <NutritionTag label="Folate-rich greens" />
+                <NutritionTag label="Iron-rich foods" />
+                <NutritionTag label="Protein" />
+              </View>
+            </View>
+          </View>
+          <Text style={styles.nutritionDisclaimer}>
+            Nutrition needs vary. Ask your healthcare professional about supplements, food safety,
+            and advice specific to you.
+          </Text>
+
+          <View style={styles.nextStepCard}>
+            <View style={styles.nextStepIcon}>
+              <Ionicons name="calendar-outline" size={21} color={COLORS.blue} />
+            </View>
+            <View style={styles.nextStepContent}>
+              <Text style={styles.nextStepTitle}>Stay connected with your care team</Text>
+              <Text style={styles.nextStepDescription}>
+                Keep prenatal visits and questions on your care plan.
               </Text>
             </View>
-          </View>
-
-          {/* Quick actions */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeading}>
-              <View style={styles.sectionTitleGroup}>
-                <Text style={styles.sectionTitle}>{copy.quickActions}</Text>
-                <Text style={styles.sectionSubtitle}>
-                  {copy.quickDescription}
-                </Text>
-              </View>
-              <Ionicons
-                name="apps-outline"
-                size={23}
-                color={COLORS.primary}
-              />
-            </View>
-
-            <View style={[styles.actionGrid, isWide && styles.actionGridWide]}>
-              <ActionCard
-                icon="chatbox-ellipses-outline"
-                title={copy.report}
-                description="Share a health concern"
-                background={COLORS.primaryLight}
-                iconColor={COLORS.primary}
-                onPress={() => navigate('/report-symptoms')}
-              />
-
-              <ActionCard
-                icon="chatbubbles-outline"
-                title={copy.support}
-                description="Message a health professional"
-                background={COLORS.lavender}
-                iconColor="#6951B8"
-                onPress={() => navigate('/chat')}
-              />
-
-              <ActionCard
-                icon="book-outline"
-                title={copy.education}
-                description="Read trusted health information"
-                background="#FFF0E8"
-                iconColor={COLORS.coral}
-                onPress={() => navigate('/education')}
-              />
-
-              <ActionCard
-                icon="clipboard-outline"
-                title={copy.followup}
-                description="Review follow-ups and referrals"
-                background={COLORS.successBg}
-                iconColor={COLORS.success}
-                onPress={() => navigate('/referrals')}
-              />
-            </View>
-          </View>
-
-          {/* Follow-up */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeading}>
-              <View style={styles.sectionTitleGroup}>
-                <Text style={styles.sectionTitle}>{copy.careTitle}</Text>
-                <Text style={styles.sectionSubtitle}>
-                  {copy.careDescription}
-                </Text>
-              </View>
-              <Ionicons
-                name="calendar-outline"
-                size={22}
-                color={COLORS.primary}
-              />
-            </View>
-
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => navigate('/referrals')}
-              style={({ pressed }) => [
-                styles.followupCard,
-                pressed && styles.pressed,
-              ]}
-            >
-              <View style={styles.followupIcon}>
-                <Ionicons
-                  name="document-text-outline"
-                  size={25}
-                  color={COLORS.primary}
-                />
-              </View>
-
-              <View style={styles.followupText}>
-                <Text style={styles.followupTitle}>{copy.followup}</Text>
-                <Text style={styles.followupDescription}>
-                  {copy.status}
-                </Text>
-              </View>
-
-              <Ionicons
-                name="chevron-forward"
-                size={20}
-                color={COLORS.muted}
-              />
-            </Pressable>
-          </View>
-
-          {/* Health education */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeading}>
-              <View style={styles.sectionTitleGroup}>
-                <Text style={styles.sectionTitle}>{copy.educationTitle}</Text>
-                <Text style={styles.sectionSubtitle}>
-                  {copy.educationDescription}
-                </Text>
-              </View>
-            </View>
-
-            <View style={[styles.educationGrid, isWide && styles.educationGridWide]}>
-              <EducationCard
-                icon="heart-outline"
-                title={copy.pregnancy}
-                background={COLORS.primaryLight}
-                iconColor={COLORS.primaryDark}
-                onPress={() => navigate('/education')}
-              />
-              <EducationCard
-                icon="nutrition-outline"
-                title={copy.nutrition}
-                background="#FFF0E8"
-                iconColor={COLORS.coral}
-                onPress={() => navigate('/education')}
-              />
-              <EducationCard
-                icon="flower-outline"
-                title={copy.postnatal}
-                background={COLORS.lavender}
-                iconColor="#6951B8"
-                onPress={() => navigate('/education')}
-              />
-            </View>
-          </View>
-
-          {/* Professional support */}
-          <View style={styles.supportCard}>
-            <View style={styles.supportIcon}>
-              <Ionicons
-                name="people-outline"
-                size={29}
-                color={COLORS.primary}
-              />
-            </View>
-
-            <Text style={styles.supportTitle}>{copy.supportTitle}</Text>
-            <Text style={styles.supportDescription}>
-              {copy.supportDescription}
-            </Text>
-
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => navigate('/chat')}
-              style={({ pressed }) => [
-                styles.supportButton,
-                pressed && styles.buttonPressed,
-              ]}
-            >
-              <Text style={styles.supportButtonText}>{copy.chatNow}</Text>
-              <Ionicons
-                name="arrow-forward"
-                size={18}
-                color={COLORS.white}
-              />
-            </Pressable>
-          </View>
-
-          {/* Privacy */}
-          <View style={styles.privacyCard}>
-            <Ionicons
-              name="lock-closed-outline"
-              size={23}
-              color={COLORS.success}
-            />
-            <View style={styles.privacyText}>
-              <Text style={styles.privacyTitle}>{copy.privacy}</Text>
-              <Text style={styles.privacyDescription}>
-                {copy.privacyDescription}
-              </Text>
-            </View>
-          </View>
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <View style={styles.footerBrand}>
-              <Ionicons
-                name="heart"
-                size={15}
-                color={COLORS.primary}
-              />
-              <Text style={styles.footerBrandText}>M-CARE</Text>
-            </View>
-            <Text style={styles.footerText}>
-              Maternal Community Alert, Response and Referral System
-            </Text>
-            <Text style={styles.footerText}>Rwanda · {new Date().getFullYear()}</Text>
+            <Ionicons name="chevron-forward" size={18} color={COLORS.muted} />
           </View>
         </View>
       </ScrollView>
+
+      <Modal
+        visible={profileMenuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setProfileMenuVisible(false)}
+      >
+        <View style={[styles.profileMenuOverlay, { paddingTop: insets.top + 76 }]}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close profile menu"
+            onPress={() => setProfileMenuVisible(false)}
+            style={StyleSheet.absoluteFill}
+          />
+          <View style={styles.profileMenuCard}>
+            <Text style={styles.profileMenuTitle}>Profile</Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                setProfileMenuVisible(false);
+                router.replace('/(auth)/login');
+              }}
+              style={({ pressed }) => [styles.profileMenuItem, pressed && styles.pressed]}
+            >
+              <Ionicons name="log-out-outline" size={20} color={COLORS.purple} />
+              <Text style={styles.profileMenuItemText}>Log out</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="View pregnancy progress chart"
+        onPress={() => setChartVisible(true)}
+        style={({ pressed }) => [
+          styles.chartButton,
+          { bottom: Math.max(insets.bottom, 12) + 14 },
+          pressed && styles.pressed,
+        ]}
+      >
+        <Ionicons name="chatbubble-ellipses-outline" size={23} color={COLORS.white} />
+      </Pressable>
+
+      <Modal
+        visible={dateModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDateModalVisible(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Expected due date</Text>
+            <Text style={styles.modalDescription}>
+              Enter the date provided by your healthcare professional.
+            </Text>
+            <TextInput
+              accessibilityLabel="Expected due date in year-month-day format"
+              value={dateInput}
+              onChangeText={setDateInput}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor="#A6A1AA"
+              keyboardType="numbers-and-punctuation"
+              maxLength={10}
+              style={styles.dateInput}
+            />
+            <View style={styles.modalActions}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setDateModalVisible(false)}
+                style={styles.cancelButton}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                onPress={saveDueDate}
+                style={styles.saveButton}
+              >
+                <Text style={styles.saveText}>Save date</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={chartVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setChartVisible(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <View style={styles.chartHeader}>
+              <Text style={styles.modalTitle}>Pregnancy progress</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Close progress chart"
+                onPress={() => setChartVisible(false)}
+                hitSlop={10}
+              >
+                <Ionicons name="close" size={23} color={COLORS.muted} />
+              </Pressable>
+            </View>
+            <Text style={styles.chartStage}>{progress.weeks} weeks, {progress.days} days</Text>
+            <View style={styles.chartTrack}>
+              <View style={[styles.chartFill, { width: `${progress.progress * 100}%` }]} />
+            </View>
+            <View style={styles.chartLabels}>
+              <Text style={styles.chartLabel}>Week 0</Text>
+              <Text style={styles.chartLabel}>Week 40</Text>
+            </View>
+            <View style={styles.chartSummary}>
+              <Text style={styles.chartSummaryText}>
+                {progress.weeksRemaining} weeks remaining
+              </Text>
+              <Text style={styles.chartSummaryText}>Due {formatDate(dueDate)}</Text>
+            </View>
+            <Text style={styles.chartDisclaimer}>
+              This timeline is an estimate based on the entered due date, not a medical assessment.
+            </Text>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
+  );
+}
+
+function HealthCard({
+  icon,
+  title,
+  subtitle,
+  tint,
+  onPress,
+}: {
+  icon: string;
+  title: string;
+  subtitle: string;
+  tint: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${title}. ${subtitle}`}
+      onPress={onPress}
+      style={({ pressed }) => [styles.healthCard, pressed && styles.pressed]}
+    >
+      <View style={[styles.healthIcon, { backgroundColor: tint }]}>
+        <Text style={styles.healthEmoji}>{icon}</Text>
+      </View>
+      <View style={styles.healthContent}>
+        <Text style={styles.healthTitle}>{title}</Text>
+        <Text style={styles.healthSubtitle}>{subtitle}</Text>
+      </View>
+      <View style={styles.healthArrow}>
+        <Ionicons name="arrow-up-outline" size={18} color={COLORS.muted} />
+      </View>
+    </Pressable>
+  );
+}
+
+function NutritionTag({ label }: { label: string }) {
+  return (
+    <View style={styles.nutritionTag}>
+      <Text style={styles.nutritionTagText}>{label}</Text>
+    </View>
   );
 }
 
@@ -588,7 +556,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 36,
+    paddingBottom: 28,
   },
   page: {
     width: '100%',
@@ -601,236 +569,105 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   header: {
-    minHeight: 76,
+    minHeight: 91,
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: 12,
   },
-  brand: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  logo: {
-    width: 43,
-    height: 43,
-    borderRadius: 14,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoPlus: {
-    position: 'absolute',
-    right: -3,
-    top: -3,
-    backgroundColor: COLORS.white,
-    width: 19,
-    height: 19,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.primaryLight,
-  },
-  brandName: {
-    fontSize: 18,
-    fontWeight: '800',
-    letterSpacing: 1,
+  pageTitle: {
     color: COLORS.text,
-  },
-  brandSubtitle: {
-    fontSize: 10,
-    color: COLORS.muted,
-    marginTop: 2,
+    fontSize: 21,
+    lineHeight: 28,
+    fontWeight: '700',
+    letterSpacing: -0.5,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 9,
+    gap: 12,
   },
-  languageToggle: {
-    flexDirection: 'row',
-    padding: 3,
-    borderRadius: 12,
-    backgroundColor: '#E9EFF1',
-  },
-  languageButton: {
-    minWidth: 36,
-    minHeight: 32,
-    paddingHorizontal: 7,
-    borderRadius: 9,
+  avatar: {
+    width: 48,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+    borderRadius: 24,
+    backgroundColor: COLORS.purpleLight,
   },
-  languageActive: {
+  profileMenuOverlay: {
+    flex: 1,
+    alignItems: 'flex-end',
+    paddingHorizontal: 20,
+    backgroundColor: 'rgba(34, 27, 38, 0.18)',
+  },
+  profileMenuCard: {
+    width: 190,
+    padding: 8,
+    borderRadius: 16,
     backgroundColor: COLORS.white,
+    shadowColor: '#24212A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
   },
-  languageText: {
-    fontSize: 11,
-    fontWeight: '600',
+  profileMenuTitle: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     color: COLORS.muted,
+    fontSize: 12,
+    fontWeight: '600',
   },
-  languageTextActive: {
-    color: COLORS.primaryDark,
-    fontWeight: '800',
+  profileMenuItem: {
+    minHeight: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+  },
+  profileMenuItemText: {
+    color: COLORS.text,
+    fontSize: 14,
+    fontWeight: '600',
   },
   notificationButton: {
-    width: 42,
-    height: 42,
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 24,
     backgroundColor: COLORS.white,
-    borderRadius: 14,
+  },
+  modeSelector: {
+    flexDirection: 'row',
+    gap: 9,
+    marginTop: 12,
+    marginBottom: 26,
+  },
+  modeButton: {
+    minHeight: 45,
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: COLORS.border,
+    borderRadius: 24,
+    backgroundColor: 'transparent',
   },
-  welcome: {
-    paddingTop: 16,
-    paddingBottom: 21,
+  modeButtonActive: {
+    borderColor: COLORS.purple,
+    backgroundColor: COLORS.purple,
   },
-  greeting: {
-    fontSize: 14,
+  modeText: {
     color: COLORS.muted,
+    fontSize: 13,
+    fontWeight: '500',
   },
-  welcomeTitle: {
-    marginTop: 4,
-    fontSize: 29,
-    lineHeight: 36,
-    fontWeight: '800',
-    color: COLORS.text,
-    letterSpacing: -0.6,
-  },
-  welcomeSubtitle: {
-    marginTop: 4,
-    fontSize: 14,
-    color: COLORS.muted,
-  },
-  heroCard: {
-    backgroundColor: '#E5F5F3',
-    borderRadius: 25,
-    padding: 21,
-    flexDirection: 'row',
-    alignItems: 'center',
-    overflow: 'hidden',
-    gap: 10,
-  },
-  heroContent: {
-    flex: 1,
-    minWidth: 0,
-    zIndex: 1,
-  },
-  heroBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    gap: 5,
-    backgroundColor: '#FFFFFFB8',
-    paddingHorizontal: 9,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  heroBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: COLORS.primaryDark,
-  },
-  heroTitle: {
-    fontSize: 23,
-    lineHeight: 29,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginTop: 16,
-    letterSpacing: -0.4,
-  },
-  heroDescription: {
-    fontSize: 12,
-    lineHeight: 19,
-    color: '#526A70',
-    marginTop: 8,
-    marginBottom: 16,
-  },
-  primaryButton: {
-    alignSelf: 'flex-start',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 13,
-    paddingVertical: 12,
-    borderRadius: 13,
-    minHeight: 46,
-  },
-  primaryButtonText: {
+  modeTextActive: {
     color: COLORS.white,
-    fontSize: 12,
     fontWeight: '700',
-  },
-  heroIllustration: {
-    width: 105,
-    height: 135,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  heroCircle: {
-    width: 94,
-    height: 94,
-    borderRadius: 47,
-    backgroundColor: '#FFFFFFB8',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  heroSparkle: {
-    position: 'absolute',
-    top: 5,
-    right: 3,
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: COLORS.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  heroSmallCircle: {
-    position: 'absolute',
-    bottom: 3,
-    left: 1,
-    width: 42,
-    height: 42,
-    borderRadius: 15,
-    backgroundColor: COLORS.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 2,
-  },
-  demoNotice: {
-    marginTop: 15,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-    padding: 13,
-    backgroundColor: COLORS.warningBg,
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: '#F3E0B9',
-  },
-  noticeContent: {
-    flex: 1,
-  },
-  noticeTitle: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: COLORS.warning,
-  },
-  noticeDescription: {
-    fontSize: 11,
-    lineHeight: 17,
-    color: '#795D35',
-    marginTop: 4,
-  },
-  section: {
-    marginTop: 29,
   },
   sectionHeading: {
     flexDirection: 'row',
@@ -839,219 +676,479 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 15,
   },
-  sectionTitleGroup: {
+  sectionTitleBlock: {
     flex: 1,
   },
   sectionTitle: {
-    fontSize: 18,
-    lineHeight: 24,
-    fontWeight: '800',
     color: COLORS.text,
-    letterSpacing: -0.3,
+    fontSize: 16,
+    lineHeight: 21,
+    fontWeight: '700',
+    letterSpacing: -0.25,
   },
-  sectionSubtitle: {
-    fontSize: 12,
-    lineHeight: 18,
+  stageButton: {
+    minHeight: 43,
+    maxWidth: '54%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    paddingHorizontal: 13,
+    borderRadius: 23,
+    backgroundColor: COLORS.white,
+  },
+  stageText: {
     color: COLORS.muted,
-    marginTop: 4,
+    fontSize: 12,
+    textTransform: 'capitalize',
   },
-  actionGrid: {
-    gap: 11,
+  timelineCard: {
+    overflow: 'hidden',
+    borderRadius: 25,
+    backgroundColor: COLORS.white,
   },
-  actionGridWide: {
+  timelineArtwork: {
+    height: 252,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    backgroundColor: '#E8D8D1',
+  },
+  artworkBackdrop: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: '#EBD8CE',
+  },
+  heartBadge: {
+    position: 'absolute',
+    zIndex: 2,
+    top: 16,
+    left: 16,
+    width: 42,
+    height: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 22,
+    backgroundColor: COLORS.white,
+  },
+  artworkCaption: {
+    position: 'absolute',
+    zIndex: 2,
+    top: 23,
+    left: 68,
+  },
+  artworkTitle: {
+    color: COLORS.text,
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: '600',
+  },
+  motherIllustration: {
+    alignSelf: 'center',
+    marginTop: -7,
+    fontSize: 134,
+    lineHeight: 166,
+    textAlign: 'center',
+  },
+  timelineOverlay: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    left: 0,
+    paddingHorizontal: 17,
+    paddingTop: 29,
+    paddingBottom: 15,
+    backgroundColor: 'rgba(255,255,255,0.66)',
+  },
+  milestoneRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 23,
+  },
+  milestoneText: {
+    color: COLORS.text,
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  progressTrack: {
+    height: 21,
+    justifyContent: 'center',
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.86)',
+  },
+  progressFill: {
+    height: 21,
+    borderRadius: 12,
+    backgroundColor: COLORS.purple,
+  },
+  progressMarker: {
+    position: 'absolute',
+    top: -4,
+    width: 29,
+    height: 29,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: -14,
+    borderWidth: 1,
+    borderColor: COLORS.white,
+    borderRadius: 15,
+    backgroundColor: COLORS.purple,
+  },
+  progressMarkerText: {
+    color: COLORS.white,
+    fontSize: 9,
+    fontWeight: '700',
+  },
+  timelineArrow: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    width: 17,
+    height: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+    backgroundColor: COLORS.text,
+  },
+  timelineDetails: {
+    minHeight: 78,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+  },
+  detailItem: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 5,
+  },
+  detailDivider: {
+    width: 1,
+    height: 35,
+    backgroundColor: COLORS.border,
+  },
+  dueDateItem: {
+    flex: 1.35,
     flexDirection: 'row',
     flexWrap: 'wrap',
-  },
-  actionCard: {
-    minHeight: 91,
-    padding: 13,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 17,
-  },
-  actionCardWide: {
-    width: '48%',
-    flexGrow: 1,
-  },
-  actionIcon: {
-    width: 47,
-    height: 47,
-    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    columnGap: 4,
+    rowGap: 5,
   },
-  actionText: {
-    flex: 1,
-    gap: 4,
+  detailLabel: {
+    width: '100%',
+    color: COLORS.muted,
+    fontSize: 8,
+    fontWeight: '700',
+    letterSpacing: 0.6,
+    textAlign: 'center',
   },
-  actionTitle: {
-    fontSize: 13,
-    fontWeight: '800',
+  detailValue: {
     color: COLORS.text,
+    fontSize: 13,
+    fontWeight: '700',
   },
-  actionDescription: {
+  dueDateValue: {
+    color: COLORS.text,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  sampleNotice: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginTop: 10,
+    padding: 11,
+    borderRadius: 13,
+    backgroundColor: '#F3EAF7',
+  },
+  sampleNoticeText: {
+    flex: 1,
+    color: '#68556F',
+    fontSize: 10,
+    lineHeight: 15,
+  },
+  sectionHeadingCards: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 25,
+    marginBottom: 12,
+  },
+  sectionSubtitle: {
+    marginTop: 4,
+    color: COLORS.muted,
     fontSize: 11,
     lineHeight: 16,
-    color: COLORS.muted,
   },
-  followupCard: {
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 17,
-    padding: 15,
+  healthGrid: {
+    gap: 10,
+  },
+  healthGridWide: {
+    flexDirection: 'row',
+  },
+  healthCard: {
+    minHeight: 83,
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    padding: 11,
+    borderRadius: 19,
+    backgroundColor: COLORS.white,
   },
-  followupIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 15,
-    backgroundColor: COLORS.primaryLight,
+  healthIcon: {
+    width: 62,
+    height: 62,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 15,
   },
-  followupText: {
+  healthEmoji: {
+    fontSize: 30,
+  },
+  healthContent: {
     flex: 1,
     gap: 5,
   },
-  followupTitle: {
-    fontSize: 13,
-    fontWeight: '800',
+  healthTitle: {
     color: COLORS.text,
-  },
-  followupDescription: {
-    fontSize: 11,
-    color: COLORS.muted,
-  },
-  educationGrid: {
-    gap: 10,
-  },
-  educationGridWide: {
-    flexDirection: 'row',
-  },
-  educationCard: {
-    minHeight: 78,
-    borderRadius: 17,
-    padding: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  educationCardTitle: {
-    flex: 1,
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.text,
-    lineHeight: 19,
-  },
-  educationArrow: {
-    marginLeft: 'auto',
-  },
-  supportCard: {
-    marginTop: 29,
-    padding: 23,
-    borderRadius: 22,
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-  },
-  supportIcon: {
-    width: 58,
-    height: 58,
-    borderRadius: 20,
-    backgroundColor: COLORS.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  supportTitle: {
-    marginTop: 15,
-    fontSize: 18,
-    fontWeight: '800',
-    color: COLORS.text,
-    textAlign: 'center',
-  },
-  supportDescription: {
     fontSize: 12,
-    lineHeight: 19,
-    color: COLORS.muted,
-    textAlign: 'center',
-    marginTop: 7,
-    maxWidth: 310,
-  },
-  supportButton: {
-    marginTop: 18,
-    width: '100%',
-    minHeight: 48,
-    paddingHorizontal: 15,
-    borderRadius: 14,
-    backgroundColor: COLORS.primaryDark,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-  },
-  supportButtonText: {
-    color: COLORS.white,
-    fontSize: 13,
     fontWeight: '700',
   },
-  privacyCard: {
-    marginTop: 17,
+  healthSubtitle: {
+    color: COLORS.muted,
+    fontSize: 10,
+    lineHeight: 14,
+  },
+  healthArrow: {
+    width: 34,
+    height: 34,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 18,
+    backgroundColor: '#FAF8FB',
+    transform: [{ rotate: '45deg' }],
+  },
+  nutritionCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
-    backgroundColor: COLORS.successBg,
     padding: 15,
-    borderRadius: 16,
+    borderRadius: 19,
+    backgroundColor: COLORS.white,
   },
-  privacyText: {
+  nutritionIcon: {
+    width: 43,
+    height: 43,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+    backgroundColor: COLORS.greenLight,
+  },
+  nutritionContent: {
     flex: 1,
   },
-  privacyTitle: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: COLORS.success,
+  nutritionTitle: {
+    color: COLORS.text,
+    fontSize: 13,
+    fontWeight: '700',
   },
-  privacyDescription: {
+  nutritionDescription: {
+    marginTop: 5,
+    color: COLORS.muted,
     fontSize: 11,
     lineHeight: 17,
-    color: '#426A56',
-    marginTop: 5,
   },
-  footer: {
-    alignItems: 'center',
-    paddingTop: 27,
-    gap: 6,
-  },
-  footerBrand: {
+  nutritionTags: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 10,
   },
-  footerBrandText: {
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1,
-    color: COLORS.text,
+  nutritionTag: {
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    borderRadius: 13,
+    backgroundColor: COLORS.greenLight,
   },
-  footerText: {
+  nutritionTagText: {
+    color: COLORS.green,
+    fontSize: 9,
+    fontWeight: '600',
+  },
+  nutritionDisclaimer: {
+    marginTop: 8,
+    paddingHorizontal: 3,
+    color: COLORS.muted,
     fontSize: 10,
     lineHeight: 15,
-    textAlign: 'center',
+  },
+  nextStepCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 22,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 18,
+    backgroundColor: COLORS.white,
+  },
+  nextStepIcon: {
+    width: 43,
+    height: 43,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+    backgroundColor: COLORS.blueLight,
+  },
+  nextStepContent: {
+    flex: 1,
+    gap: 4,
+  },
+  nextStepTitle: {
+    color: COLORS.text,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  nextStepDescription: {
     color: COLORS.muted,
+    fontSize: 10,
+    lineHeight: 15,
+  },
+  chartButton: {
+    position: 'absolute',
+    right: 20,
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: COLORS.white,
+    borderRadius: 29,
+    backgroundColor: COLORS.purple,
+    shadowColor: '#4B285B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 7,
+    elevation: 5,
   },
   pressed: {
     opacity: 0.78,
   },
-  buttonPressed: {
-    opacity: 0.86,
-    transform: [{ scale: 0.99 }],
+  modalBackdrop: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 22,
+    backgroundColor: 'rgba(34, 27, 38, 0.38)',
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 430,
+    padding: 22,
+    borderRadius: 22,
+    backgroundColor: COLORS.white,
+  },
+  modalTitle: {
+    color: COLORS.text,
+    fontSize: 19,
+    fontWeight: '700',
+  },
+  modalDescription: {
+    marginTop: 7,
+    color: COLORS.muted,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  dateInput: {
+    minHeight: 50,
+    marginTop: 18,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    color: COLORS.text,
+    fontSize: 15,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 20,
+  },
+  cancelButton: {
+    minHeight: 43,
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+    borderRadius: 13,
+    backgroundColor: '#F2EFF3',
+  },
+  cancelText: {
+    color: COLORS.text,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  saveButton: {
+    minHeight: 43,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    borderRadius: 13,
+    backgroundColor: COLORS.purple,
+  },
+  saveText: {
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  chartHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  chartStage: {
+    marginTop: 18,
+    color: COLORS.text,
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  chartTrack: {
+    height: 13,
+    overflow: 'hidden',
+    marginTop: 15,
+    borderRadius: 8,
+    backgroundColor: COLORS.purpleLight,
+  },
+  chartFill: {
+    height: '100%',
+    borderRadius: 8,
+    backgroundColor: COLORS.purple,
+  },
+  chartLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 7,
+  },
+  chartLabel: {
+    color: COLORS.muted,
+    fontSize: 10,
+  },
+  chartSummary: {
+    gap: 8,
+    marginTop: 19,
+    padding: 13,
+    borderRadius: 13,
+    backgroundColor: '#FAF7FB',
+  },
+  chartSummaryText: {
+    color: COLORS.text,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  chartDisclaimer: {
+    marginTop: 13,
+    color: COLORS.muted,
+    fontSize: 10,
+    lineHeight: 15,
   },
 });

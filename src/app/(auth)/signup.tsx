@@ -3,7 +3,7 @@ import { SafeAreaView, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Colors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export default function SignupScreen() {
@@ -46,7 +46,7 @@ export default function SignupScreen() {
           <Link href="/(auth)/login" style={styles.link}>
             Already have an account? Log in
           </Link>
-          <Link href="/(tabs)/index" style={styles.link}>
+          <Link href="/(tabs)" style={styles.link}>
             Back to Home
           </Link>
         </View>
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   },
   link: {
     alignSelf: 'center',
-    color: '#3c87f7',
+    color: Colors.light.accent,
     padding: Spacing.two,
   },
 });
