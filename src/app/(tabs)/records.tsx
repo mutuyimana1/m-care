@@ -68,6 +68,7 @@ const ANC_SCHEDULE: AncVisit[] = [
 
 export default function RecordsScreen() {
   const { width } = useWindowDimensions();
+  const isSmall = width < 360;
   const isWide = width >= 768;
 
   return (
@@ -76,7 +77,7 @@ export default function RecordsScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: BottomTabInset + 40 },
+          { paddingBottom: BottomTabInset + 36 },
         ]}
         showsVerticalScrollIndicator={false}
       >
@@ -87,41 +88,107 @@ export default function RecordsScreen() {
               <FileText size={13} color={PALETTE.deepViolet} />
               <Text style={styles.badgeText}>PATIENT PROFILE & ANC</Text>
             </View>
-            <Text style={styles.title}>Maternal Health Passport</Text>
+            <Text style={[styles.title, isSmall && { fontSize: 22 }]}>
+              Maternal Health Passport
+            </Text>
             <Text style={styles.subtitle}>
               Verified clinical records synchronized with National Digital Health (MOH)
             </Text>
           </View>
 
           {/* Mother's ID Card (Deep Violet Hero) */}
-          <View style={styles.profileCard}>
+          <View
+            style={[
+              styles.profileCard,
+              isSmall && { padding: 14, borderRadius: 20 },
+            ]}
+          >
             <View style={styles.profileTop}>
-              <View style={styles.avatarBox}>
-                <User size={26} color={PALETTE.white} />
+              <View
+                style={[
+                  styles.avatarBox,
+                  isSmall && { width: 40, height: 40, borderRadius: 20 },
+                ]}
+              >
+                <User size={isSmall ? 20 : 26} color={PALETTE.white} />
               </View>
               <View style={styles.profileDetails}>
-                <Text style={styles.profileName}>Aline Uwase</Text>
-                <Text style={styles.profileId}>M-CARE ID: RW-04-2026-9932</Text>
+                <Text
+                  numberOfLines={1}
+                  style={[styles.profileName, isSmall && { fontSize: 16 }]}
+                >
+                  Aline Uwase
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={[styles.profileId, isSmall && { fontSize: 11 }]}
+                >
+                  M-CARE ID: RW-04-2026-9932
+                </Text>
               </View>
-              <View style={styles.bloodBadge}>
-                <Text style={styles.bloodBadgeText}>O+</Text>
+              <View
+                style={[
+                  styles.bloodBadge,
+                  isSmall && { paddingHorizontal: 8, paddingVertical: 3 },
+                ]}
+              >
+                <Text
+                  style={[styles.bloodBadgeText, isSmall && { fontSize: 12 }]}
+                >
+                  O+
+                </Text>
               </View>
             </View>
 
-            <View style={styles.profileStatsRow}>
+            <View
+              style={[
+                styles.profileStatsRow,
+                isSmall && { paddingVertical: 8, paddingHorizontal: 6 },
+              ]}
+            >
               <View style={styles.statBox}>
-                <Text style={styles.statLabel}>Estimated Due Date</Text>
-                <Text style={styles.statValue}>Feb 18, 2027</Text>
+                <Text
+                  numberOfLines={1}
+                  style={[styles.statLabel, isSmall && { fontSize: 8.5 }]}
+                >
+                  Estimated Due
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={[styles.statValue, isSmall && { fontSize: 11 }]}
+                >
+                  Feb 18, 2027
+                </Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statBox}>
-                <Text style={styles.statLabel}>Gestational Age</Text>
-                <Text style={styles.statValue}>Week 28 (7 Mo)</Text>
+                <Text
+                  numberOfLines={1}
+                  style={[styles.statLabel, isSmall && { fontSize: 8.5 }]}
+                >
+                  Gestational Age
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={[styles.statValue, isSmall && { fontSize: 11 }]}
+                >
+                  Week 28 (7 Mo)
+                </Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statBox}>
-                <Text style={styles.statLabel}>Primary Facility</Text>
-                <Text style={styles.statValue}>Muhima HC</Text>
+                <Text
+                  numberOfLines={1}
+                  style={[styles.statLabel, isSmall && { fontSize: 8.5 }]}
+                >
+                  Primary Clinic
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={[styles.statValue, isSmall && { fontSize: 11 }]}
+                >
+                  Muhima HC
+                </Text>
               </View>
             </View>
           </View>

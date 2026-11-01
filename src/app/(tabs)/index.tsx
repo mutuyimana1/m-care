@@ -39,6 +39,7 @@ export default function HomeScreen() {
   const [kickCount, setKickCount] = useState(7);
   const [lang, setLang] = useState<'EN' | 'RW'>('EN');
   const { width } = useWindowDimensions();
+  const isSmall = width < 360;
   const isWide = width >= 768;
 
   const handleLogKick = () => {
@@ -66,8 +67,6 @@ export default function HomeScreen() {
       weightLabel: 'Baby Weight',
       gestation: '28 Weeks',
       gestationLabel: 'Cycle Days',
-      heartbeat: '142 bpm',
-      heartbeatLabel: 'Fetal Heart',
       dailySection: 'My Daily Activity',
       cardTalk: 'Talking with Baby',
       cardYoga: 'Kegel Exercise',
@@ -95,8 +94,6 @@ export default function HomeScreen() {
       weightLabel: 'Uburemere',
       gestation: 'Ibyumweru 28',
       gestationLabel: 'Igihe Cyose',
-      heartbeat: '142 bpm',
-      heartbeatLabel: 'Umutima',
       dailySection: 'Gahunda y’Umunsi',
       cardTalk: 'Kuganira n’Umwana',
       cardYoga: 'Imyitozo ya Kegel',
@@ -123,35 +120,67 @@ export default function HomeScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: BottomTabInset + 40 },
+          { paddingBottom: BottomTabInset + 36 },
         ]}
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.container, isWide && styles.containerWide]}>
-          {/* Header Row: User Avatar, Greeting, Notifications & Lang Toggle */}
+          {/* Header Row: Responsive User Profile, Language & Bell */}
           <View style={styles.headerRow}>
             <View style={styles.userProfileWrap}>
-              <View style={styles.avatarCircle}>
-                <User size={20} color={PALETTE.white} />
+              <View
+                style={[
+                  styles.avatarCircle,
+                  isSmall && { width: 38, height: 38, borderRadius: 19 },
+                ]}
+              >
+                <User size={isSmall ? 18 : 20} color={PALETTE.white} />
               </View>
               <View style={styles.userGreetingText}>
-                <Text style={styles.greetingSubtitle}>{t.greeting}</Text>
-                <Text style={styles.userNameText}>{t.userName}</Text>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.greetingSubtitle,
+                    isSmall && { fontSize: 11 },
+                  ]}
+                >
+                  {t.greeting}
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.userNameText,
+                    isSmall && { fontSize: 16 },
+                  ]}
+                >
+                  {t.userName}
+                </Text>
               </View>
             </View>
 
             <View style={styles.headerActions}>
               <Pressable
-                style={styles.langPill}
+                style={[
+                  styles.langPill,
+                  isSmall && { paddingHorizontal: 7, paddingVertical: 4 },
+                ]}
                 onPress={() => setLang(lang === 'EN' ? 'RW' : 'EN')}
               >
-                <Text style={styles.langPillText}>
+                <Text
+                  style={[
+                    styles.langPillText,
+                    isSmall && { fontSize: 10 },
+                  ]}
+                >
                   {lang === 'EN' ? '🇷🇼 RW' : '🇬🇧 EN'}
                 </Text>
               </Pressable>
 
               <Pressable
-                style={styles.bellButton}
+                style={[
+                  styles.bellButton,
+                  isSmall && { width: 36, height: 36, borderRadius: 18 },
+                ]}
                 onPress={() =>
                   Alert.alert(
                     'Notifications',
@@ -159,65 +188,179 @@ export default function HomeScreen() {
                   )
                 }
               >
-                <Bell size={18} color={PALETTE.deepViolet} />
+                <Bell size={isSmall ? 16 : 18} color={PALETTE.deepViolet} />
                 <View style={styles.bellDot} />
               </Pressable>
             </View>
           </View>
 
-          {/* Fetal Telemetry & Gestational Milestone Card */}
-          <View style={styles.heroCard}>
+          {/* Fetal Telemetry & Gestational Milestone Hero Card */}
+          <View
+            style={[
+              styles.heroCard,
+              isSmall && {
+                paddingHorizontal: 12,
+                paddingTop: 14,
+                paddingBottom: 14,
+                borderRadius: 22,
+              },
+            ]}
+          >
             {/* Top pill badge */}
-            <View style={styles.milestoneBadgePill}>
-              <Sparkles size={13} color={PALETTE.white} />
-              <Text style={styles.milestoneBadgeText}>{t.countdownPill}</Text>
+            <View
+              style={[
+                styles.milestoneBadgePill,
+                isSmall && { paddingHorizontal: 10, paddingVertical: 4 },
+              ]}
+            >
+              <Sparkles size={isSmall ? 11 : 13} color={PALETTE.white} />
+              <Text
+                numberOfLines={1}
+                style={[
+                  styles.milestoneBadgeText,
+                  isSmall && { fontSize: 10 },
+                ]}
+              >
+                {t.countdownPill}
+              </Text>
             </View>
 
             {/* Professional Fetal Telemetry Visualizer */}
             <View style={styles.fetalTelemetryWrap}>
-              <View style={styles.haloOuter}>
-                <View style={styles.haloMid}>
-                  <View style={styles.haloCore}>
-                    <Baby size={40} color={PALETTE.vibrantCrimson} strokeWidth={2.2} />
+              <View
+                style={[
+                  styles.haloOuter,
+                  isSmall && { width: 80, height: 80, borderRadius: 40 },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.haloMid,
+                    isSmall && { width: 64, height: 64, borderRadius: 32 },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.haloCore,
+                      isSmall && { width: 48, height: 48, borderRadius: 24 },
+                    ]}
+                  >
+                    <Baby
+                      size={isSmall ? 30 : 38}
+                      color={PALETTE.vibrantCrimson}
+                      strokeWidth={2.2}
+                    />
                   </View>
                 </View>
               </View>
 
-              <View style={styles.telemetryTag}>
-                <Activity size={12} color={PALETTE.deepViolet} />
-                <Text style={styles.telemetryTagText}>{t.stageSubtitle}</Text>
+              <View
+                style={[
+                  styles.telemetryTag,
+                  isSmall && { paddingHorizontal: 8, paddingVertical: 3 },
+                ]}
+              >
+                <HeartPulse size={12} color={PALETTE.vibrantCrimson} />
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.telemetryTagText,
+                    isSmall && { fontSize: 9 },
+                  ]}
+                >
+                  142 BPM · {t.stageSubtitle}
+                </Text>
               </View>
             </View>
 
-            {/* Metric Capsules Row */}
-            <View style={styles.metricCapsulesRow}>
-              <View style={styles.metricCapsule}>
-                <View style={[styles.capsuleIconBox, { backgroundColor: '#FFE8EC' }]}>
-                  <Scale size={16} color={PALETTE.vibrantCrimson} />
+            {/* 2 Responsive Metric Capsules (Fluid, Non-Wrapping) */}
+            <View
+              style={[
+                styles.metricCapsulesRow,
+                isSmall && { gap: 6, marginTop: 8 },
+              ]}
+            >
+              <View
+                style={[
+                  styles.metricCapsule,
+                  isSmall && {
+                    paddingVertical: 8,
+                    paddingHorizontal: 8,
+                    gap: 6,
+                    borderRadius: 14,
+                  },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.capsuleIconBox,
+                    { backgroundColor: '#FFE8EC' },
+                    isSmall && { width: 28, height: 28, borderRadius: 8 },
+                  ]}
+                >
+                  <Scale size={isSmall ? 14 : 17} color={PALETTE.vibrantCrimson} />
                 </View>
                 <View style={styles.capsuleTextCol}>
-                  <Text style={styles.capsuleLabel}>{t.weightLabel}</Text>
-                  <Text style={styles.capsuleValue}>{t.babyWeight}</Text>
+                  <Text
+                    numberOfLines={1}
+                    style={[
+                      styles.capsuleLabel,
+                      isSmall && { fontSize: 8.5 },
+                    ]}
+                  >
+                    {t.weightLabel}
+                  </Text>
+                  <Text
+                    numberOfLines={1}
+                    style={[
+                      styles.capsuleValue,
+                      isSmall && { fontSize: 13 },
+                    ]}
+                  >
+                    {t.babyWeight}
+                  </Text>
                 </View>
               </View>
 
-              <View style={styles.metricCapsule}>
-                <View style={[styles.capsuleIconBox, { backgroundColor: '#ECE4FA' }]}>
-                  <Repeat size={16} color={PALETTE.electricPurple} />
+              <View
+                style={[
+                  styles.metricCapsule,
+                  isSmall && {
+                    paddingVertical: 8,
+                    paddingHorizontal: 8,
+                    gap: 6,
+                    borderRadius: 14,
+                  },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.capsuleIconBox,
+                    { backgroundColor: '#ECE4FA' },
+                    isSmall && { width: 28, height: 28, borderRadius: 8 },
+                  ]}
+                >
+                  <Repeat size={isSmall ? 14 : 17} color={PALETTE.electricPurple} />
                 </View>
                 <View style={styles.capsuleTextCol}>
-                  <Text style={styles.capsuleLabel}>{t.gestationLabel}</Text>
-                  <Text style={styles.capsuleValue}>{t.gestation}</Text>
-                </View>
-              </View>
-
-              <View style={styles.metricCapsule}>
-                <View style={[styles.capsuleIconBox, { backgroundColor: '#FFE8E4' }]}>
-                  <HeartPulse size={16} color={PALETTE.deepRuby} />
-                </View>
-                <View style={styles.capsuleTextCol}>
-                  <Text style={styles.capsuleLabel}>{t.heartbeatLabel}</Text>
-                  <Text style={styles.capsuleValue}>{t.heartbeat}</Text>
+                  <Text
+                    numberOfLines={1}
+                    style={[
+                      styles.capsuleLabel,
+                      isSmall && { fontSize: 8.5 },
+                    ]}
+                  >
+                    {t.gestationLabel}
+                  </Text>
+                  <Text
+                    numberOfLines={1}
+                    style={[
+                      styles.capsuleValue,
+                      isSmall && { fontSize: 13 },
+                    ]}
+                  >
+                    {t.gestation}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -225,76 +368,247 @@ export default function HomeScreen() {
 
           {/* Daily Activity Section Heading */}
           <View style={styles.sectionHeaderWrap}>
-            <Text style={styles.sectionTitle}>{t.dailySection}</Text>
+            <Text
+              style={[
+                styles.sectionTitle,
+                isSmall && { fontSize: 16 },
+              ]}
+            >
+              {t.dailySection}
+            </Text>
           </View>
 
-          {/* 2x2 Professional Activity Grid */}
-          <View style={styles.activityGrid}>
+          {/* 2x2 Responsive Activity Grid */}
+          <View style={[styles.activityGrid, isSmall && { gap: 8 }]}>
             {/* Card 1: Talking with Baby */}
             <Pressable
-              style={[styles.activityCard, styles.activityCardPeach]}
+              style={[
+                styles.activityCard,
+                styles.activityCardPeach,
+                isSmall && { padding: 10, minHeight: 128, borderRadius: 18 },
+              ]}
               onPress={() => router.push('/chat' as any)}
             >
-              <View style={[styles.activityIconCircle, { backgroundColor: '#FFD7D0' }]}>
-                <MessageSquareHeart size={34} color={PALETTE.deepViolet} strokeWidth={2} />
+              <View
+                style={[
+                  styles.activityIconCircle,
+                  { backgroundColor: '#FFD7D0' },
+                  isSmall && {
+                    width: 46,
+                    height: 46,
+                    borderRadius: 23,
+                    marginBottom: 6,
+                  },
+                ]}
+              >
+                <MessageSquareHeart
+                  size={isSmall ? 24 : 32}
+                  color={PALETTE.deepViolet}
+                  strokeWidth={2}
+                />
               </View>
-              <Text style={styles.activityTitle}>{t.cardTalk}</Text>
+              <Text
+                numberOfLines={2}
+                style={[
+                  styles.activityTitle,
+                  isSmall && { fontSize: 11.5, lineHeight: 15 },
+                ]}
+              >
+                {t.cardTalk}
+              </Text>
             </Pressable>
 
             {/* Card 2: Kegel Exercise */}
             <Pressable
-              style={[styles.activityCard, styles.activityCardLavender]}
+              style={[
+                styles.activityCard,
+                styles.activityCardLavender,
+                isSmall && { padding: 10, minHeight: 128, borderRadius: 18 },
+              ]}
               onPress={() => router.push('/education' as any)}
             >
-              <View style={[styles.activityIconCircle, { backgroundColor: '#E2D3FA' }]}>
-                <HeartPulse size={34} color={PALETTE.electricPurple} strokeWidth={2} />
+              <View
+                style={[
+                  styles.activityIconCircle,
+                  { backgroundColor: '#E2D3FA' },
+                  isSmall && {
+                    width: 46,
+                    height: 46,
+                    borderRadius: 23,
+                    marginBottom: 6,
+                  },
+                ]}
+              >
+                <HeartPulse
+                  size={isSmall ? 24 : 32}
+                  color={PALETTE.electricPurple}
+                  strokeWidth={2}
+                />
               </View>
-              <Text style={styles.activityTitle}>{t.cardYoga}</Text>
+              <Text
+                numberOfLines={2}
+                style={[
+                  styles.activityTitle,
+                  isSmall && { fontSize: 11.5, lineHeight: 15 },
+                ]}
+              >
+                {t.cardYoga}
+              </Text>
             </Pressable>
 
             {/* Card 3: Kick Counter */}
-            <View style={[styles.activityCard, styles.activityCardRuby]}>
-              <View style={[styles.activityIconCircle, { backgroundColor: '#FFD0D9' }]}>
-                <Footprints size={34} color={PALETTE.vibrantCrimson} strokeWidth={2} />
+            <View
+              style={[
+                styles.activityCard,
+                styles.activityCardRuby,
+                isSmall && { padding: 10, minHeight: 128, borderRadius: 18 },
+              ]}
+            >
+              <View
+                style={[
+                  styles.activityIconCircle,
+                  { backgroundColor: '#FFD0D9' },
+                  isSmall && {
+                    width: 46,
+                    height: 46,
+                    borderRadius: 23,
+                    marginBottom: 6,
+                  },
+                ]}
+              >
+                <Footprints
+                  size={isSmall ? 24 : 32}
+                  color={PALETTE.vibrantCrimson}
+                  strokeWidth={2}
+                />
               </View>
-              <Text style={styles.activityTitle}>{t.cardKick}</Text>
+              <Text
+                numberOfLines={1}
+                style={[
+                  styles.activityTitle,
+                  isSmall && { fontSize: 11.5, lineHeight: 15 },
+                ]}
+              >
+                {t.cardKick}
+              </Text>
 
-              <View style={styles.kickActionRow}>
-                <View style={styles.kickMiniBadge}>
-                  <Activity size={12} color={PALETTE.vibrantCrimson} />
-                  <Text style={styles.kickMiniText}>{kickCount}/10</Text>
+              <View
+                style={[
+                  styles.kickActionRow,
+                  isSmall && { gap: 4, marginTop: 6 },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.kickMiniBadge,
+                    isSmall && { paddingHorizontal: 5, paddingVertical: 2 },
+                  ]}
+                >
+                  <Activity size={10} color={PALETTE.vibrantCrimson} />
+                  <Text
+                    style={[
+                      styles.kickMiniText,
+                      isSmall && { fontSize: 10 },
+                    ]}
+                  >
+                    {kickCount}/10
+                  </Text>
                 </View>
-                <Pressable style={styles.kickMiniBtn} onPress={handleLogKick}>
-                  <Text style={styles.kickMiniBtnText}>{t.logKick}</Text>
+                <Pressable
+                  style={[
+                    styles.kickMiniBtn,
+                    isSmall && { paddingHorizontal: 7, paddingVertical: 3 },
+                  ]}
+                  onPress={handleLogKick}
+                >
+                  <Text
+                    style={[
+                      styles.kickMiniBtnText,
+                      isSmall && { fontSize: 10 },
+                    ]}
+                  >
+                    {t.logKick}
+                  </Text>
                 </Pressable>
               </View>
             </View>
 
             {/* Card 4: Calendar & Notes */}
             <Pressable
-              style={[styles.activityCard, styles.activityCardAmber]}
+              style={[
+                styles.activityCard,
+                styles.activityCardAmber,
+                isSmall && { padding: 10, minHeight: 128, borderRadius: 18 },
+              ]}
               onPress={() => router.push('/records' as any)}
             >
-              <View style={[styles.activityIconCircle, { backgroundColor: '#FDE68A' }]}>
-                <CalendarDays size={34} color="#B45309" strokeWidth={2} />
+              <View
+                style={[
+                  styles.activityIconCircle,
+                  { backgroundColor: '#FDE68A' },
+                  isSmall && {
+                    width: 46,
+                    height: 46,
+                    borderRadius: 23,
+                    marginBottom: 6,
+                  },
+                ]}
+              >
+                <CalendarDays
+                  size={isSmall ? 24 : 32}
+                  color="#B45309"
+                  strokeWidth={2}
+                />
               </View>
-              <Text style={styles.activityTitle}>{t.cardCalendar}</Text>
+              <Text
+                numberOfLines={2}
+                style={[
+                  styles.activityTitle,
+                  isSmall && { fontSize: 11.5, lineHeight: 15 },
+                ]}
+              >
+                {t.cardCalendar}
+              </Text>
             </Pressable>
           </View>
 
           {/* Live Session Card */}
-          <View style={styles.liveSessionCard}>
+          <View
+            style={[
+              styles.liveSessionCard,
+              isSmall && { padding: 12, borderRadius: 18 },
+            ]}
+          >
             <View style={styles.liveLeft}>
               <View style={styles.livePill}>
-                <Radio size={11} color={PALETTE.white} />
+                <Radio size={10} color={PALETTE.white} />
                 <Text style={styles.livePillText}>{t.liveBadge}</Text>
               </View>
-              <Text style={styles.liveTitleText}>{t.liveTitle}</Text>
-              <Text style={styles.liveTimeText}>{t.liveTime}</Text>
+              <Text
+                numberOfLines={1}
+                style={[
+                  styles.liveTitleText,
+                  isSmall && { fontSize: 13 },
+                ]}
+              >
+                {t.liveTitle}
+              </Text>
+              <Text
+                numberOfLines={1}
+                style={[
+                  styles.liveTimeText,
+                  isSmall && { fontSize: 10.5 },
+                ]}
+              >
+                {t.liveTime}
+              </Text>
             </View>
 
             <Pressable
-              style={styles.liveJoinBtn}
+              style={[
+                styles.liveJoinBtn,
+                isSmall && { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 },
+              ]}
               onPress={() =>
                 Alert.alert(
                   'Live Audio Broadcast',
@@ -302,22 +616,44 @@ export default function HomeScreen() {
                 )
               }
             >
-              <Play size={14} color={PALETTE.white} fill={PALETTE.white} />
-              <Text style={styles.liveJoinText}>{t.liveJoin}</Text>
+              <Play size={isSmall ? 12 : 14} color={PALETTE.white} fill={PALETTE.white} />
+              <Text
+                style={[
+                  styles.liveJoinText,
+                  isSmall && { fontSize: 11 },
+                ]}
+              >
+                {t.liveJoin}
+              </Text>
             </Pressable>
           </View>
 
-          {/* Urgent Danger Signs: Professional Lucide Icon Chips */}
-          <View style={styles.dangerSection}>
+          {/* Urgent Danger Signs: Responsive Medical Lucide Icon Tiles */}
+          <View
+            style={[
+              styles.dangerSection,
+              isSmall && { padding: 12, borderRadius: 18, gap: 10 },
+            ]}
+          >
             <View style={styles.dangerHeaderRow}>
               <View style={styles.dangerHeaderLeft}>
-                <AlertTriangle size={15} color={PALETTE.vibrantCrimson} />
-                <Text style={styles.dangerSectionTitle}>{t.dangerTitle}</Text>
+                <AlertTriangle size={isSmall ? 14 : 15} color={PALETTE.vibrantCrimson} />
+                <Text
+                  style={[
+                    styles.dangerSectionTitle,
+                    isSmall && { fontSize: 13 },
+                  ]}
+                >
+                  {t.dangerTitle}
+                </Text>
               </View>
 
-              <View style={styles.dangerActions}>
+              <View style={[styles.dangerActions, isSmall && { gap: 6 }]}>
                 <Pressable
-                  style={styles.sosButton}
+                  style={[
+                    styles.sosButton,
+                    isSmall && { paddingHorizontal: 7, paddingVertical: 4, borderRadius: 10 },
+                  ]}
                   onPress={() =>
                     Alert.alert(
                       'Emergency Call 114',
@@ -325,60 +661,145 @@ export default function HomeScreen() {
                     )
                   }
                 >
-                  <PhoneCall size={12} color={PALETTE.white} />
-                  <Text style={styles.sosButtonText}>{t.callSos}</Text>
+                  <PhoneCall size={isSmall ? 10 : 12} color={PALETTE.white} />
+                  <Text
+                    style={[
+                      styles.sosButtonText,
+                      isSmall && { fontSize: 10 },
+                    ]}
+                  >
+                    {t.callSos}
+                  </Text>
                 </Pressable>
 
                 <Pressable
-                  style={styles.voiceButton}
+                  style={[
+                    styles.voiceButton,
+                    isSmall && { paddingHorizontal: 7, paddingVertical: 4, borderRadius: 10 },
+                  ]}
                   onPress={() => router.push('/report' as any)}
                 >
-                  <Mic size={13} color={PALETTE.deepViolet} />
-                  <Text style={styles.voiceButtonText}>{t.voiceReport}</Text>
+                  <Mic size={isSmall ? 11 : 13} color={PALETTE.deepViolet} />
+                  <Text
+                    style={[
+                      styles.voiceButtonText,
+                      isSmall && { fontSize: 10 },
+                    ]}
+                  >
+                    {t.voiceReport}
+                  </Text>
                 </Pressable>
               </View>
             </View>
 
-            {/* Professional Medical Lucide Icon Tiles */}
-            <View style={styles.dangerChipsRow}>
+            {/* Responsive Danger Chips Row */}
+            <View style={[styles.dangerChipsRow, isSmall && { gap: 4 }]}>
               <Pressable
-                style={styles.dangerChip}
+                style={[
+                  styles.dangerChip,
+                  isSmall && { paddingVertical: 6, borderRadius: 12 },
+                ]}
                 onPress={() => router.push('/report' as any)}
               >
-                <View style={[styles.dangerIconBox, { backgroundColor: '#FFE8EC' }]}>
-                  <Droplets size={18} color={PALETTE.vibrantCrimson} />
+                <View
+                  style={[
+                    styles.dangerIconBox,
+                    { backgroundColor: '#FFE8EC' },
+                    isSmall && { width: 26, height: 26, borderRadius: 13 },
+                  ]}
+                >
+                  <Droplets size={isSmall ? 14 : 17} color={PALETTE.vibrantCrimson} />
                 </View>
-                <Text style={styles.dangerChipText}>{t.dangerBleed}</Text>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.dangerChipText,
+                    isSmall && { fontSize: 8.5 },
+                  ]}
+                >
+                  {t.dangerBleed}
+                </Text>
               </Pressable>
 
               <Pressable
-                style={styles.dangerChip}
+                style={[
+                  styles.dangerChip,
+                  isSmall && { paddingVertical: 6, borderRadius: 12 },
+                ]}
                 onPress={() => router.push('/report' as any)}
               >
-                <View style={[styles.dangerIconBox, { backgroundColor: '#FFF5D6' }]}>
-                  <Zap size={18} color="#D97706" />
+                <View
+                  style={[
+                    styles.dangerIconBox,
+                    { backgroundColor: '#FFF5D6' },
+                    isSmall && { width: 26, height: 26, borderRadius: 13 },
+                  ]}
+                >
+                  <Zap size={isSmall ? 14 : 17} color="#D97706" />
                 </View>
-                <Text style={styles.dangerChipText}>{t.dangerPain}</Text>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.dangerChipText,
+                    isSmall && { fontSize: 8.5 },
+                  ]}
+                >
+                  {t.dangerPain}
+                </Text>
               </Pressable>
 
               <Pressable
-                style={styles.dangerChip}
+                style={[
+                  styles.dangerChip,
+                  isSmall && { paddingVertical: 6, borderRadius: 12 },
+                ]}
                 onPress={() => router.push('/report' as any)}
               >
-                <View style={[styles.dangerIconBox, { backgroundColor: '#ECE4FA' }]}>
-                  <Eye size={18} color={PALETTE.electricPurple} />
+                <View
+                  style={[
+                    styles.dangerIconBox,
+                    { backgroundColor: '#ECE4FA' },
+                    isSmall && { width: 26, height: 26, borderRadius: 13 },
+                  ]}
+                >
+                  <Eye size={isSmall ? 14 : 17} color={PALETTE.electricPurple} />
                 </View>
-                <Text style={styles.dangerChipText}>{t.dangerVision}</Text>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.dangerChipText,
+                    isSmall && { fontSize: 8.5 },
+                  ]}
+                >
+                  {t.dangerVision}
+                </Text>
               </Pressable>
 
               <Pressable
-                style={styles.dangerChip}
+                style={[
+                  styles.dangerChip,
+                  isSmall && { paddingVertical: 6, borderRadius: 12 },
+                ]}
                 onPress={() => router.push('/report' as any)}
               >
-                <View style={[styles.dangerIconBox, { backgroundColor: '#FFE8EC' }]}>
-                  <Thermometer size={18} color={PALETTE.deepRuby} />
+                <View
+                  style={[
+                    styles.dangerIconBox,
+                    { backgroundColor: '#FFE8EC' },
+                    isSmall && { width: 26, height: 26, borderRadius: 13 },
+                  ]}
+                >
+                  <Thermometer size={isSmall ? 14 : 17} color={PALETTE.deepRuby} />
                 </View>
-                <Text style={styles.dangerChipText}>{t.dangerFever}</Text>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.dangerChipText,
+                    isSmall && { fontSize: 8.5 },
+                  ]}
+                >
+                  {t.dangerFever}
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -402,7 +823,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 680,
     alignSelf: 'center',
-    gap: 16,
+    gap: 14,
   },
   containerWide: {
     maxWidth: 780,
@@ -413,12 +834,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 4,
+    paddingVertical: 2,
   },
   userProfileWrap: {
+    flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   avatarCircle: {
     width: 44,
@@ -434,7 +857,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   userGreetingText: {
-    gap: 2,
+    flex: 1,
+    minWidth: 0,
   },
   greetingSubtitle: {
     fontFamily: Fonts.medium,
@@ -455,7 +879,7 @@ const styles = StyleSheet.create({
   langPill: {
     backgroundColor: PALETTE.cardLavender,
     paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingVertical: 5,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: '#DFD2F5',
@@ -489,8 +913,8 @@ const styles = StyleSheet.create({
   /* Hero Fetal Card */
   heroCard: {
     backgroundColor: PALETTE.cardPeach,
-    borderRadius: 28,
-    paddingTop: 18,
+    borderRadius: 26,
+    paddingTop: 16,
     paddingBottom: 16,
     paddingHorizontal: 16,
     alignItems: 'center',
@@ -510,7 +934,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 5,
     borderRadius: 20,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   milestoneBadgeText: {
     fontFamily: Fonts.bold,
@@ -521,12 +945,12 @@ const styles = StyleSheet.create({
   fetalTelemetryWrap: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 6,
+    marginVertical: 4,
   },
   haloOuter: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 92,
+    height: 92,
+    borderRadius: 46,
     backgroundColor: 'rgba(255, 174, 158, 0.28)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -534,17 +958,17 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 122, 96, 0.35)',
   },
   haloMid: {
-    width: 78,
-    height: 78,
-    borderRadius: 39,
+    width: 74,
+    height: 74,
+    borderRadius: 37,
     backgroundColor: 'rgba(255, 232, 228, 0.75)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   haloCore: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
     backgroundColor: PALETTE.cardSurface,
     alignItems: 'center',
     justifyContent: 'center',
@@ -580,39 +1004,41 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     gap: 8,
-    marginTop: 12,
+    marginTop: 10,
   },
   metricCapsule: {
     flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     backgroundColor: PALETTE.cardSurface,
     paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     borderRadius: 18,
     borderWidth: 1,
     borderColor: '#F3E5E2',
   },
   capsuleIconBox: {
-    width: 30,
-    height: 30,
+    width: 32,
+    height: 32,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   capsuleTextCol: {
     flex: 1,
+    minWidth: 0,
   },
   capsuleLabel: {
     fontFamily: Fonts.medium,
-    fontSize: 9,
+    fontSize: 9.5,
     color: PALETTE.gray500,
     textTransform: 'uppercase',
   },
   capsuleValue: {
     fontFamily: Fonts.bold,
-    fontSize: 13,
+    fontSize: 14,
     color: PALETTE.black,
   },
 
@@ -622,7 +1048,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontFamily: Fonts.bold,
-    fontSize: 18,
+    fontSize: 17,
     color: PALETTE.black,
     letterSpacing: -0.2,
   },
@@ -631,18 +1057,18 @@ const styles = StyleSheet.create({
   activityGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
   },
   activityCard: {
     width: '48%',
     flexGrow: 1,
-    borderRadius: 24,
-    padding: 16,
+    borderRadius: 22,
+    padding: 14,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#DFD2F5',
-    minHeight: 154,
+    minHeight: 144,
     shadowColor: PALETTE.deepViolet,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.04,
@@ -666,12 +1092,12 @@ const styles = StyleSheet.create({
     borderColor: '#FDE68A',
   },
   activityIconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
     shadowColor: PALETTE.deepViolet,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -680,7 +1106,7 @@ const styles = StyleSheet.create({
   },
   activityTitle: {
     fontFamily: Fonts.bold,
-    fontSize: 13,
+    fontSize: 12.5,
     color: PALETTE.black,
     textAlign: 'center',
   },
@@ -688,39 +1114,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginTop: 8,
+    marginTop: 6,
   },
   kickMiniBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
     backgroundColor: 'rgba(255, 25, 59, 0.12)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 10,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 8,
   },
   kickMiniText: {
     fontFamily: Fonts.bold,
-    fontSize: 11,
+    fontSize: 10.5,
     color: PALETTE.vibrantCrimson,
   },
   kickMiniBtn: {
     backgroundColor: PALETTE.vibrantCrimson,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: 8,
   },
   kickMiniBtnText: {
     fontFamily: Fonts.bold,
-    fontSize: 11,
+    fontSize: 10.5,
     color: PALETTE.white,
   },
 
   /* Live Session Card */
   liveSessionCard: {
     backgroundColor: PALETTE.cardSurface,
-    borderRadius: 22,
-    padding: 16,
+    borderRadius: 20,
+    padding: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -733,15 +1159,17 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   liveLeft: {
-    gap: 4,
+    gap: 3,
     flex: 1,
+    minWidth: 0,
+    marginRight: 8,
   },
   livePill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
     backgroundColor: PALETTE.vibrantCrimson,
-    paddingHorizontal: 8,
+    paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: 10,
     alignSelf: 'flex-start',
@@ -754,7 +1182,7 @@ const styles = StyleSheet.create({
   },
   liveTitleText: {
     fontFamily: Fonts.bold,
-    fontSize: 14,
+    fontSize: 13.5,
     color: PALETTE.black,
   },
   liveTimeText: {
@@ -767,21 +1195,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     backgroundColor: PALETTE.deepViolet,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 14,
   },
   liveJoinText: {
     fontFamily: Fonts.bold,
-    fontSize: 12,
+    fontSize: 11.5,
     color: PALETTE.white,
   },
 
   /* Danger Signs Section */
   dangerSection: {
     backgroundColor: PALETTE.cardSurface,
-    borderRadius: 24,
-    padding: 16,
+    borderRadius: 22,
+    padding: 14,
     borderWidth: 1,
     borderColor: '#DFD2F5',
     gap: 12,
@@ -798,26 +1226,26 @@ const styles = StyleSheet.create({
   },
   dangerSectionTitle: {
     fontFamily: Fonts.bold,
-    fontSize: 14,
+    fontSize: 13.5,
     color: PALETTE.black,
   },
   dangerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   sosButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 4,
     backgroundColor: PALETTE.vibrantCrimson,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 10,
   },
   sosButtonText: {
     fontFamily: Fonts.bold,
-    fontSize: 11,
+    fontSize: 10.5,
     color: PALETTE.white,
   },
   voiceButton: {
@@ -825,15 +1253,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
     backgroundColor: PALETTE.cardLavender,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: '#DFD2F5',
   },
   voiceButtonText: {
     fontFamily: Fonts.bold,
-    fontSize: 11,
+    fontSize: 10.5,
     color: PALETTE.deepViolet,
   },
   dangerChipsRow: {
@@ -845,24 +1273,24 @@ const styles = StyleSheet.create({
   dangerChip: {
     flex: 1,
     backgroundColor: PALETTE.cardLavender,
-    borderRadius: 16,
-    paddingVertical: 10,
-    paddingHorizontal: 4,
+    borderRadius: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 2,
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
     borderWidth: 1,
     borderColor: '#E6DAFA',
   },
   dangerIconBox: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   dangerChipText: {
     fontFamily: Fonts.bold,
-    fontSize: 10,
+    fontSize: 9.5,
     color: PALETTE.black,
     textAlign: 'center',
   },
