@@ -33,6 +33,81 @@ const COLORS = {
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
+function ActionCard({
+  icon,
+  title,
+  description,
+  background,
+  iconColor,
+  isWide,
+  onPress,
+}: {
+  icon: IconName;
+  title: string;
+  description: string;
+  background: string;
+  iconColor: string;
+  isWide?: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${title}. ${description}`}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.actionCard,
+        isWide && styles.actionCardWide,
+        pressed && styles.pressed,
+      ]}
+    >
+      <View style={[styles.actionIcon, { backgroundColor: background }]}>
+        <Ionicons name={icon} size={23} color={iconColor} />
+      </View>
+      <View style={styles.actionText}>
+        <Text style={styles.actionTitle}>{title}</Text>
+        <Text style={styles.actionDescription}>{description}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={19} color={COLORS.muted} />
+    </Pressable>
+  );
+}
+
+function EducationCard({
+  icon,
+  title,
+  background,
+  iconColor,
+  onPress,
+}: {
+  icon: IconName;
+  title: string;
+  background: string;
+  iconColor: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.educationCard,
+        { backgroundColor: background },
+        pressed && styles.pressed,
+      ]}
+    >
+      <Ionicons name={icon} size={27} color={iconColor} />
+      <Text style={styles.educationCardTitle}>{title}</Text>
+      <Ionicons
+        name="arrow-forward"
+        size={18}
+        color={iconColor}
+        style={styles.educationArrow}
+      />
+    </Pressable>
+  );
+}
+
 export default function HomeScreen() {
   const [language, setLanguage] = useState<'EN' | 'RW'>('EN');
   const { width } = useWindowDimensions();
@@ -122,75 +197,6 @@ export default function HomeScreen() {
       );
     }
   };
-
-  const ActionCard = ({
-    icon,
-    title,
-    description,
-    background,
-    iconColor,
-    onPress,
-  }: {
-    icon: IconName;
-    title: string;
-    description: string;
-    background: string;
-    iconColor: string;
-    onPress: () => void;
-  }) => (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${title}. ${description}`}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.actionCard,
-        isWide && styles.actionCardWide,
-        pressed && styles.pressed,
-      ]}
-    >
-      <View style={[styles.actionIcon, { backgroundColor: background }]}>
-        <Ionicons name={icon} size={23} color={iconColor} />
-      </View>
-      <View style={styles.actionText}>
-        <Text style={styles.actionTitle}>{title}</Text>
-        <Text style={styles.actionDescription}>{description}</Text>
-      </View>
-      <Ionicons name="chevron-forward" size={19} color={COLORS.muted} />
-    </Pressable>
-  );
-
-  const EducationCard = ({
-    icon,
-    title,
-    background,
-    iconColor,
-    onPress,
-  }: {
-    icon: IconName;
-    title: string;
-    background: string;
-    iconColor: string;
-    onPress: () => void;
-  }) => (
-    <Pressable
-      accessibilityRole="button"
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.educationCard,
-        { backgroundColor: background },
-        pressed && styles.pressed,
-      ]}
-    >
-      <Ionicons name={icon} size={27} color={iconColor} />
-      <Text style={styles.educationCardTitle}>{title}</Text>
-      <Ionicons
-        name="arrow-forward"
-        size={18}
-        color={iconColor}
-        style={styles.educationArrow}
-      />
-    </Pressable>
-  );
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -398,6 +404,7 @@ export default function HomeScreen() {
                 description="Share a health concern"
                 background={COLORS.primaryLight}
                 iconColor={COLORS.primary}
+                isWide={isWide}
                 onPress={() => navigate('/report-symptoms')}
               />
 
@@ -407,6 +414,7 @@ export default function HomeScreen() {
                 description="Message a health professional"
                 background={COLORS.lavender}
                 iconColor="#6951B8"
+                isWide={isWide}
                 onPress={() => navigate('/chat')}
               />
 
@@ -416,6 +424,7 @@ export default function HomeScreen() {
                 description="Read trusted health information"
                 background="#FFF0E8"
                 iconColor={COLORS.coral}
+                isWide={isWide}
                 onPress={() => navigate('/education')}
               />
 
@@ -425,6 +434,7 @@ export default function HomeScreen() {
                 description="Review follow-ups and referrals"
                 background={COLORS.successBg}
                 iconColor={COLORS.success}
+                isWide={isWide}
                 onPress={() => navigate('/referrals')}
               />
             </View>

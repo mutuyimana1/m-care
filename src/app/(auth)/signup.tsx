@@ -46,7 +46,7 @@ export default function SignupScreen() {
           <Link href="/(auth)/login" style={styles.link}>
             Already have an account? Log in
           </Link>
-          <Link href="/(tabs)/index" style={styles.link}>
+          <Link href="/(tabs)" style={styles.link}>
             Back to Home
           </Link>
         </View>

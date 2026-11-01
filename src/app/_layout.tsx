@@ -7,7 +7,7 @@ import { AnimatedSplashOverlay } from '@/components/animated-icon';
 SplashScreen.preventAutoHideAsync();
 
 export const unstable_settings = {
-  initialRouteName: '(tabs)',
+  anchor: '(tabs)',
 };
 
 export default function RootLayout() {
