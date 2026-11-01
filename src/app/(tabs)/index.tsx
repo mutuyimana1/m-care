@@ -1,7 +1,4 @@
-
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -10,580 +7,380 @@ import {
   StyleSheet,
   Text,
   View,
-  useWindowDimensions
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const COLORS = {
-  primary: '#087F8C',
-  primaryDark: '#075D68',
-  primaryLight: '#E5F5F4',
-  background: '#F5F8FA',
-  white: '#FFFFFF',
-  text: '#18343B',
-  muted: '#71848A',
-  border: '#E4EBEE',
-  warning: '#9A5A08',
-  warningBg: '#FFF3DD',
-  success: '#26734D',
-  successBg: '#E7F6ED',
-  coral: '#D96C56',
-  lavender: '#F0ECFF',
-};
-
-type IconName = React.ComponentProps<typeof Ionicons>['name'];
-
-function ActionCard({
-  icon,
-  title,
-  description,
-  background,
-  iconColor,
-  isWide,
-  onPress,
-}: {
-  icon: IconName;
-  title: string;
-  description: string;
-  background: string;
-  iconColor: string;
-  isWide?: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${title}. ${description}`}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.actionCard,
-        isWide && styles.actionCardWide,
-        pressed && styles.pressed,
-      ]}
-    >
-      <View style={[styles.actionIcon, { backgroundColor: background }]}>
-        <Ionicons name={icon} size={23} color={iconColor} />
-      </View>
-      <View style={styles.actionText}>
-        <Text style={styles.actionTitle}>{title}</Text>
-        <Text style={styles.actionDescription}>{description}</Text>
-      </View>
-      <Ionicons name="chevron-forward" size={19} color={COLORS.muted} />
-    </Pressable>
-  );
-}
-
-function EducationCard({
-  icon,
-  title,
-  background,
-  iconColor,
-  onPress,
-}: {
-  icon: IconName;
-  title: string;
-  background: string;
-  iconColor: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.educationCard,
-        { backgroundColor: background },
-        pressed && styles.pressed,
-      ]}
-    >
-      <Ionicons name={icon} size={27} color={iconColor} />
-      <Text style={styles.educationCardTitle}>{title}</Text>
-      <Ionicons
-        name="arrow-forward"
-        size={18}
-        color={iconColor}
-        style={styles.educationArrow}
-      />
-    </Pressable>
-  );
-}
+import { router } from 'expo-router';
+import {
+  Activity,
+  AlertTriangle,
+  Baby,
+  Bell,
+  CalendarDays,
+  Droplets,
+  Eye,
+  Footprints,
+  HeartPulse,
+  MessageSquareHeart,
+  Mic,
+  PhoneCall,
+  Play,
+  Radio,
+  Repeat,
+  Scale,
+  Sparkles,
+  Thermometer,
+  User,
+  Zap,
+} from 'lucide-react-native';
+import { BottomTabInset, Fonts, PALETTE } from '@/constants/theme';
 
 export default function HomeScreen() {
-  const [language, setLanguage] = useState<'EN' | 'RW'>('EN');
+  const [kickCount, setKickCount] = useState(7);
+  const [lang, setLang] = useState<'EN' | 'RW'>('EN');
   const { width } = useWindowDimensions();
-  const isWide = width >= 700;
+  const isWide = width >= 768;
 
-  const copy = {
+  const handleLogKick = () => {
+    setKickCount((prev) => {
+      const next = prev + 1;
+      if (next === 10) {
+        Alert.alert(
+          lang === 'EN' ? 'Goal Reached! 🌟' : 'Wabigezeho! 🌟',
+          lang === 'EN'
+            ? '10 fetal movements logged. Fetal activity is optimal.'
+            : 'Imigeri 10 yose yanditswe. Umwana ameze neza cyane.'
+        );
+      }
+      return next;
+    });
+  };
+
+  const t = {
     EN: {
-      greeting: 'Hello, welcome to',
-      subtitle: 'Your maternal health companion',
-      healthTitle: 'Your health matters',
-      healthDescription:
-        'Have a health concern? Share it with your healthcare team.',
-      report: 'Report a concern',
-      support: 'Professional support',
-      education: 'Health education',
-      followup: 'My follow-ups',
-      quickActions: 'How can we help you?',
-      quickDescription:
-        'Choose a service to get started.',
-      careTitle: 'Your care and follow-up',
-      careDescription:
-        'Keep track of your reported concerns and referrals.',
-      viewDetails: 'View details',
-      educationTitle: 'Learn about your health',
-      educationDescription:
-        'Explore pregnancy and postnatal health information.',
-      pregnancy: 'Pregnancy care',
-      nutrition: 'Nutrition',
-      postnatal: 'Postnatal care',
-      supportTitle: 'Need someone to talk to?',
-      supportDescription:
-        'Connect with a qualified healthcare professional for guidance.',
-      chatNow: 'Contact a professional',
-      privacy: 'Your privacy matters',
-      privacyDescription:
-        'Your health information should only be accessible to authorized people.',
-      demo: 'Prototype preview',
-      demoDescription:
-        'This screen uses sample information. Health services and alerts must be connected and verified before real-world use.',
-      status: 'No live updates',
+      greeting: 'Good Morning ☀️',
+      userName: 'Aline Uwase',
+      countdownPill: '1 Month, 2 Days to Delivery',
+      stageSubtitle: 'WEEK 28 · 3RD TRIMESTER',
+      babyWeight: '1.1 kg',
+      weightLabel: 'Baby Weight',
+      gestation: '28 Weeks',
+      gestationLabel: 'Cycle Days',
+      heartbeat: '142 bpm',
+      heartbeatLabel: 'Fetal Heart',
+      dailySection: 'My Daily Activity',
+      cardTalk: 'Talking with Baby',
+      cardYoga: 'Kegel Exercise',
+      cardKick: 'Kick Counter',
+      cardCalendar: 'Calendar & Notes',
+      logKick: '+ Kick',
+      liveBadge: 'LIVE',
+      liveTitle: 'Breathing for Delivery',
+      liveTime: '04:30 PM (CAT)',
+      liveJoin: 'Join',
+      dangerTitle: 'Urgent Signs',
+      dangerBleed: 'Bleeding',
+      dangerPain: 'Severe Pain',
+      dangerVision: 'Blurry Vision',
+      dangerFever: 'High Fever',
+      callSos: 'SOS 114',
+      voiceReport: 'Voice Note',
     },
     RW: {
-      greeting: 'Muraho, karibu kuri',
-      subtitle: 'Umufasha wawe mu buzima bw’umubyeyi',
-      healthTitle: 'Ubuzima bwawe ni ingenzi',
-      healthDescription:
-        'Ufite ikibazo cy’ubuzima? Kigeze ku itsinda ry’abaganga bakwitaho.',
-      report: 'Tanga amakuru',
-      support: 'Ubufasha bw’abaganga',
-      education: 'Inyigisho z’ubuzima',
-      followup: 'Gukurikirana ubuvuzi',
-      quickActions: 'Twagufasha dute?',
-      quickDescription: 'Hitamo serivisi ukeneye.',
-      careTitle: 'Ubuvuzi bwawe',
-      careDescription:
-        'Kurikirana ibibazo watanze n’uburyo bwo koherezwa ku yindi serivisi.',
-      viewDetails: 'Reba ibisobanuro',
-      educationTitle: 'Menya ibijyanye n’ubuzima bwawe',
-      educationDescription:
-        'Soma amakuru ajyanye no gutwita no kwita ku mwana nyuma yo kubyara.',
-      pregnancy: 'Kwita ku utwite',
-      nutrition: 'Imirire',
-      postnatal: 'Kwita ku mubyeyi nyuma yo kubyara',
-      supportTitle: 'Ukeneye umuntu muganira?',
-      supportDescription:
-        'Vugana n’umuganga ubifitiye ubumenyi kugira ngo akugire inama.',
-      chatNow: 'Vugana n’umuganga',
-      privacy: 'Ibanga ry’amakuru yawe ni ingenzi',
-      privacyDescription:
-        'Amakuru y’ubuzima bwawe agomba kubonwa n’ababyemerewe gusa.',
-      demo: 'Urugero rw’imikorere ya porogaramu',
-      demoDescription:
-        'Aya makuru ni ayo kugerageza. Serivisi z’ubuzima n’amatangazo bigomba kubanza guhuzwa no kugenzurwa mbere yo gukoreshwa.',
-      status: 'Nta makuru mashya ahari',
+      greeting: 'Muraho Neza ☀️',
+      userName: 'Aline Uwase',
+      countdownPill: 'Hasigaye Ukwezi 1, Iminsi 2',
+      stageSubtitle: 'ICYUMWERU CYA 28 · IGIHE CYA 3',
+      babyWeight: 'Ibiro 1.1',
+      weightLabel: 'Uburemere',
+      gestation: 'Ibyumweru 28',
+      gestationLabel: 'Igihe Cyose',
+      heartbeat: '142 bpm',
+      heartbeatLabel: 'Umutima',
+      dailySection: 'Gahunda y’Umunsi',
+      cardTalk: 'Kuganira n’Umwana',
+      cardYoga: 'Imyitozo ya Kegel',
+      cardKick: 'Kubara Imigeri',
+      cardCalendar: 'Kalandari & Inyandiko',
+      logKick: '+ Umugeri',
+      liveBadge: 'LIVE',
+      liveTitle: 'Guhumeka Neza mu Kubyara',
+      liveTime: '04:30 PM (CAT)',
+      liveJoin: 'Injira',
+      dangerTitle: 'Ibimenyetso Byihutirwa',
+      dangerBleed: 'Kuva Amaraso',
+      dangerPain: 'Uburibwe Bukabije',
+      dangerVision: 'Kutabona Neza',
+      dangerFever: 'Umuriro Mwinshi',
+      callSos: 'SOS 114',
+      voiceReport: 'Ijwi',
     },
-  }[language];
-
-  const navigate = (path: string) => {
-    // Connect these destinations to the corresponding screens
-    // when their Expo Router files are implemented.
-    try {
-      router.push(path as never);
-    } catch {
-      Alert.alert(
-        'Coming soon',
-        'This service will be available when its screen is connected.',
-      );
-    }
-  };
+  }[lang];
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-     <StatusBar barStyle="dark-content" />
-
+      <StatusBar barStyle="dark-content" />
       <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: BottomTabInset + 40 },
+        ]}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
       >
-        <View style={[styles.page, isWide && styles.pageWide]}>
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={styles.brand}>
-              <View style={styles.logo}>
-                <Ionicons
-                  name="heart"
-                  size={23}
-                  color={COLORS.white}
-                />
-                <View style={styles.logoPlus}>
-                  <Ionicons name="add" size={12} color={COLORS.primary} />
-                </View>
+        <View style={[styles.container, isWide && styles.containerWide]}>
+          {/* Header Row: User Avatar, Greeting, Notifications & Lang Toggle */}
+          <View style={styles.headerRow}>
+            <View style={styles.userProfileWrap}>
+              <View style={styles.avatarCircle}>
+                <User size={20} color={PALETTE.white} />
               </View>
-
-              <View>
-                <Text style={styles.brandName}>M-CARE</Text>
-                <Text style={styles.brandSubtitle}>Maternal care & support</Text>
+              <View style={styles.userGreetingText}>
+                <Text style={styles.greetingSubtitle}>{t.greeting}</Text>
+                <Text style={styles.userNameText}>{t.userName}</Text>
               </View>
             </View>
-<Pressable
-  accessibilityRole="button"
-  accessibilityLabel="Open profile menu"
-  // onPress={() => setProfileMenuVisible((visible) => !visible)}
-  // style={styles.profileButton}
->
-  <Ionicons name="person-outline" size={23} color="#087F8C" />
-</Pressable>
-            <View style={styles.headerActions}>
-              <View style={styles.languageToggle}>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Use English"
-                  onPress={() => setLanguage('EN')}
-                  style={[
-                    styles.languageButton,
-                    language === 'EN' && styles.languageActive,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.languageText,
-                      language === 'EN' && styles.languageTextActive,
-                    ]}
-                  >
-                    EN
-                  </Text>
-                </Pressable>
 
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Use Kinyarwanda"
-                  onPress={() => setLanguage('RW')}
-                  style={[
-                    styles.languageButton,
-                    language === 'RW' && styles.languageActive,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.languageText,
-                      language === 'RW' && styles.languageTextActive,
-                    ]}
-                  >
-                    RW
-                  </Text>
-                </Pressable>
-              </View>
+            <View style={styles.headerActions}>
+              <Pressable
+                style={styles.langPill}
+                onPress={() => setLang(lang === 'EN' ? 'RW' : 'EN')}
+              >
+                <Text style={styles.langPillText}>
+                  {lang === 'EN' ? '🇷🇼 RW' : '🇬🇧 EN'}
+                </Text>
+              </Pressable>
 
               <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Notifications"
+                style={styles.bellButton}
                 onPress={() =>
                   Alert.alert(
                     'Notifications',
-                    'Live notifications are not connected in this prototype.',
+                    'Reminder: Iron supplement refill due tomorrow at Muhima HC.'
                   )
                 }
-                style={styles.notificationButton}
               >
-                <Ionicons
-                  name="notifications-outline"
-                  size={23}
-                  color={COLORS.text}
-                />
+                <Bell size={18} color={PALETTE.deepViolet} />
+                <View style={styles.bellDot} />
               </Pressable>
             </View>
           </View>
 
-          {/* Welcome */}
-          <View style={styles.welcome}>
-            <Text style={styles.greeting}>{copy.greeting}</Text>
-            <Text style={styles.welcomeTitle}>M-CARE</Text>
-            <Text style={styles.welcomeSubtitle}>{copy.subtitle}</Text>
-          </View>
-
-          {/* Main hero */}
+          {/* Fetal Telemetry & Gestational Milestone Card */}
           <View style={styles.heroCard}>
-            <View style={styles.heroContent}>
-              <View style={styles.heroBadge}>
-                <Ionicons
-                  name="heart-circle-outline"
-                  size={17}
-                  color={COLORS.primaryDark}
-                />
-                <Text style={styles.heroBadgeText}>Care starts with you</Text>
-              </View>
-
-              <Text style={styles.heroTitle}>{copy.healthTitle}</Text>
-              <Text style={styles.heroDescription}>
-                {copy.healthDescription}
-              </Text>
-
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => navigate('/report-symptoms')}
-                style={({ pressed }) => [
-                  styles.primaryButton,
-                  pressed && styles.buttonPressed,
-                ]}
-              >
-                <Ionicons
-                  name="chatbox-ellipses-outline"
-                  size={20}
-                  color={COLORS.white}
-                />
-                <Text style={styles.primaryButtonText}>{copy.report}</Text>
-                <Ionicons
-                  name="arrow-forward"
-                  size={18}
-                  color={COLORS.white}
-                />
-              </Pressable>
+            {/* Top pill badge */}
+            <View style={styles.milestoneBadgePill}>
+              <Sparkles size={13} color={PALETTE.white} />
+              <Text style={styles.milestoneBadgeText}>{t.countdownPill}</Text>
             </View>
 
-            <View style={styles.heroIllustration}>
-              <View style={styles.heroCircle}>
-                <Ionicons
-                  name="heart"
-                  size={66}
-                  color={COLORS.primary}
-                />
-                <View style={styles.heroSparkle}>
-                  <Ionicons
-                    name="medical"
-                    size={24}
-                    color={COLORS.coral}
-                  />
+            {/* Professional Fetal Telemetry Visualizer */}
+            <View style={styles.fetalTelemetryWrap}>
+              <View style={styles.haloOuter}>
+                <View style={styles.haloMid}>
+                  <View style={styles.haloCore}>
+                    <Baby size={40} color={PALETTE.vibrantCrimson} strokeWidth={2.2} />
+                  </View>
                 </View>
               </View>
-              <View style={styles.heroSmallCircle}>
-                <Ionicons
-                  name="shield-checkmark"
-                  size={24}
-                  color={COLORS.success}
-                />
+
+              <View style={styles.telemetryTag}>
+                <Activity size={12} color={PALETTE.deepViolet} />
+                <Text style={styles.telemetryTagText}>{t.stageSubtitle}</Text>
+              </View>
+            </View>
+
+            {/* Metric Capsules Row */}
+            <View style={styles.metricCapsulesRow}>
+              <View style={styles.metricCapsule}>
+                <View style={[styles.capsuleIconBox, { backgroundColor: '#FFE8EC' }]}>
+                  <Scale size={16} color={PALETTE.vibrantCrimson} />
+                </View>
+                <View style={styles.capsuleTextCol}>
+                  <Text style={styles.capsuleLabel}>{t.weightLabel}</Text>
+                  <Text style={styles.capsuleValue}>{t.babyWeight}</Text>
+                </View>
+              </View>
+
+              <View style={styles.metricCapsule}>
+                <View style={[styles.capsuleIconBox, { backgroundColor: '#ECE4FA' }]}>
+                  <Repeat size={16} color={PALETTE.electricPurple} />
+                </View>
+                <View style={styles.capsuleTextCol}>
+                  <Text style={styles.capsuleLabel}>{t.gestationLabel}</Text>
+                  <Text style={styles.capsuleValue}>{t.gestation}</Text>
+                </View>
+              </View>
+
+              <View style={styles.metricCapsule}>
+                <View style={[styles.capsuleIconBox, { backgroundColor: '#FFE8E4' }]}>
+                  <HeartPulse size={16} color={PALETTE.deepRuby} />
+                </View>
+                <View style={styles.capsuleTextCol}>
+                  <Text style={styles.capsuleLabel}>{t.heartbeatLabel}</Text>
+                  <Text style={styles.capsuleValue}>{t.heartbeat}</Text>
+                </View>
               </View>
             </View>
           </View>
 
-          {/* Prototype status */}
-          <View style={styles.demoNotice}>
-            <Ionicons
-              name="information-circle-outline"
-              size={20}
-              color={COLORS.warning}
-            />
-            <View style={styles.noticeContent}>
-              <Text style={styles.noticeTitle}>{copy.demo}</Text>
-              <Text style={styles.noticeDescription}>
-                {copy.demoDescription}
-              </Text>
-            </View>
+          {/* Daily Activity Section Heading */}
+          <View style={styles.sectionHeaderWrap}>
+            <Text style={styles.sectionTitle}>{t.dailySection}</Text>
           </View>
 
-          {/* Quick actions */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeading}>
-              <View style={styles.sectionTitleGroup}>
-                <Text style={styles.sectionTitle}>{copy.quickActions}</Text>
-                <Text style={styles.sectionSubtitle}>
-                  {copy.quickDescription}
-                </Text>
-              </View>
-              <Ionicons
-                name="apps-outline"
-                size={23}
-                color={COLORS.primary}
-              />
-            </View>
-
-            <View style={[styles.actionGrid, isWide && styles.actionGridWide]}>
-              <ActionCard
-                icon="chatbox-ellipses-outline"
-                title={copy.report}
-                description="Share a health concern"
-                background={COLORS.primaryLight}
-                iconColor={COLORS.primary}
-                isWide={isWide}
-                onPress={() => navigate('/report-symptoms')}
-              />
-
-              <ActionCard
-                icon="chatbubbles-outline"
-                title={copy.support}
-                description="Message a health professional"
-                background={COLORS.lavender}
-                iconColor="#6951B8"
-                isWide={isWide}
-                onPress={() => navigate('/chat')}
-              />
-
-              <ActionCard
-                icon="book-outline"
-                title={copy.education}
-                description="Read trusted health information"
-                background="#FFF0E8"
-                iconColor={COLORS.coral}
-                isWide={isWide}
-                onPress={() => navigate('/education')}
-              />
-
-              <ActionCard
-                icon="clipboard-outline"
-                title={copy.followup}
-                description="Review follow-ups and referrals"
-                background={COLORS.successBg}
-                iconColor={COLORS.success}
-                isWide={isWide}
-                onPress={() => navigate('/referrals')}
-              />
-            </View>
-          </View>
-
-          {/* Follow-up */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeading}>
-              <View style={styles.sectionTitleGroup}>
-                <Text style={styles.sectionTitle}>{copy.careTitle}</Text>
-                <Text style={styles.sectionSubtitle}>
-                  {copy.careDescription}
-                </Text>
-              </View>
-              <Ionicons
-                name="calendar-outline"
-                size={22}
-                color={COLORS.primary}
-              />
-            </View>
-
+          {/* 2x2 Professional Activity Grid */}
+          <View style={styles.activityGrid}>
+            {/* Card 1: Talking with Baby */}
             <Pressable
-              accessibilityRole="button"
-              onPress={() => navigate('/referrals')}
-              style={({ pressed }) => [
-                styles.followupCard,
-                pressed && styles.pressed,
-              ]}
+              style={[styles.activityCard, styles.activityCardPeach]}
+              onPress={() => router.push('/chat' as any)}
             >
-              <View style={styles.followupIcon}>
-                <Ionicons
-                  name="document-text-outline"
-                  size={25}
-                  color={COLORS.primary}
-                />
+              <View style={[styles.activityIconCircle, { backgroundColor: '#FFD7D0' }]}>
+                <MessageSquareHeart size={34} color={PALETTE.deepViolet} strokeWidth={2} />
               </View>
+              <Text style={styles.activityTitle}>{t.cardTalk}</Text>
+            </Pressable>
 
-              <View style={styles.followupText}>
-                <Text style={styles.followupTitle}>{copy.followup}</Text>
-                <Text style={styles.followupDescription}>
-                  {copy.status}
-                </Text>
+            {/* Card 2: Kegel Exercise */}
+            <Pressable
+              style={[styles.activityCard, styles.activityCardLavender]}
+              onPress={() => router.push('/education' as any)}
+            >
+              <View style={[styles.activityIconCircle, { backgroundColor: '#E2D3FA' }]}>
+                <HeartPulse size={34} color={PALETTE.electricPurple} strokeWidth={2} />
               </View>
+              <Text style={styles.activityTitle}>{t.cardYoga}</Text>
+            </Pressable>
 
-              <Ionicons
-                name="chevron-forward"
-                size={20}
-                color={COLORS.muted}
-              />
+            {/* Card 3: Kick Counter */}
+            <View style={[styles.activityCard, styles.activityCardRuby]}>
+              <View style={[styles.activityIconCircle, { backgroundColor: '#FFD0D9' }]}>
+                <Footprints size={34} color={PALETTE.vibrantCrimson} strokeWidth={2} />
+              </View>
+              <Text style={styles.activityTitle}>{t.cardKick}</Text>
+
+              <View style={styles.kickActionRow}>
+                <View style={styles.kickMiniBadge}>
+                  <Activity size={12} color={PALETTE.vibrantCrimson} />
+                  <Text style={styles.kickMiniText}>{kickCount}/10</Text>
+                </View>
+                <Pressable style={styles.kickMiniBtn} onPress={handleLogKick}>
+                  <Text style={styles.kickMiniBtnText}>{t.logKick}</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            {/* Card 4: Calendar & Notes */}
+            <Pressable
+              style={[styles.activityCard, styles.activityCardAmber]}
+              onPress={() => router.push('/records' as any)}
+            >
+              <View style={[styles.activityIconCircle, { backgroundColor: '#FDE68A' }]}>
+                <CalendarDays size={34} color="#B45309" strokeWidth={2} />
+              </View>
+              <Text style={styles.activityTitle}>{t.cardCalendar}</Text>
             </Pressable>
           </View>
 
-          {/* Health education */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeading}>
-              <View style={styles.sectionTitleGroup}>
-                <Text style={styles.sectionTitle}>{copy.educationTitle}</Text>
-                <Text style={styles.sectionSubtitle}>
-                  {copy.educationDescription}
-                </Text>
+          {/* Live Session Card */}
+          <View style={styles.liveSessionCard}>
+            <View style={styles.liveLeft}>
+              <View style={styles.livePill}>
+                <Radio size={11} color={PALETTE.white} />
+                <Text style={styles.livePillText}>{t.liveBadge}</Text>
               </View>
+              <Text style={styles.liveTitleText}>{t.liveTitle}</Text>
+              <Text style={styles.liveTimeText}>{t.liveTime}</Text>
             </View>
-
-            <View style={[styles.educationGrid, isWide && styles.educationGridWide]}>
-              <EducationCard
-                icon="heart-outline"
-                title={copy.pregnancy}
-                background={COLORS.primaryLight}
-                iconColor={COLORS.primaryDark}
-                onPress={() => navigate('/education')}
-              />
-              <EducationCard
-                icon="nutrition-outline"
-                title={copy.nutrition}
-                background="#FFF0E8"
-                iconColor={COLORS.coral}
-                onPress={() => navigate('/education')}
-              />
-              <EducationCard
-                icon="flower-outline"
-                title={copy.postnatal}
-                background={COLORS.lavender}
-                iconColor="#6951B8"
-                onPress={() => navigate('/education')}
-              />
-            </View>
-          </View>
-
-          {/* Professional support */}
-          <View style={styles.supportCard}>
-            <View style={styles.supportIcon}>
-              <Ionicons
-                name="people-outline"
-                size={29}
-                color={COLORS.primary}
-              />
-            </View>
-
-            <Text style={styles.supportTitle}>{copy.supportTitle}</Text>
-            <Text style={styles.supportDescription}>
-              {copy.supportDescription}
-            </Text>
 
             <Pressable
-              accessibilityRole="button"
-              onPress={() => navigate('/chat')}
-              style={({ pressed }) => [
-                styles.supportButton,
-                pressed && styles.buttonPressed,
-              ]}
+              style={styles.liveJoinBtn}
+              onPress={() =>
+                Alert.alert(
+                  'Live Audio Broadcast',
+                  'Connecting to Sister Claire live broadcast...'
+                )
+              }
             >
-              <Text style={styles.supportButtonText}>{copy.chatNow}</Text>
-              <Ionicons
-                name="arrow-forward"
-                size={18}
-                color={COLORS.white}
-              />
+              <Play size={14} color={PALETTE.white} fill={PALETTE.white} />
+              <Text style={styles.liveJoinText}>{t.liveJoin}</Text>
             </Pressable>
           </View>
 
-          {/* Privacy */}
-          <View style={styles.privacyCard}>
-            <Ionicons
-              name="lock-closed-outline"
-              size={23}
-              color={COLORS.success}
-            />
-            <View style={styles.privacyText}>
-              <Text style={styles.privacyTitle}>{copy.privacy}</Text>
-              <Text style={styles.privacyDescription}>
-                {copy.privacyDescription}
-              </Text>
-            </View>
-          </View>
+          {/* Urgent Danger Signs: Professional Lucide Icon Chips */}
+          <View style={styles.dangerSection}>
+            <View style={styles.dangerHeaderRow}>
+              <View style={styles.dangerHeaderLeft}>
+                <AlertTriangle size={15} color={PALETTE.vibrantCrimson} />
+                <Text style={styles.dangerSectionTitle}>{t.dangerTitle}</Text>
+              </View>
 
-          {/* Footer */}
-          <View style={styles.footer}>
-            <View style={styles.footerBrand}>
-              <Ionicons
-                name="heart"
-                size={15}
-                color={COLORS.primary}
-              />
-              <Text style={styles.footerBrandText}>M-CARE</Text>
+              <View style={styles.dangerActions}>
+                <Pressable
+                  style={styles.sosButton}
+                  onPress={() =>
+                    Alert.alert(
+                      'Emergency Call 114',
+                      'Calling Rwanda National Ambulance Service (SAMU)...'
+                    )
+                  }
+                >
+                  <PhoneCall size={12} color={PALETTE.white} />
+                  <Text style={styles.sosButtonText}>{t.callSos}</Text>
+                </Pressable>
+
+                <Pressable
+                  style={styles.voiceButton}
+                  onPress={() => router.push('/report' as any)}
+                >
+                  <Mic size={13} color={PALETTE.deepViolet} />
+                  <Text style={styles.voiceButtonText}>{t.voiceReport}</Text>
+                </Pressable>
+              </View>
             </View>
-            <Text style={styles.footerText}>
-              Maternal Community Alert, Response and Referral System
-            </Text>
-            <Text style={styles.footerText}>Rwanda · {new Date().getFullYear()}</Text>
+
+            {/* Professional Medical Lucide Icon Tiles */}
+            <View style={styles.dangerChipsRow}>
+              <Pressable
+                style={styles.dangerChip}
+                onPress={() => router.push('/report' as any)}
+              >
+                <View style={[styles.dangerIconBox, { backgroundColor: '#FFE8EC' }]}>
+                  <Droplets size={18} color={PALETTE.vibrantCrimson} />
+                </View>
+                <Text style={styles.dangerChipText}>{t.dangerBleed}</Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.dangerChip}
+                onPress={() => router.push('/report' as any)}
+              >
+                <View style={[styles.dangerIconBox, { backgroundColor: '#FFF5D6' }]}>
+                  <Zap size={18} color="#D97706" />
+                </View>
+                <Text style={styles.dangerChipText}>{t.dangerPain}</Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.dangerChip}
+                onPress={() => router.push('/report' as any)}
+              >
+                <View style={[styles.dangerIconBox, { backgroundColor: '#ECE4FA' }]}>
+                  <Eye size={18} color={PALETTE.electricPurple} />
+                </View>
+                <Text style={styles.dangerChipText}>{t.dangerVision}</Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.dangerChip}
+                onPress={() => router.push('/report' as any)}
+              >
+                <View style={[styles.dangerIconBox, { backgroundColor: '#FFE8EC' }]}>
+                  <Thermometer size={18} color={PALETTE.deepRuby} />
+                </View>
+                <Text style={styles.dangerChipText}>{t.dangerFever}</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -594,474 +391,479 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: PALETTE.bgCanvas,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 36,
+    paddingHorizontal: 16,
+    paddingTop: 10,
   },
-  page: {
+  container: {
     width: '100%',
-    maxWidth: 620,
+    maxWidth: 680,
     alignSelf: 'center',
-    paddingHorizontal: 20,
+    gap: 16,
   },
-  pageWide: {
-    maxWidth: 1000,
-    paddingHorizontal: 32,
+  containerWide: {
+    maxWidth: 780,
   },
-  header: {
-    minHeight: 76,
+
+  /* Header */
+  headerRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  userProfileWrap: {
+    flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  brand: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  logo: {
-    width: 43,
-    height: 43,
-    borderRadius: 14,
-    backgroundColor: COLORS.primary,
+  avatarCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: PALETTE.deepViolet,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: PALETTE.deepViolet,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  logoPlus: {
-    position: 'absolute',
-    right: -3,
-    top: -3,
-    backgroundColor: COLORS.white,
-    width: 19,
-    height: 19,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.primaryLight,
+  userGreetingText: {
+    gap: 2,
   },
-  brandName: {
+  greetingSubtitle: {
+    fontFamily: Fonts.medium,
+    fontSize: 12,
+    color: PALETTE.gray500,
+  },
+  userNameText: {
+    fontFamily: Fonts.bold,
     fontSize: 18,
-    fontWeight: '800',
-    letterSpacing: 1,
-    color: COLORS.text,
-  },
-  brandSubtitle: {
-    fontSize: 10,
-    color: COLORS.muted,
-    marginTop: 2,
+    color: PALETTE.black,
+    letterSpacing: -0.2,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 9,
+    gap: 8,
   },
-  languageToggle: {
-    flexDirection: 'row',
-    padding: 3,
-    borderRadius: 12,
-    backgroundColor: '#E9EFF1',
-  },
-  languageButton: {
-    minWidth: 36,
-    minHeight: 32,
-    paddingHorizontal: 7,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  languageActive: {
-    backgroundColor: COLORS.white,
-  },
-  languageText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.muted,
-  },
-  languageTextActive: {
-    color: COLORS.primaryDark,
-    fontWeight: '800',
-  },
-  notificationButton: {
-    width: 42,
-    height: 42,
-    backgroundColor: COLORS.white,
+  langPill: {
+    backgroundColor: PALETTE.cardLavender,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#DFD2F5',
+  },
+  langPillText: {
+    fontFamily: Fonts.bold,
+    fontSize: 11,
+    color: PALETTE.deepViolet,
+  },
+  bellButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: PALETTE.cardSurface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: '#DFD2F5',
+    position: 'relative',
   },
-  welcome: {
-    paddingTop: 16,
-    paddingBottom: 21,
+  bellDot: {
+    position: 'absolute',
+    top: 9,
+    right: 10,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: PALETTE.vibrantCrimson,
   },
-  greeting: {
-    fontSize: 14,
-    color: COLORS.muted,
-  },
-  welcomeTitle: {
-    marginTop: 4,
-    fontSize: 29,
-    lineHeight: 36,
-    fontWeight: '800',
-    color: COLORS.text,
-    letterSpacing: -0.6,
-  },
-  welcomeSubtitle: {
-    marginTop: 4,
-    fontSize: 14,
-    color: COLORS.muted,
-  },
+
+  /* Hero Fetal Card */
   heroCard: {
-    backgroundColor: '#E5F5F3',
-    borderRadius: 25,
-    padding: 21,
+    backgroundColor: PALETTE.cardPeach,
+    borderRadius: 28,
+    paddingTop: 18,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FFD7D0',
+    shadowColor: PALETTE.deepViolet,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  milestoneBadgePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    overflow: 'hidden',
-    gap: 10,
-  },
-  heroContent: {
-    flex: 1,
-    minWidth: 0,
-    zIndex: 1,
-  },
-  heroBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    gap: 5,
-    backgroundColor: '#FFFFFFB8',
-    paddingHorizontal: 9,
-    paddingVertical: 6,
+    gap: 6,
+    backgroundColor: PALETTE.vibrantCrimson,
+    paddingHorizontal: 14,
+    paddingVertical: 5,
     borderRadius: 20,
+    marginBottom: 10,
   },
-  heroBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: COLORS.primaryDark,
+  milestoneBadgeText: {
+    fontFamily: Fonts.bold,
+    fontSize: 11,
+    color: PALETTE.white,
+    letterSpacing: 0.3,
   },
-  heroTitle: {
-    fontSize: 23,
-    lineHeight: 29,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginTop: 16,
-    letterSpacing: -0.4,
-  },
-  heroDescription: {
-    fontSize: 12,
-    lineHeight: 19,
-    color: '#526A70',
-    marginTop: 8,
-    marginBottom: 16,
-  },
-  primaryButton: {
-    alignSelf: 'flex-start',
-    flexDirection: 'row',
+  fetalTelemetryWrap: {
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 13,
-    paddingVertical: 12,
-    borderRadius: 13,
-    minHeight: 46,
+    marginVertical: 6,
   },
-  primaryButtonText: {
-    color: COLORS.white,
-    fontSize: 12,
-    fontWeight: '700',
+  haloOuter: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: 'rgba(255, 174, 158, 0.28)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 122, 96, 0.35)',
   },
-  heroIllustration: {
-    width: 105,
-    height: 135,
+  haloMid: {
+    width: 78,
+    height: 78,
+    borderRadius: 39,
+    backgroundColor: 'rgba(255, 232, 228, 0.75)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  heroCircle: {
-    width: 94,
-    height: 94,
-    borderRadius: 47,
-    backgroundColor: '#FFFFFFB8',
+  haloCore: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: PALETTE.cardSurface,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  heroSparkle: {
-    position: 'absolute',
-    top: 5,
-    right: 3,
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: COLORS.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  heroSmallCircle: {
-    position: 'absolute',
-    bottom: 3,
-    left: 1,
-    width: 42,
-    height: 42,
-    borderRadius: 15,
-    backgroundColor: COLORS.white,
-    alignItems: 'center',
-    justifyContent: 'center',
+    shadowColor: PALETTE.vibrantCrimson,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
     elevation: 2,
   },
-  demoNotice: {
-    marginTop: 15,
+  telemetryTag: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-    padding: 13,
-    backgroundColor: COLORS.warningBg,
-    borderRadius: 15,
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: PALETTE.cardSurface,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 8,
     borderWidth: 1,
-    borderColor: '#F3E0B9',
+    borderColor: '#FFD7D0',
   },
-  noticeContent: {
-    flex: 1,
+  telemetryTagText: {
+    fontFamily: Fonts.bold,
+    fontSize: 10,
+    color: PALETTE.deepViolet,
+    letterSpacing: 0.5,
   },
-  noticeTitle: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: COLORS.warning,
-  },
-  noticeDescription: {
-    fontSize: 11,
-    lineHeight: 17,
-    color: '#795D35',
-    marginTop: 4,
-  },
-  section: {
-    marginTop: 29,
-  },
-  sectionHeading: {
+
+  /* Metric Capsules */
+  metricCapsulesRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
-    marginBottom: 15,
+    width: '100%',
+    gap: 8,
+    marginTop: 12,
   },
-  sectionTitleGroup: {
+  metricCapsule: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: PALETTE.cardSurface,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#F3E5E2',
+  },
+  capsuleIconBox: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  capsuleTextCol: {
+    flex: 1,
+  },
+  capsuleLabel: {
+    fontFamily: Fonts.medium,
+    fontSize: 9,
+    color: PALETTE.gray500,
+    textTransform: 'uppercase',
+  },
+  capsuleValue: {
+    fontFamily: Fonts.bold,
+    fontSize: 13,
+    color: PALETTE.black,
+  },
+
+  /* Section Header */
+  sectionHeaderWrap: {
+    paddingHorizontal: 4,
   },
   sectionTitle: {
+    fontFamily: Fonts.bold,
     fontSize: 18,
-    lineHeight: 24,
-    fontWeight: '800',
-    color: COLORS.text,
-    letterSpacing: -0.3,
+    color: PALETTE.black,
+    letterSpacing: -0.2,
   },
-  sectionSubtitle: {
-    fontSize: 12,
-    lineHeight: 18,
-    color: COLORS.muted,
-    marginTop: 4,
-  },
-  actionGrid: {
-    gap: 11,
-  },
-  actionGridWide: {
+
+  /* 2x2 Activity Grid */
+  activityGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-  },
-  actionCard: {
-    minHeight: 91,
-    padding: 13,
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: 12,
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 17,
   },
-  actionCardWide: {
+  activityCard: {
     width: '48%',
     flexGrow: 1,
-  },
-  actionIcon: {
-    width: 47,
-    height: 47,
-    borderRadius: 14,
+    borderRadius: 24,
+    padding: 16,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  actionText: {
-    flex: 1,
-    gap: 4,
-  },
-  actionTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.text,
-  },
-  actionDescription: {
-    fontSize: 11,
-    lineHeight: 16,
-    color: COLORS.muted,
-  },
-  followupCard: {
-    backgroundColor: COLORS.white,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 17,
-    padding: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    borderColor: '#DFD2F5',
+    minHeight: 154,
+    shadowColor: PALETTE.deepViolet,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  followupIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 15,
-    backgroundColor: COLORS.primaryLight,
+  activityCardPeach: {
+    backgroundColor: PALETTE.cardPeach,
+    borderColor: '#FFD7D0',
+  },
+  activityCardLavender: {
+    backgroundColor: PALETTE.cardLavender,
+    borderColor: '#E0CEFA',
+  },
+  activityCardRuby: {
+    backgroundColor: PALETTE.cardRuby,
+    borderColor: '#FED0D8',
+  },
+  activityCardAmber: {
+    backgroundColor: PALETTE.cardAmber,
+    borderColor: '#FDE68A',
+  },
+  activityIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 10,
+    shadowColor: PALETTE.deepViolet,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  followupText: {
-    flex: 1,
-    gap: 5,
-  },
-  followupTitle: {
+  activityTitle: {
+    fontFamily: Fonts.bold,
     fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.text,
+    color: PALETTE.black,
+    textAlign: 'center',
   },
-  followupDescription: {
-    fontSize: 11,
-    color: COLORS.muted,
-  },
-  educationGrid: {
-    gap: 10,
-  },
-  educationGridWide: {
-    flexDirection: 'row',
-  },
-  educationCard: {
-    minHeight: 78,
-    borderRadius: 17,
-    padding: 15,
+  kickActionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 6,
+    marginTop: 8,
   },
-  educationCardTitle: {
-    flex: 1,
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.text,
-    lineHeight: 19,
+  kickMiniBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(255, 25, 59, 0.12)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
   },
-  educationArrow: {
-    marginLeft: 'auto',
+  kickMiniText: {
+    fontFamily: Fonts.bold,
+    fontSize: 11,
+    color: PALETTE.vibrantCrimson,
   },
-  supportCard: {
-    marginTop: 29,
-    padding: 23,
+  kickMiniBtn: {
+    backgroundColor: PALETTE.vibrantCrimson,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  kickMiniBtnText: {
+    fontFamily: Fonts.bold,
+    fontSize: 11,
+    color: PALETTE.white,
+  },
+
+  /* Live Session Card */
+  liveSessionCard: {
+    backgroundColor: PALETTE.cardSurface,
     borderRadius: 22,
-    backgroundColor: COLORS.white,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
+    borderColor: '#DFD2F5',
+    shadowColor: PALETTE.deepViolet,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  supportIcon: {
-    width: 58,
-    height: 58,
-    borderRadius: 20,
-    backgroundColor: COLORS.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
+  liveLeft: {
+    gap: 4,
+    flex: 1,
   },
-  supportTitle: {
-    marginTop: 15,
-    fontSize: 18,
-    fontWeight: '800',
-    color: COLORS.text,
-    textAlign: 'center',
-  },
-  supportDescription: {
-    fontSize: 12,
-    lineHeight: 19,
-    color: COLORS.muted,
-    textAlign: 'center',
-    marginTop: 7,
-    maxWidth: 310,
-  },
-  supportButton: {
-    marginTop: 18,
-    width: '100%',
-    minHeight: 48,
-    paddingHorizontal: 15,
-    borderRadius: 14,
-    backgroundColor: COLORS.primaryDark,
+  livePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
+    gap: 5,
+    backgroundColor: PALETTE.vibrantCrimson,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    alignSelf: 'flex-start',
   },
-  supportButtonText: {
-    color: COLORS.white,
-    fontSize: 13,
-    fontWeight: '700',
+  livePillText: {
+    fontFamily: Fonts.extraBold,
+    fontSize: 9,
+    color: PALETTE.white,
+    letterSpacing: 0.5,
   },
-  privacyCard: {
-    marginTop: 17,
+  liveTitleText: {
+    fontFamily: Fonts.bold,
+    fontSize: 14,
+    color: PALETTE.black,
+  },
+  liveTimeText: {
+    fontFamily: Fonts.medium,
+    fontSize: 11,
+    color: PALETTE.gray500,
+  },
+  liveJoinBtn: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    backgroundColor: COLORS.successBg,
-    padding: 15,
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: PALETTE.deepViolet,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 16,
   },
-  privacyText: {
-    flex: 1,
-  },
-  privacyTitle: {
+  liveJoinText: {
+    fontFamily: Fonts.bold,
     fontSize: 12,
-    fontWeight: '800',
-    color: COLORS.success,
+    color: PALETTE.white,
   },
-  privacyDescription: {
-    fontSize: 11,
-    lineHeight: 17,
-    color: '#426A56',
-    marginTop: 5,
+
+  /* Danger Signs Section */
+  dangerSection: {
+    backgroundColor: PALETTE.cardSurface,
+    borderRadius: 24,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#DFD2F5',
+    gap: 12,
   },
-  footer: {
+  dangerHeaderRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 27,
+    justifyContent: 'space-between',
+  },
+  dangerHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
   },
-  footerBrand: {
+  dangerSectionTitle: {
+    fontFamily: Fonts.bold,
+    fontSize: 14,
+    color: PALETTE.black,
+  },
+  dangerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sosButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
+    backgroundColor: PALETTE.vibrantCrimson,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
   },
-  footerBrandText: {
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1,
-    color: COLORS.text,
+  sosButtonText: {
+    fontFamily: Fonts.bold,
+    fontSize: 11,
+    color: PALETTE.white,
   },
-  footerText: {
+  voiceButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: PALETTE.cardLavender,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#DFD2F5',
+  },
+  voiceButtonText: {
+    fontFamily: Fonts.bold,
+    fontSize: 11,
+    color: PALETTE.deepViolet,
+  },
+  dangerChipsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 6,
+  },
+  dangerChip: {
+    flex: 1,
+    backgroundColor: PALETTE.cardLavender,
+    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: '#E6DAFA',
+  },
+  dangerIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dangerChipText: {
+    fontFamily: Fonts.bold,
     fontSize: 10,
-    lineHeight: 15,
+    color: PALETTE.black,
     textAlign: 'center',
-    color: COLORS.muted,
-  },
-  pressed: {
-    opacity: 0.78,
-  },
-  buttonPressed: {
-    opacity: 0.86,
-    transform: [{ scale: 0.99 }],
   },
 });
