@@ -13,22 +13,26 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import {
   Activity,
   AlertCircle,
   AlertTriangle,
   ArrowRight,
+  Baby,
   CheckCircle2,
   Clock,
   Droplets,
   Eye,
   Footprints,
+  Hospital,
   MapPin,
   Mic,
   PhoneCall,
   Send,
   ShieldAlert,
   Thermometer,
+  UserCheck,
   Waves,
   Zap,
 } from 'lucide-react-native';
@@ -60,23 +64,33 @@ const SYMPTOMS: SymptomChip[] = [
   { id: '5', iconType: 'activity', en: 'Severe Cramps', rw: 'Uburibwe bukabije', danger: true },
   { id: '6', iconType: 'eye', en: 'Blurred Vision', rw: 'Kutabona Neza', danger: true },
   { id: '7', iconType: 'alert-circle', en: 'Face/Hand Swelling', rw: 'Kubyimba Isura', danger: false },
-  { id: '8', iconType: 'waves', en: 'Water Break', rw: 'Amazi Yamanutse', danger: true },
+  { id: '8', iconType: 'waves', en: 'Water Break / Fluid', rw: 'Amazi Yamanutse', danger: true },
 ];
 
 export default function ReportScreen() {
   const [lang, setLang] = useState<'EN' | 'RW'>('EN');
-  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
-  const [urgency, setUrgency] = useState<'emergency' | 'urgent' | 'routine'>('urgent');
+  const [stage, setStage] = useState<'pregnant' | 'postpartum'>('pregnant');
+  const [district, setDistrict] = useState<'Kicukiro' | 'Nyagatare'>('Kicukiro');
+  const [onset, setOnset] = useState<'<2h' | 'today' | '1-2d' | '>2d'>('<2h');
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>(['1']);
+  const [urgency, setUrgency] = useState<'emergency' | 'urgent' | 'routine'>('emergency');
   const [notes, setNotes] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
   const { width } = useWindowDimensions();
   const isWide = width >= 768;
 
   const toggleSymptom = (id: string) => {
-    setSelectedSymptoms((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+    setSelectedSymptoms((prev) => {
+      const next = prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id];
+      // Auto-adjust protocol urgency if danger signs selected
+      const hasDanger = next.some((item) => SYMPTOMS.find((s) => s.id === item)?.danger);
+      if (hasDanger || onset === '<2h') {
+        setUrgency('emergency');
+      }
+      return next;
+    });
   };
 
   const hasDangerSigns = selectedSymptoms.some(
@@ -114,7 +128,6 @@ export default function ReportScreen() {
       );
       return;
     }
-
     setSubmitted(true);
   };
 
@@ -124,56 +137,86 @@ export default function ReportScreen() {
     setSubmitted(false);
   };
 
+  const caseId = district === 'Kicukiro' ? 'MC-KCK-2026-8841' : 'MC-NYG-2026-4412';
+  const catchmentCenter =
+    district === 'Kicukiro' ? 'Muhima Health Center (Kicukiro)' : 'Rukomo Health Center (Nyagatare)';
+  const referralHospital =
+    district === 'Kicukiro' ? 'CHUK Maternity Wing / Masaka' : 'Nyagatare District Hospital';
+
   const t = {
     EN: {
-      title: 'Report a Health Concern',
-      subtitle: 'Fast triage & immediate community response',
-      emergencyBannerTitle: 'Critical Emergency? Call 114 or 912',
-      emergencyBannerSub: 'Emergency medical dispatch available 24/7 in Rwanda',
-      callNow: 'Call Emergency',
+      title: 'Report Maternal Concern',
+      subtitle: 'Triage alert dispatched to CHW & Health Center',
+      stageLabel: 'Maternal Stage',
+      pregnantOpt: 'Pregnant (Wk 28)',
+      postpartumOpt: 'Postpartum (0–6 Wks)',
+      districtLabel: 'Pilot Catchment',
+      onsetLabel: 'When did this concern begin?',
+      onsetLess2h: 'Just now (< 2h)',
+      onsetToday: 'Earlier today',
+      onset12d: '1–2 days ago',
+      onsetMore2d: '> 2 days ago',
+      emergencyBannerTitle: 'Life-Threatening Emergency? Call 114 / 912',
+      emergencyBannerSub: 'Emergency instructions do not depend on chat response. Free 24/7 SAMU ambulance dispatch.',
+      callNow: 'Call 114 Now',
       symptomsTitle: 'Select Observed Symptoms',
-      symptomsSubtitle: 'Tap all signs that apply to your current condition',
-      dangerAlert: 'Warning: You selected a maternal danger sign. A midwife is being notified.',
-      urgencyTitle: 'How urgent does this feel?',
+      symptomsSubtitle: 'Tap all danger signs that apply to your current condition',
+      dangerAlert: 'Warning: Maternal danger sign selected. Immediate CHW triage is being triggered.',
+      urgencyTitle: 'Protocol Urgency Level',
       routine: 'Routine',
       urgent: 'Urgent',
-      emergency: 'Critical',
-      notesLabel: 'Additional Details (Optional)',
-      notesPlaceholder: 'Describe when it started, severity, or any other notes...',
+      emergency: 'Critical Alert',
+      notesLabel: 'Additional Details / Voice Note',
+      notesPlaceholder: 'Describe pain intensity, baby movement changes, or color of fluid...',
       voiceNote: 'Record voice note (Kinyarwanda / English)',
-      recording: 'Recording audio...',
-      locationTag: 'Location auto-tagged: Muhima Health Center catchment',
-      submitBtn: 'Send Health Report',
-      successTitle: 'Report Dispatched Successfully',
-      successSub: 'A healthcare worker at your local health center has received your alert.',
-      refNumber: 'Reference ID: MC-2026-8841',
-      actionAdvice: 'Please stay seated and hydrate. If your condition worsens, call 114 immediately.',
+      recording: 'Recording audio note...',
+      locationTag: `Catchment: ${catchmentCenter}`,
+      submitBtn: 'Transmit Maternal Alert',
+      successTitle: 'Alert Triaged & Dispatched',
+      successSub: `Your report has been received by ${catchmentCenter} and assigned to Community Health Worker Mukamana.`,
+      refNumber: `Case Reference: ${caseId}`,
+      actionAdvice: 'Protocol Guidance: Stay seated, do not exert yourself, and hydrate. If bleeding increases or convulsions occur, call 114 immediately.',
+      assignedChw: 'Assigned CHW: Mukamana (+250 788 123 456)',
+      slaTime: 'Response SLA: Contact within 30 minutes',
       doneBtn: 'Submit Another Report',
+      viewRecordsBtn: 'View Active Case in Records',
     },
     RW: {
       title: 'Tanga Impuruza y’Ubuzima',
-      subtitle: 'Kugenzura byihuse no gufashwa n’abajyanama b’ubuzima',
-      emergencyBannerTitle: 'Ni ubutabazi bwihuse? Hamagara 114 cyangwa 912',
-      emergencyBannerSub: 'Ubutabazi bwa gisirikare n’ubw’ubuzima buraherereye amasaha 24/7',
-      callNow: 'Hamagara Ubutabazi',
+      subtitle: 'Impuruza yoherezwa ku mukozi w’ubuzima n’ikigo nderabuzima',
+      stageLabel: 'Uko umeze ubu',
+      pregnantOpt: 'Ntwite (Icyumweru 28)',
+      postpartumOpt: 'Nabyaye (Ibyumweru 0–6)',
+      districtLabel: 'Akarere k’Icyitegererezo',
+      onsetLabel: 'Byatangiye ryari?',
+      onsetLess2h: 'Ubu (< amasaha 2)',
+      onsetToday: 'Uyu munsi',
+      onset12d: 'Iminsi 1–2 ishize',
+      onsetMore2d: '> Iminsi 2',
+      emergencyBannerTitle: 'Ni Ubutabazi Bwihuse? Hamagara 114 / 912',
+      emergencyBannerSub: 'Ubutabazi bwa gisirikare n’ubw’ubuzima (SAMU) buraherereye amasaha 24/7.',
+      callNow: 'Hamagara 114',
       symptomsTitle: 'Hitamo Ibimenyetso Ufite',
-      symptomsSubtitle: 'Kanda ku kimenyetso cyose ubona kigaragara kuri wowe',
-      dangerAlert: 'Iburira: Wahisemo ikimenyetso cy’ingorane. Umubyaza ari kumenyeshwa ako kanya.',
-      urgencyTitle: 'Bikabije bingana bite?',
+      symptomsSubtitle: 'Kanda ku kimenyetso cyose cy’ingorane ubona kigaragara',
+      dangerAlert: 'Iburira: Wahisemo ikimenyetso gikomeye. Umujyanama w’ubuzima aratabarizwa ako kanya.',
+      urgencyTitle: 'Urugero rw’Ubwihutirwe',
       routine: 'Bisanzwe',
       urgent: 'Byihutirwa',
       emergency: 'Biteye Inkeke',
-      notesLabel: 'Andi Makuru Yinyongera (Ubyifuza)',
-      notesPlaceholder: 'Sobanura igihe byatangiriye, uko wiyumva...',
+      notesLabel: 'Andi Makuru / Ijwi',
+      notesPlaceholder: 'Sobanura ubukana bw’ububabare, imigeri y’umwana, cyangwa uko amaraso ameze...',
       voiceNote: 'Fata ijwi (Kinyarwanda / English)',
       recording: 'Gufata ijwi...',
-      locationTag: 'Ahantu uri: Ikigo Nderabuzima cya Muhima',
-      submitBtn: 'Ohereza Impuruza',
+      locationTag: `Ahantu: ${catchmentCenter}`,
+      submitBtn: 'Ohereza Impuruza Ako Kanya',
       successTitle: 'Impuruza Yoherejwe Neza',
-      successSub: 'Umukozi w’ubuzima ku kigo nderabuzima cyawe yakiriye ubutumwa bwawe.',
-      refNumber: 'Nimero y’ubutumwa: MC-2026-8841',
-      actionAdvice: 'Ihangane wicare ahantu hatuje. Niba bikabije cyane, hamagara 114 ako kanya.',
+      successSub: `Raporo yawe yakiriwe na ${catchmentCenter} kandi yahawe umujyanama w’ubuzima Mukamana.`,
+      refNumber: `Nimero y’Impuruza: ${caseId}`,
+      actionAdvice: 'Amabwiriza: Ihangane wicare hamwe, nywa amazi meza. Niba amaraso yiyongereye, hamagara 114 ako kanya.',
+      assignedChw: 'Umujyanama: Mukamana (+250 788 123 456)',
+      slaTime: 'Igihe cyo Gukurikiranwa: Mu minota 30',
       doneBtn: 'Tanga Indi Mpuruza',
+      viewRecordsBtn: 'Kureba Dosiye mu Bitaro',
     },
   }[lang];
 
@@ -217,9 +260,12 @@ export default function ReportScreen() {
             </View>
 
             {submitted ? (
+              /* ======================================================== */
+              /* SUBMISSION CONFIRMATION & GUIDANCE (PRD §4.A, §5 & §8)  */
+              /* ======================================================== */
               <View style={styles.successCard}>
                 <View style={styles.successIconBox}>
-                  <CheckCircle2 size={42} color={PALETTE.electricPurple} />
+                  <CheckCircle2 size={40} color={PALETTE.electricPurple} />
                 </View>
                 <Text style={styles.successTitle}>{t.successTitle}</Text>
                 <Text style={styles.successSub}>{t.successSub}</Text>
@@ -232,6 +278,22 @@ export default function ReportScreen() {
                   </View>
                 </View>
 
+                {/* Assigned CHW and SLA */}
+                <View style={styles.assignedCard}>
+                  <View style={styles.assignedRow}>
+                    <UserCheck size={16} color={PALETTE.deepViolet} />
+                    <Text style={styles.assignedText}>{t.assignedChw}</Text>
+                  </View>
+                  <View style={styles.assignedRow}>
+                    <Clock size={16} color={PALETTE.vibrantCrimson} />
+                    <Text style={styles.slaText}>{t.slaTime}</Text>
+                  </View>
+                  <View style={styles.assignedRow}>
+                    <Hospital size={16} color={PALETTE.deepViolet} />
+                    <Text style={styles.assignedText}>Referral Hospital: {referralHospital}</Text>
+                  </View>
+                </View>
+
                 <View style={styles.adviceBox}>
                   <AlertCircle size={20} color={PALETTE.vibrantCrimson} />
                   <Text style={styles.adviceText}>{t.actionAdvice}</Text>
@@ -239,20 +301,28 @@ export default function ReportScreen() {
 
                 <Pressable
                   accessibilityRole="button"
+                  style={styles.recordsButton}
+                  onPress={() => router.push('/records' as any)}
+                >
+                  <Text style={styles.recordsButtonText}>{t.viewRecordsBtn}</Text>
+                  <ArrowRight size={16} color={PALETTE.white} />
+                </Pressable>
+
+                <Pressable
+                  accessibilityRole="button"
                   style={styles.resetButton}
                   onPress={handleReset}
                 >
                   <Text style={styles.resetButtonText}>{t.doneBtn}</Text>
-                  <ArrowRight size={18} color={PALETTE.white} />
                 </Pressable>
               </View>
             ) : (
               <>
-                {/* Emergency Hotline Banner */}
+                {/* EMERGENCY SAFETY BANNER (PRD §8) */}
                 <View style={styles.emergencyBanner}>
                   <View style={styles.emergencyLeft}>
                     <View style={styles.emergencyIconBox}>
-                      <ShieldAlert size={26} color={PALETTE.white} />
+                      <ShieldAlert size={24} color={PALETTE.white} />
                     </View>
                     <View style={styles.emergencyTextWrap}>
                       <Text style={styles.emergencyTitle}>
@@ -267,20 +337,160 @@ export default function ReportScreen() {
                     style={styles.emergencyCallBtn}
                     onPress={() =>
                       Alert.alert(
-                        'Emergency Call',
-                        'Dialing national toll-free ambulance / maternal dispatch: 114'
+                        'Emergency Call 114',
+                        'Calling Rwanda National Ambulance Service (SAMU 114 / 912)...'
                       )
                     }
                   >
-                    <PhoneCall size={16} color={PALETTE.white} />
+                    <PhoneCall size={15} color={PALETTE.white} />
                     <Text style={styles.emergencyCallText}>{t.callNow}</Text>
                   </Pressable>
+                </View>
+
+                {/* PILOT DISTRICT & STAGE SELECTORS (PRD §4.A & §11) */}
+                <View style={styles.sectionCard}>
+                  {/* Maternal Stage */}
+                  <Text style={styles.sectionHeading}>{t.stageLabel}</Text>
+                  <View style={styles.segmentRow}>
+                    <Pressable
+                      style={[
+                        styles.segmentBtn,
+                        stage === 'pregnant' && styles.segmentBtnActive,
+                      ]}
+                      onPress={() => setStage('pregnant')}
+                    >
+                      <Baby
+                        size={14}
+                        color={stage === 'pregnant' ? PALETTE.white : PALETTE.gray600}
+                      />
+                      <Text
+                        style={[
+                          styles.segmentBtnText,
+                          stage === 'pregnant' && styles.segmentBtnTextActive,
+                        ]}
+                      >
+                        {t.pregnantOpt}
+                      </Text>
+                    </Pressable>
+
+                    <Pressable
+                      style={[
+                        styles.segmentBtn,
+                        stage === 'postpartum' && styles.segmentBtnActive,
+                      ]}
+                      onPress={() => setStage('postpartum')}
+                    >
+                      <Activity
+                        size={14}
+                        color={stage === 'postpartum' ? PALETTE.white : PALETTE.gray600}
+                      />
+                      <Text
+                        style={[
+                          styles.segmentBtnText,
+                          stage === 'postpartum' && styles.segmentBtnTextActive,
+                        ]}
+                      >
+                        {t.postpartumOpt}
+                      </Text>
+                    </Pressable>
+                  </View>
+
+                  {/* District Catchment */}
+                  <View style={styles.districtRow}>
+                    <Text style={styles.subHeading}>{t.districtLabel}:</Text>
+                    <View style={styles.districtChips}>
+                      <Pressable
+                        style={[
+                          styles.districtChip,
+                          district === 'Kicukiro' && styles.districtChipActive,
+                        ]}
+                        onPress={() => setDistrict('Kicukiro')}
+                      >
+                        <MapPin
+                          size={12}
+                          color={district === 'Kicukiro' ? PALETTE.white : PALETTE.deepViolet}
+                        />
+                        <Text
+                          style={[
+                            styles.districtChipText,
+                            district === 'Kicukiro' && styles.districtChipTextActive,
+                          ]}
+                        >
+                          Kicukiro District
+                        </Text>
+                      </Pressable>
+
+                      <Pressable
+                        style={[
+                          styles.districtChip,
+                          district === 'Nyagatare' && styles.districtChipActive,
+                        ]}
+                        onPress={() => setDistrict('Nyagatare')}
+                      >
+                        <MapPin
+                          size={12}
+                          color={district === 'Nyagatare' ? PALETTE.white : PALETTE.deepViolet}
+                        />
+                        <Text
+                          style={[
+                            styles.districtChipText,
+                            district === 'Nyagatare' && styles.districtChipTextActive,
+                          ]}
+                        >
+                          Nyagatare District
+                        </Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                </View>
+
+                {/* ONSET QUESTION (PRD §4.A & §8) */}
+                <View style={styles.sectionCard}>
+                  <Text style={styles.sectionHeading}>{t.onsetLabel}</Text>
+                  <View style={styles.onsetGrid}>
+                    {[
+                      { key: '<2h', label: t.onsetLess2h },
+                      { key: 'today', label: t.onsetToday },
+                      { key: '1-2d', label: t.onset12d },
+                      { key: '>2d', label: t.onsetMore2d },
+                    ].map((item) => {
+                      const isSelected = onset === item.key;
+                      return (
+                        <Pressable
+                          key={item.key}
+                          style={[
+                            styles.onsetChip,
+                            isSelected && styles.onsetChipActive,
+                          ]}
+                          onPress={() => {
+                            setOnset(item.key as any);
+                            if (item.key === '<2h' || hasDangerSigns) {
+                              setUrgency('emergency');
+                            }
+                          }}
+                        >
+                          <Clock
+                            size={12}
+                            color={isSelected ? PALETTE.white : PALETTE.deepViolet}
+                          />
+                          <Text
+                            style={[
+                              styles.onsetChipText,
+                              isSelected && styles.onsetChipTextActive,
+                            ]}
+                          >
+                            {item.label}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
                 </View>
 
                 {/* Danger Signs Warning */}
                 {hasDangerSigns && (
                   <View style={styles.dangerAlertBox}>
-                    <AlertTriangle size={22} color={PALETTE.vibrantCrimson} />
+                    <AlertTriangle size={20} color={PALETTE.vibrantCrimson} />
                     <Text style={styles.dangerAlertText}>{t.dangerAlert}</Text>
                   </View>
                 )}
@@ -405,7 +615,7 @@ export default function ReportScreen() {
                     placeholder={t.notesPlaceholder}
                     placeholderTextColor={PALETTE.gray400}
                     multiline
-                    numberOfLines={4}
+                    numberOfLines={3}
                     value={notes}
                     onChangeText={setNotes}
                     textAlignVertical="top"
@@ -453,7 +663,7 @@ export default function ReportScreen() {
                   ]}
                   onPress={handleSubmit}
                 >
-                  <Send size={20} color={PALETTE.white} />
+                  <Send size={18} color={PALETTE.white} />
                   <Text style={styles.submitButtonText}>{t.submitBtn}</Text>
                 </Pressable>
               </>
@@ -482,13 +692,13 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 680,
     alignSelf: 'center',
-    gap: 16,
+    gap: 14,
   },
   containerWide: {
     maxWidth: 780,
   },
   header: {
-    gap: 6,
+    gap: 5,
   },
   headerTop: {
     flexDirection: 'row',
@@ -499,15 +709,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: PALETTE.cardRuby,
+    backgroundColor: '#FFE8EC',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
-    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#FFD4DC',
   },
   badgeText: {
     fontFamily: Fonts.bold,
-    fontSize: 10,
+    fontSize: 10.5,
     color: PALETTE.vibrantCrimson,
     letterSpacing: 0.6,
   },
@@ -517,7 +728,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#DFCEFA',
+    borderColor: '#DFD2F5',
   },
   langToggleText: {
     fontFamily: Fonts.bold,
@@ -525,111 +736,223 @@ const styles = StyleSheet.create({
     color: PALETTE.deepViolet,
   },
   title: {
-    fontFamily: Fonts.extraBold,
-    fontSize: 24,
+    fontFamily: Fonts.bold,
+    fontSize: 22,
     color: PALETTE.black,
     letterSpacing: -0.3,
   },
   subtitle: {
     fontFamily: Fonts.regular,
-    fontSize: 13,
+    fontSize: 12.5,
     color: PALETTE.gray600,
     lineHeight: 18,
   },
+
+  /* Emergency Hotline Banner */
   emergencyBanner: {
-    backgroundColor: PALETTE.deepRuby,
+    backgroundColor: PALETTE.vibrantCrimson,
     borderRadius: 20,
-    padding: 16,
+    padding: 14,
+    flexDirection: 'column',
     gap: 12,
-    shadowColor: PALETTE.deepRuby,
+    shadowColor: PALETTE.vibrantCrimson,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.2,
     shadowRadius: 10,
-    elevation: 4,
+    elevation: 3,
   },
   emergencyLeft: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 12,
   },
   emergencyIconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   emergencyTextWrap: {
     flex: 1,
   },
   emergencyTitle: {
     fontFamily: Fonts.bold,
-    fontSize: 15,
+    fontSize: 14,
     color: PALETTE.white,
   },
   emergencySub: {
     fontFamily: Fonts.regular,
     fontSize: 11.5,
-    color: 'rgba(255,255,255,0.85)',
+    color: '#FFE4E8',
     marginTop: 2,
+    lineHeight: 16,
   },
   emergencyCallBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: PALETTE.vibrantCrimson,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    backgroundColor: PALETTE.white,
+    paddingVertical: 9,
+    paddingHorizontal: 14,
     borderRadius: 12,
   },
   emergencyCallText: {
     fontFamily: Fonts.bold,
-    fontSize: 13,
-    color: PALETTE.white,
-  },
-  dangerAlertBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: PALETTE.cardRuby,
-    borderWidth: 1.5,
-    borderColor: '#FECDD6',
-    borderRadius: 16,
-    padding: 14,
-  },
-  dangerAlertText: {
-    flex: 1,
-    fontFamily: Fonts.semiBold,
     fontSize: 12.5,
-    color: PALETTE.deepRuby,
-    lineHeight: 18,
+    color: PALETTE.vibrantCrimson,
   },
+
+  /* Section Cards */
   sectionCard: {
     backgroundColor: PALETTE.cardSurface,
     borderRadius: 20,
-    padding: 18,
-    borderWidth: 1.5,
-    borderColor: '#DFCEFA',
-    shadowColor: PALETTE.deepViolet,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#DFD2F5',
+    gap: 10,
   },
   sectionHeading: {
     fontFamily: Fonts.bold,
-    fontSize: 15.5,
+    fontSize: 14,
     color: PALETTE.black,
   },
   sectionDescription: {
     fontFamily: Fonts.regular,
     fontSize: 12,
     color: PALETTE.gray500,
-    marginTop: 2,
-    marginBottom: 14,
+    marginTop: -4,
   },
+  subHeading: {
+    fontFamily: Fonts.semiBold,
+    fontSize: 12,
+    color: PALETTE.gray600,
+  },
+
+  /* Stage & District Segment Styles */
+  segmentRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  segmentBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 9,
+    borderRadius: 14,
+    backgroundColor: PALETTE.bgCanvas,
+    borderWidth: 1,
+    borderColor: '#DFD2F5',
+  },
+  segmentBtnActive: {
+    backgroundColor: PALETTE.deepViolet,
+    borderColor: PALETTE.deepViolet,
+  },
+  segmentBtnText: {
+    fontFamily: Fonts.medium,
+    fontSize: 12,
+    color: PALETTE.gray600,
+  },
+  segmentBtnTextActive: {
+    fontFamily: Fonts.bold,
+    color: PALETTE.white,
+  },
+  districtRow: {
+    flexDirection: 'column',
+    gap: 6,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F0EAF8',
+  },
+  districtChips: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  districtChip: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    backgroundColor: PALETTE.cardLavender,
+    borderWidth: 1,
+    borderColor: '#DFD2F5',
+  },
+  districtChipActive: {
+    backgroundColor: PALETTE.electricPurple,
+    borderColor: PALETTE.electricPurple,
+  },
+  districtChipText: {
+    fontFamily: Fonts.medium,
+    fontSize: 11.5,
+    color: PALETTE.deepViolet,
+  },
+  districtChipTextActive: {
+    fontFamily: Fonts.bold,
+    color: PALETTE.white,
+  },
+
+  /* Onset Grid */
+  onsetGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  onsetChip: {
+    flexBasis: '48%',
+    flexGrow: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: PALETTE.bgCanvas,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#DFD2F5',
+  },
+  onsetChipActive: {
+    backgroundColor: PALETTE.deepViolet,
+    borderColor: PALETTE.deepViolet,
+  },
+  onsetChipText: {
+    fontFamily: Fonts.medium,
+    fontSize: 11.5,
+    color: PALETTE.deepViolet,
+  },
+  onsetChipTextActive: {
+    fontFamily: Fonts.bold,
+    color: PALETTE.white,
+  },
+
+  /* Danger Alert Box */
+  dangerAlertBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#FFF0F3',
+    padding: 12,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#FFD4DC',
+  },
+  dangerAlertText: {
+    flex: 1,
+    fontFamily: Fonts.semiBold,
+    fontSize: 12,
+    color: PALETTE.vibrantCrimson,
+    lineHeight: 17,
+  },
+
+  /* Symptom Chips */
   chipsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -638,13 +961,17 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
+    gap: 7,
+    backgroundColor: PALETTE.bgCanvas,
     paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#ECE4FA',
+    paddingHorizontal: 11,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#DACAF5',
+    borderColor: '#DFD2F5',
+  },
+  chipIconBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   chipSelected: {
     backgroundColor: PALETTE.electricPurple,
@@ -654,38 +981,36 @@ const styles = StyleSheet.create({
     backgroundColor: PALETTE.vibrantCrimson,
     borderColor: PALETTE.vibrantCrimson,
   },
-  chipIconBox: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   chipText: {
-    fontFamily: Fonts.semiBold,
+    fontFamily: Fonts.medium,
     fontSize: 12,
     color: PALETTE.black,
   },
   chipTextSelected: {
     color: PALETTE.white,
+    fontFamily: Fonts.bold,
   },
+
+  /* Urgency Level */
   urgencyRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 12,
+    gap: 8,
   },
   urgencyBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 10,
-    borderRadius: 12,
-    backgroundColor: '#ECE4FA',
+    gap: 5,
+    paddingVertical: 9,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#DACAF5',
+    borderColor: '#DFD2F5',
+    backgroundColor: PALETTE.bgCanvas,
   },
   urgencyBtnRoutine: {
-    backgroundColor: PALETTE.deepViolet,
-    borderColor: PALETTE.deepViolet,
+    backgroundColor: '#16A34A',
+    borderColor: '#16A34A',
   },
   urgencyBtnUrgent: {
     backgroundColor: '#D97706',
@@ -696,71 +1021,75 @@ const styles = StyleSheet.create({
     borderColor: PALETTE.vibrantCrimson,
   },
   urgencyText: {
-    fontFamily: Fonts.semiBold,
-    fontSize: 12,
-    color: PALETTE.black,
+    fontFamily: Fonts.medium,
+    fontSize: 11.5,
+    color: PALETTE.gray600,
   },
   urgencyTextActive: {
-    fontFamily: Fonts.bold,
     color: PALETTE.white,
+    fontFamily: Fonts.bold,
   },
+
+  /* Text Area & Voice */
   textArea: {
-    minHeight: 90,
-    borderWidth: 1,
-    borderColor: '#DACAF5',
+    backgroundColor: PALETTE.bgCanvas,
     borderRadius: 14,
     padding: 12,
+    fontFamily: Fonts.regular,
     fontSize: 13,
     color: PALETTE.black,
-    fontFamily: Fonts.regular,
-    backgroundColor: '#FAF7FE',
-    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#DFD2F5',
+    minHeight: 70,
   },
   voiceBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    marginTop: 12,
-    paddingVertical: 11,
-    borderRadius: 12,
-    backgroundColor: '#ECE4FA',
+    backgroundColor: PALETTE.cardLavender,
+    paddingVertical: 10,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#DACAF5',
+    borderColor: '#DFD2F5',
   },
   voiceBtnRecording: {
-    backgroundColor: '#FFE4E8',
+    backgroundColor: '#FFE8EC',
     borderColor: PALETTE.vibrantCrimson,
   },
   voiceBtnText: {
-    fontFamily: Fonts.semiBold,
-    fontSize: 12.5,
+    fontFamily: Fonts.bold,
+    fontSize: 12,
     color: PALETTE.deepViolet,
   },
+
+  /* Location Box */
   locationBox: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
   },
   locationText: {
-    fontFamily: Fonts.regular,
+    fontFamily: Fonts.medium,
     fontSize: 11.5,
-    color: PALETTE.gray500,
+    color: PALETTE.deepViolet,
   },
+
+  /* Submit Button */
   submitButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
-    backgroundColor: PALETTE.electricPurple,
-    paddingVertical: 14,
-    borderRadius: 16,
-    shadowColor: PALETTE.electricPurple,
+    gap: 8,
+    backgroundColor: PALETTE.deepViolet,
+    paddingVertical: 13,
+    borderRadius: 18,
+    shadowColor: PALETTE.deepViolet,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 10,
-    elevation: 3,
+    elevation: 4,
   },
   submitButtonDanger: {
     backgroundColor: PALETTE.vibrantCrimson,
@@ -768,29 +1097,32 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     fontFamily: Fonts.bold,
-    fontSize: 15,
+    fontSize: 14,
     color: PALETTE.white,
+    letterSpacing: 0.2,
   },
+
+  /* Success Confirmation Card (PRD §4.A) */
   successCard: {
     backgroundColor: PALETTE.cardSurface,
     borderRadius: 24,
-    padding: 24,
+    padding: 20,
     alignItems: 'center',
-    gap: 12,
-    borderWidth: 1.5,
-    borderColor: '#DFCEFA',
+    gap: 14,
+    borderWidth: 1,
+    borderColor: '#DFD2F5',
   },
   successIconBox: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: PALETTE.cardLavender,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#EDE4FA',
     alignItems: 'center',
     justifyContent: 'center',
   },
   successTitle: {
     fontFamily: Fonts.bold,
-    fontSize: 20,
+    fontSize: 18,
     color: PALETTE.black,
     textAlign: 'center',
   },
@@ -806,60 +1138,95 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    backgroundColor: '#ECE4FA',
+    backgroundColor: PALETTE.bgCanvas,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 12,
-    marginVertical: 4,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#DFD2F5',
   },
   refText: {
-    fontFamily: Fonts.medium,
-    fontSize: 12,
-    color: PALETTE.black,
+    fontFamily: Fonts.bold,
+    fontSize: 12.5,
+    color: PALETTE.deepViolet,
   },
   statusPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    backgroundColor: PALETTE.cardLavender,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
   },
   statusPillText: {
     fontFamily: Fonts.bold,
     fontSize: 10,
-    color: PALETTE.electricPurple,
-    letterSpacing: 0.5,
+    color: PALETTE.deepViolet,
+  },
+  assignedCard: {
+    width: '100%',
+    backgroundColor: '#F5EFFC',
+    borderRadius: 16,
+    padding: 12,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#E4D5F8',
+  },
+  assignedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  assignedText: {
+    fontFamily: Fonts.medium,
+    fontSize: 12,
+    color: PALETTE.black,
+  },
+  slaText: {
+    fontFamily: Fonts.bold,
+    fontSize: 12,
+    color: PALETTE.vibrantCrimson,
   },
   adviceBox: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 10,
-    backgroundColor: PALETTE.cardRuby,
+    backgroundColor: '#FFF0F3',
     padding: 12,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#FECDD6',
+    borderColor: '#FFD4DC',
     width: '100%',
   },
   adviceText: {
     flex: 1,
     fontFamily: Fonts.medium,
-    fontSize: 12,
-    color: PALETTE.deepRuby,
+    fontSize: 11.5,
+    color: PALETTE.vibrantCrimson,
     lineHeight: 16,
   },
-  resetButton: {
+  recordsButton: {
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
     backgroundColor: PALETTE.deepViolet,
-    width: '100%',
     paddingVertical: 12,
-    borderRadius: 14,
-    marginTop: 6,
+    borderRadius: 16,
+  },
+  recordsButtonText: {
+    fontFamily: Fonts.bold,
+    fontSize: 13,
+    color: PALETTE.white,
+  },
+  resetButton: {
+    paddingVertical: 6,
   },
   resetButtonText: {
-    fontFamily: Fonts.bold,
-    fontSize: 14,
-    color: PALETTE.white,
+    fontFamily: Fonts.semiBold,
+    fontSize: 12,
+    color: PALETTE.gray500,
   },
 });
