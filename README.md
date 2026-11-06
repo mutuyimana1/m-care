@@ -1,56 +1,42 @@
-# Welcome to your Expo app 👋
+# M-CARE
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+M-CARE is an Expo / React Native maternal-care app prototype.
 
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Run locally
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+## Demo sign-in accounts
 
-### Other setup steps
+Use the following prototype-only credentials on the login screen:
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+| Role | Email | Password |
+| --- | --- | --- |
+| Mother | `mother@mcare.demo` | `Mother123!` |
+| Clinician | `doctor@mcare.demo` | `Doctor123!` |
 
-## Learn more
+The credential examples are in `src/data/demo-users.json`. Authentication is local demo
+authentication, not a production identity provider. The session and sample patient records are
+held in memory and reset when the app restarts. Do not enter real patient information.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Implemented prototype flows
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- Mother: pregnancy overview, reminders, profile, and educational guidance.
+- Clinician: patient lookup, duplicate checks, maternal registration, patient records, and follow-up.
+- Registration: personal information and consent, pregnancy confirmation, obstetric and medical
+  history, measurements, laboratory results, completeness summary, and clinician approval.
 
-## Join the community
+Secure storage, facility-to-facility sharing, EMR import, offline synchronization, and production
+clinical workflows require a backend and are not implemented in this prototype.
 
-Join our community of developers creating universal apps.
+## Development
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Run lint and type-check:
+
+```bash
+npx expo lint
+npx tsc --noEmit
+```

@@ -2,7 +2,7 @@
 import { Stack } from 'expo-router';
 
 export const unstable_settings = {
-  initialRouteName: 'welcome',
+  anchor: 'welcome',
 };
 
 export default function AuthLayout() {

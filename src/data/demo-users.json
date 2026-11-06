@@ -1,0 +1,14 @@
+[
+  {
+    "email": "mother@mcare.demo",
+    "password": "Mother123!",
+    "name": "Beata Mukamana",
+    "role": "mother"
+  },
+  {
+    "email": "doctor@mcare.demo",
+    "password": "Doctor123!",
+    "name": "Dr. Eric Niyonzima",
+    "role": "doctor"
+  }
+]

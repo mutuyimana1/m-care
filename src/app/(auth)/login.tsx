@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Link, router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import {
   Alert,
@@ -12,73 +12,117 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Colors } from '@/constants/theme';
+import { useAuth } from '@/contexts/auth-context';
 
 const COLORS = {
   purple: Colors.light.accent,
-  purpleDark: Colors.light.accent,
-  text: '#25232A',
+  text: '#17151B',
   muted: '#77747B',
-  border: '#D8D6DB',
+  border: '#D9D7DC',
   white: '#FFFFFF',
 };
 
 export default function LoginScreen() {
-  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { signIn } = useAuth();
+
+  const { height, width } = useWindowDimensions();
+
+  const compact = height < 700;
 
   const handleLogin = () => {
-    router.replace('/(tabs)');
+    if (!signIn(email, password)) {
+      Alert.alert('Unable to sign in', 'Check the email and password shown in the demo account cards.');
+    }
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" />
-      <View style={styles.decor} pointerEvents="none">
-        <View style={styles.lavenderOrb} />
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <StatusBar barStyle="dark-content" background-Color="#FFFFFF" />
+
+      {/* Background */}
+      <View style={styles.background} pointerEvents="none">
+        <LinearGradient
+          colors={['#DCC4FF', '#E8D9FC', '#F8F2FF', '#FFFFFF']}
+          locations={[0, 0.4, 0.75, 1]}
+          start={{ x: 0.1, y: 0 }}
+          end={{ x: 0.9, y: 1 }}
+          style={[
+            styles.lavenderOrb,
+            {
+              width: Math.min(width * 0.78, 300),
+              height: Math.min(width * 0.78, 300),
+            },
+          ]}
+        />
       </View>
+
+      {/* Rounded screen frame */}
+      <View style={styles.screenBorder} pointerEvents="none" />
+
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { minHeight: height - 24 },
+          ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.content}>
-            <View style={styles.heading}>
+            {/* Heading */}
+            <View
+              style={[
+                styles.heading,
+                {
+                  marginTop: height * (compact ? 0.08 : 0.12),
+                },
+              ]}
+            >
               <Text style={styles.title}>Login</Text>
+
               <View style={styles.signupPrompt}>
-                <Text style={styles.promptText}>Don&apos;t have an account? </Text>
-                <Link href="/(auth)/signup" style={styles.signupLink}>
-                  sign up
-                </Link>
+                <Text style={styles.promptText}>
+                  Sign in with the account provided by your M-CARE care team.
+                </Text>
               </View>
             </View>
 
+            {/* Login form */}
             <View style={styles.form}>
+              {/* Email input */}
               <View style={styles.inputRow}>
-                <Text style={styles.countryCode}>+1</Text>
-                <View style={styles.divider} />
                 <TextInput
-                  accessibilityLabel="Phone number"
-                  value={phone}
-                  onChangeText={setPhone}
-                  placeholder="Phone number"
+                  accessibilityLabel="Email address"
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Email address"
                   placeholderTextColor="#A6A3AA"
-                  keyboardType="phone-pad"
-                  autoComplete="tel"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
                   style={styles.input}
                   returnKeyType="next"
                 />
               </View>
 
+              {/* Password input */}
               <View style={styles.passwordRow}>
-                <Ionicons name="lock-closed-outline" size={16} color="#A6A3AA" />
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={16}
+                  color="#A6A3AA"
+                />
+
                 <TextInput
                   accessibilityLabel="Password"
                   value={password}
@@ -91,44 +135,49 @@ export default function LoginScreen() {
                   returnKeyType="done"
                   onSubmitEditing={handleLogin}
                 />
+
                 <Pressable
                   accessibilityRole="button"
+                  accessibilityLabel="Forgot password"
                   onPress={() =>
                     Alert.alert(
                       'Forgot password?',
                       'Password recovery will be available once authentication is connected.',
                     )
                   }
-                  hitSlop={8}
+                  hitSlop={10}
                 >
                   <Text style={styles.forgotText}>FORGOT</Text>
                 </Pressable>
               </View>
 
+              {/* Login button */}
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Login and continue to home"
                 onPress={handleLogin}
-                style={({ pressed }) => [styles.loginButton, pressed && styles.pressed]}
+                style={({ pressed }) => [
+                  styles.loginButton,
+                  pressed && styles.pressed,
+                ]}
               >
                 <Text style={styles.loginButtonText}>Login</Text>
-                <Ionicons name="log-in-outline" size={19} color={COLORS.white} />
+
+                <Ionicons
+                  name="log-in-outline"
+                  size={18}
+                  color={COLORS.white}
+                />
               </Pressable>
             </View>
 
-            <View style={styles.socialRow} accessibilityLabel="Social sign-in options">
-              <View style={[styles.socialIcon, styles.appleIcon]}>
-                <Ionicons name="logo-apple" size={17} color={COLORS.white} />
-              </View>
-              <View style={[styles.socialIcon, styles.facebookIcon]}>
-                <Ionicons name="logo-facebook" size={17} color={COLORS.white} />
-              </View>
-              <View style={[styles.socialIcon, styles.googleIcon]}>
-                <Ionicons name="logo-google" size={16} color="#4285F4" />
-              </View>
-              <View style={[styles.socialIcon, styles.twitterIcon]}>
-                <Ionicons name="logo-twitter" size={16} color={COLORS.white} />
-              </View>
+            <View style={styles.demoAccounts}>
+              <Text style={styles.demoTitle}>Try a demo account</Text>
+              <Text style={styles.demoAccount}>Mother · mother@mcare.demo · Mother123!</Text>
+              <Text style={styles.demoAccount}>Clinician · doctor@mcare.demo · Doctor123!</Text>
+              <Text style={styles.demoNote}>
+                Demo access only. Do not enter real patient information.
+              </Text>
             </View>
           </View>
         </ScrollView>
@@ -140,169 +189,227 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    overflow: 'hidden',
     backgroundColor: COLORS.white,
+    overflow: 'hidden',
+    borderRadius: 28,
   },
-  decor: {
+
+  background: {
     ...StyleSheet.absoluteFill,
     overflow: 'hidden',
   },
+
   lavenderOrb: {
     position: 'absolute',
-    top: -180,
-    left: -150,
-    width: 360,
-    height: 360,
-    borderRadius: 180,
-    backgroundColor: '#F2E6FC',
+    top: -65,
+    left: -55,
+    borderRadius: 999,
   },
+
+  screenBorder: {
+    ...StyleSheet.absoluteFill,
+    borderWidth: 1,
+    borderColor: '#F0EDF2',
+    borderRadius: 28,
+    zIndex: 10,
+  },
+
   keyboardView: {
     flex: 1,
   },
+
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
     paddingHorizontal: 22,
-    paddingVertical: 36,
+    paddingBottom: 18,
   },
+
   content: {
+    flex: 1,
     width: '100%',
     maxWidth: 430,
     alignSelf: 'center',
   },
+
   heading: {
-    marginBottom: 26,
+    marginBottom: 28,
   },
+
   title: {
     color: COLORS.text,
     fontSize: 24,
     lineHeight: 30,
     fontWeight: '700',
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
   },
+
   signupPrompt: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 7,
+    marginTop: 8,
   },
+
   promptText: {
     color: COLORS.muted,
-    fontSize: 12,
+    fontSize: 11,
   },
-  signupLink: {
-    color: COLORS.purpleDark,
-    fontSize: 12,
-    fontWeight: '700',
-  },
+
   form: {
     gap: 12,
   },
+
   inputRow: {
-    minHeight: 47,
+    height: 44,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 24,
     paddingHorizontal: 12,
+    backgroundColor: '#FFFFFF',
     shadowColor: '#24212A',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
     elevation: 1,
   },
+
   countryCode: {
-    width: 20,
+    width: 28,
+    height: 40,
     color: COLORS.muted,
-    fontSize: 12,
+    fontSize: 13,
+    padding: 0,
+    textAlignVertical: 'center',
   },
+
   divider: {
     width: 1,
-    height: 22,
-    marginHorizontal: 8,
+    height: 24,
+    marginHorizontal: 5,
     backgroundColor: '#E5E3E7',
   },
+
   input: {
     flex: 1,
-    minHeight: 44,
+    height: 40,
     color: COLORS.text,
-    fontSize: 13,
-    paddingVertical: 8,
+    fontSize: 14,
+    paddingVertical: 0,
   },
+  demoAccounts: {
+    marginTop: 'auto',
+    padding: 14,
+    gap: 7,
+    borderRadius: 16,
+    backgroundColor: '#FAF5FE',
+    borderWidth: 1,
+    borderColor: '#EEE2F6',
+  },
+  demoTitle: {
+    color: COLORS.text,
+    fontSize: 12,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  demoAccount: {
+    color: '#51485A',
+    fontSize: 11,
+    lineHeight: 16,
+  },
+  demoNote: {
+    color: COLORS.muted,
+    fontSize: 10,
+    lineHeight: 14,
+    marginTop: 2,
+  },
+
   passwordRow: {
-    minHeight: 47,
+    height: 44,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 9,
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 24,
-    paddingHorizontal: 11,
+    paddingHorizontal: 12,
+    backgroundColor: '#FFFFFF',
     shadowColor: '#24212A',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
     elevation: 1,
   },
+
   passwordInput: {
     flex: 1,
-    minHeight: 44,
+    height: 40,
     color: COLORS.text,
-    fontSize: 13,
-    paddingVertical: 8,
+    fontSize: 14,
+    paddingVertical: 0,
   },
+
   forgotText: {
-    color: COLORS.purpleDark,
+    color: COLORS.purple,
     fontSize: 9,
-    fontWeight: '700',
+    fontWeight: '800',
   },
+
   loginButton: {
-    minWidth: 104,
-    minHeight: 43,
+    width: 88,
+    height: 38,
     alignSelf: 'flex-end',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 7,
-    paddingHorizontal: 16,
-    marginTop: 28,
-    borderRadius: 24,
+    marginTop: 30,
+    borderRadius: 22,
     backgroundColor: COLORS.purple,
   },
+
   loginButtonText: {
     color: COLORS.white,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
   },
+
   pressed: {
     opacity: 0.8,
-    transform: [{ scale: 0.98 }],
+    transform: [{ scale: 0.97 }],
   },
+
   socialRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 16,
-    marginTop: 46,
+    gap: 18,
+    marginTop: 'auto',
+    paddingBottom: 30,
   },
+
   socialIcon: {
-    width: 29,
-    height: 29,
+    width: 26,
+    height: 26,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 16,
+    borderRadius: 13,
   },
+
   appleIcon: {
     backgroundColor: '#101014',
   },
+
   facebookIcon: {
     backgroundColor: '#1877F2',
   },
+
   googleIcon: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#F0EEF2',
   },
+
   twitterIcon: {
     backgroundColor: '#1D9BF0',
   },
