@@ -25,7 +25,7 @@ export default function MotherStagesScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Back to pregnancy home"
-            onPress={() => router.replace('/mother/index')}
+            onPress={() => router.replace('/mother')}
             style={({ pressed }) => [styles.roundButton, pressed && styles.pressed]}>
             <Ionicons name="chevron-back" size={23} color={UI.ink} />
           </Pressable>

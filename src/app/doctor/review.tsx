@@ -6,15 +6,22 @@ import { Card, Page, PageHeader, SectionHeading, StatusPill, UI } from '@/compon
 import { useClinic } from '@/contexts/clinic-context';
 
 export default function FollowUpScreen() {
-  const { patients } = useClinic();
-  const followUps = patients.filter((patient) => patient.missingAssessments.trim());
+  const { patients, symptomReports, followUpRequests } = useClinic();
+  const followUps = patients.filter(
+    (patient) =>
+      patient.missingAssessments.trim() ||
+      patient.priorityFindings.trim() ||
+      !patient.clinicianApproved ||
+      symptomReports.some((report) => report.patientId === patient.id && !report.reviewed) ||
+      followUpRequests.some((request) => request.patientId === patient.id && !request.reviewed),
+  );
 
   return (
     <Page>
       <PageHeader
         eyebrow="CLINICAL FOLLOW-UP"
         title="Review & follow-up"
-        subtitle="Track outstanding investigations and the care plan documented for each profile."
+        subtitle="Review outstanding tests, clinician notes, and woman-reported follow-up requests."
       />
 
       <Card style={styles.infoCard}>
@@ -53,6 +60,19 @@ export default function FollowUpScreen() {
                 <StatusPill label="Follow-up" tone="amber" />
               </View>
               <Text style={styles.followUpText}>{patient.missingAssessments}</Text>
+              {patient.priorityFindings ? (
+                <Text style={styles.followUpText}>Findings for clinician review: {patient.priorityFindings}</Text>
+              ) : null}
+              {symptomReports.filter((report) => report.patientId === patient.id && !report.reviewed).length ? (
+                <Text style={styles.followUpText}>
+                  {symptomReports.filter((report) => report.patientId === patient.id && !report.reviewed).length} symptom report(s) need review
+                </Text>
+              ) : null}
+              {followUpRequests.filter((request) => request.patientId === patient.id && !request.reviewed).length ? (
+                <Text style={styles.followUpText}>
+                  {followUpRequests.filter((request) => request.patientId === patient.id && !request.reviewed).length} follow-up request(s)
+                </Text>
+              ) : null}
               <View style={styles.carePlan}>
                 <Text style={styles.carePlanLabel}>Documented next step</Text>
                 <Text style={styles.copy}>{patient.followUp || patient.carePlan}</Text>

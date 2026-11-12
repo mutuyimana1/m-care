@@ -37,6 +37,7 @@ function RoleAwareStack() {
       <Stack.Protected guard={user?.role === 'mother'}>
         <Stack.Screen name="mother" />
         <Stack.Screen name="mother-stages" />
+        <Stack.Screen name="mother-symptoms" />
       </Stack.Protected>
       <Stack.Protected guard={user?.role === 'doctor'}>
         <Stack.Screen name="doctor" />

@@ -13,11 +13,13 @@ import {
   SectionHeading,
   UI,
 } from '@/components/mcare-ui';
+import { useAuth } from '@/contexts/auth-context';
 import { useClinic, type PatientRecord } from '@/contexts/clinic-context';
+import { getMaternalCompleteness } from '@/utils/maternal-completeness';
 
-type PatientDraft = Omit<PatientRecord, 'id' | 'createdAt' | 'clinicianApproved'>;
+type PatientDraft = Omit<PatientRecord, 'id' | 'createdAt' | 'clinicianApproved' | 'reviewedBy' | 'reviewedAt'>;
 type DraftKey = keyof PatientDraft;
-type DraftTextKey = Exclude<DraftKey, 'consent'>;
+type DraftTextKey = Exclude<DraftKey, 'consent' | 'consentRecordedAt' | 'postpartumStatus'>;
 
 const steps = [
   { title: 'Find or identify', subtitle: 'Search first to help avoid duplicate records.' },
@@ -34,60 +36,133 @@ const steps = [
 const initialDraft: PatientDraft = {
   name: '',
   phone: '',
+  motherAccountEmail: '',
   dateOfBirth: '',
+  nationalId: '',
   preferredLanguage: 'Kinyarwanda',
+  district: '',
+  sector: '',
+  cell: '',
+  village: '',
   facility: '',
+  facilityContactPhone: '',
+  emergencyContactName: '',
+  emergencyContactPhone: '',
+  communityHealthWorker: '',
   consent: false,
+  consentRecordedAt: '',
   confirmationMethod: '',
   pregnancyResult: 'Pending',
   confirmationDate: '',
+  pregnancyTestDate: '',
   clinicianName: '',
+  lastMenstrualPeriod: '',
+  estimatedDueDate: '',
+  datingMethod: '',
+  datingSource: '',
+  gestationalAgeWeeks: '',
+  gestationalAgeDays: '',
   gravida: '',
   para: '',
   previousPregnancies: '',
+  livingChildren: '',
+  pregnancyOutcomes: '',
+  previousDeliveryMode: '',
+  lastBirthDate: '',
+  birthSpacing: '',
+  currentSymptoms: '',
   complications: '',
   conditions: '',
+  surgicalHistory: '',
+  familyHistory: '',
+  mentalHealthHistory: '',
   medications: '',
   allergies: '',
   systolic: '',
   diastolic: '',
   weightKg: '',
+  heightCm: '',
   temperatureC: '',
   pulse: '',
+  respiratoryRate: '',
+  oxygenSaturation: '',
+  fundalHeightCm: '',
+  fetalHeartRate: '',
   hemoglobin: '',
   bloodGroup: '',
+  rhesusFactor: '',
   hiv: '',
   syphilis: '',
   urineProtein: '',
+  urineGlucose: '',
+  hepatitisB: '',
+  malaria: '',
+  sickleCell: '',
+  ultrasoundSummary: '',
+  investigationSource: '',
   otherTests: '',
+  nextAppointmentDate: '',
   riskFactors: '',
+  priorityFindings: '',
   missingAssessments: '',
   followUp: '',
   carePlan: '',
+  referralFacility: '',
+  referralReason: '',
+  postpartumStatus: 'pregnant',
+  deliveryDate: '',
+  postpartumFollowUpDate: '',
+  careTeamMessage: '',
 };
 
 const fieldsByStep: Record<number, { key: DraftTextKey; label: string; multiline?: boolean; numeric?: boolean }[]> = {
   0: [
     { key: 'name', label: 'Full name' },
     { key: 'phone', label: 'Phone number' },
+    { key: 'motherAccountEmail', label: 'Mother account email (for authorized profile linking)' },
   ],
   1: [
     { key: 'dateOfBirth', label: 'Date of birth (YYYY-MM-DD)' },
+    { key: 'nationalId', label: 'National ID (optional)' },
     { key: 'preferredLanguage', label: 'Preferred language' },
+    { key: 'district', label: 'District' },
+    { key: 'sector', label: 'Sector' },
+    { key: 'cell', label: 'Cell' },
+    { key: 'village', label: 'Village' },
     { key: 'facility', label: 'Health facility' },
+    { key: 'facilityContactPhone', label: 'Health facility contact phone (optional)' },
+    { key: 'emergencyContactName', label: 'Emergency contact name' },
+    { key: 'emergencyContactPhone', label: 'Emergency contact phone' },
+    { key: 'communityHealthWorker', label: 'Community health worker (if known)' },
   ],
   2: [
     { key: 'confirmationDate', label: 'Date confirmed (YYYY-MM-DD)' },
+    { key: 'pregnancyTestDate', label: 'Pregnancy test date (YYYY-MM-DD)' },
     { key: 'clinicianName', label: 'Confirming clinician' },
+    { key: 'lastMenstrualPeriod', label: 'Last menstrual period (YYYY-MM-DD)' },
+    { key: 'estimatedDueDate', label: 'Estimated due date (YYYY-MM-DD)' },
+    { key: 'datingMethod', label: 'Pregnancy dating method' },
+    { key: 'datingSource', label: 'Dating source / confidence notes' },
+    { key: 'gestationalAgeWeeks', label: 'Clinician-recorded gestational age (weeks)', numeric: true },
+    { key: 'gestationalAgeDays', label: 'Additional days', numeric: true },
   ],
   3: [
     { key: 'gravida', label: 'Total pregnancies (gravida)', numeric: true },
     { key: 'para', label: 'Previous births (para)', numeric: true },
     { key: 'previousPregnancies', label: 'Previous pregnancy details', multiline: true },
+    { key: 'pregnancyOutcomes', label: 'Previous pregnancy outcomes', multiline: true },
+    { key: 'previousDeliveryMode', label: 'Previous delivery mode / complications', multiline: true },
+    { key: 'livingChildren', label: 'Living children', numeric: true },
+    { key: 'lastBirthDate', label: 'Most recent birth date (YYYY-MM-DD)' },
+    { key: 'birthSpacing', label: 'Birth spacing / interval notes', multiline: true },
     { key: 'complications', label: 'Previous complications', multiline: true },
+    { key: 'currentSymptoms', label: 'Current concerns reported by the woman', multiline: true },
   ],
   4: [
     { key: 'conditions', label: 'Medical conditions', multiline: true },
+    { key: 'surgicalHistory', label: 'Surgical history', multiline: true },
+    { key: 'familyHistory', label: 'Relevant family history', multiline: true },
+    { key: 'mentalHealthHistory', label: 'Mental health / psychosocial history', multiline: true },
     { key: 'medications', label: 'Current medicines', multiline: true },
     { key: 'allergies', label: 'Allergies or reactions', multiline: true },
   ],
@@ -95,25 +170,43 @@ const fieldsByStep: Record<number, { key: DraftTextKey; label: string; multiline
     { key: 'systolic', label: 'Blood pressure — systolic (mmHg)', numeric: true },
     { key: 'diastolic', label: 'Blood pressure — diastolic (mmHg)', numeric: true },
     { key: 'weightKg', label: 'Weight (kg)', numeric: true },
+    { key: 'heightCm', label: 'Height (cm)', numeric: true },
     { key: 'temperatureC', label: 'Temperature (°C)', numeric: true },
     { key: 'pulse', label: 'Pulse (beats/min)', numeric: true },
+    { key: 'respiratoryRate', label: 'Respiratory rate (breaths/min)', numeric: true },
+    { key: 'oxygenSaturation', label: 'Oxygen saturation (%)', numeric: true },
+    { key: 'fundalHeightCm', label: 'Fundal height (cm)', numeric: true },
+    { key: 'fetalHeartRate', label: 'Fetal heart rate (beats/min)', numeric: true },
   ],
   6: [
     { key: 'hemoglobin', label: 'Hemoglobin result', numeric: true },
     { key: 'bloodGroup', label: 'Blood group' },
+    { key: 'rhesusFactor', label: 'Rhesus factor' },
     { key: 'hiv', label: 'HIV test status' },
     { key: 'syphilis', label: 'Syphilis test status' },
     { key: 'urineProtein', label: 'Urine protein result' },
+    { key: 'urineGlucose', label: 'Urine glucose result' },
+    { key: 'hepatitisB', label: 'Hepatitis B test status' },
+    { key: 'malaria', label: 'Malaria test status' },
+    { key: 'sickleCell', label: 'Sickle cell result, if indicated' },
+    { key: 'ultrasoundSummary', label: 'Ultrasound / diagnostic summary', multiline: true },
+    { key: 'investigationSource', label: 'Result source (facility, lab, or EMR)' },
     { key: 'otherTests', label: 'Other tests / EMR reference', multiline: true },
   ],
   7: [
     { key: 'riskFactors', label: 'Risk factors identified', multiline: true },
+    { key: 'priorityFindings', label: 'Findings requiring clinician attention', multiline: true },
     { key: 'missingAssessments', label: 'Missing tests or assessments', multiline: true },
     { key: 'followUp', label: 'Follow-up needed', multiline: true },
+    { key: 'nextAppointmentDate', label: 'Next appointment (YYYY-MM-DD)' },
+    { key: 'referralFacility', label: 'Referral facility (if applicable)' },
+    { key: 'referralReason', label: 'Referral reason / status', multiline: true },
+    { key: 'careTeamMessage', label: 'Approved message for the woman (optional)', multiline: true },
   ],
 };
 
 export default function RegistrationScreen() {
+  const { user } = useAuth();
   const { patients, addPatient } = useClinic();
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<PatientDraft>(initialDraft);
@@ -127,52 +220,14 @@ export default function RegistrationScreen() {
       (patient) =>
         patient.name.toLowerCase().includes(query) ||
         patient.id.toLowerCase().includes(query) ||
-        patient.phone.replace(/\s/g, '').includes(query.replace(/\s/g, '')),
+          patient.phone.replace(/\s/g, '').includes(query.replace(/\s/g, '')) ||
+          patient.motherAccountEmail.toLowerCase().includes(query),
     );
   }, [patients, search]);
 
-  const completenessItems = [
-    { label: 'Patient identity and contact', complete: Boolean(draft.name.trim() && draft.phone.trim()) },
-    {
-      label: 'Personal information and consent',
-      complete: Boolean(
-        isValidDate(draft.dateOfBirth) &&
-          draft.preferredLanguage.trim() &&
-          draft.facility.trim() &&
-          draft.consent,
-      ),
-    },
-    {
-      label: 'Pregnancy confirmation',
-      complete: Boolean(
-        draft.confirmationMethod &&
-          isValidDate(draft.confirmationDate) &&
-          draft.clinicianName.trim() &&
-          draft.pregnancyResult === 'Confirmed',
-      ),
-    },
-    { label: 'Obstetric history', complete: Boolean(draft.gravida.trim() && draft.para.trim() && draft.previousPregnancies.trim() && draft.complications.trim()) },
-    { label: 'Medical history', complete: Boolean(draft.conditions.trim() && draft.medications.trim() && draft.allergies.trim()) },
-    {
-      label: 'Clinical measurements',
-      complete: Boolean(
-        isPositiveNumber(draft.systolic) &&
-          isPositiveNumber(draft.diastolic) &&
-          isPositiveNumber(draft.weightKg) &&
-          isPositiveNumber(draft.temperatureC) &&
-          isPositiveNumber(draft.pulse),
-      ),
-    },
-    { label: 'Laboratory investigations', complete: Boolean(draft.hemoglobin.trim() && draft.bloodGroup.trim() && draft.hiv.trim() && draft.syphilis.trim() && draft.urineProtein.trim() && draft.otherTests.trim()) },
-    { label: 'Assessment and follow-up', complete: Boolean(draft.riskFactors.trim() && draft.missingAssessments.trim() && draft.followUp.trim()) },
-    { label: 'Initial care plan', complete: Boolean(draft.carePlan.trim()) },
-  ];
-  const approvalItems = completenessItems;
-  const missingItems = approvalItems.filter((item) => !item.complete);
-  const missingSections = completenessItems.filter((item) => !item.complete);
-  const completeness = Math.round(
-    ((completenessItems.length - missingSections.length) / completenessItems.length) * 100,
-  );
+  const { items: completenessItems, missing: missingItems, percent: completeness } =
+    getMaternalCompleteness(draft);
+  const missingSections = missingItems;
 
   const setField = (key: DraftKey, value: string) => {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -187,7 +242,11 @@ export default function RegistrationScreen() {
     const duplicate = patients.find(
       (patient) =>
         patient.phone.replace(/\s/g, '') === normalizedPhone ||
-        patient.name.trim().toLowerCase() === draft.name.trim().toLowerCase(),
+          patient.name.trim().toLowerCase() === draft.name.trim().toLowerCase() ||
+          Boolean(
+            draft.motherAccountEmail.trim() &&
+              patient.motherAccountEmail.toLowerCase() === draft.motherAccountEmail.trim().toLowerCase(),
+          ),
     );
     if (duplicate) {
       Alert.alert(
@@ -198,7 +257,12 @@ export default function RegistrationScreen() {
       return;
     }
 
-    const patient = addPatient({ ...draft, clinicianApproved: true });
+    const patient = addPatient({
+      ...draft,
+      clinicianApproved: true,
+      reviewedBy: user?.name ?? 'Authorized clinician',
+      reviewedAt: new Date().toISOString(),
+    });
     Alert.alert('Registration approved', `${patient.name} was added to this session's patient list.`);
     router.replace('/doctor/patients');
   };
@@ -294,7 +358,13 @@ export default function RegistrationScreen() {
           <Pressable
             accessibilityRole="checkbox"
             accessibilityState={{ checked: draft.consent }}
-            onPress={() => setDraft((current) => ({ ...current, consent: !current.consent }))}
+            onPress={() =>
+              setDraft((current) => ({
+                ...current,
+                consent: !current.consent,
+                consentRecordedAt: !current.consent ? new Date().toISOString() : '',
+              }))
+            }
             style={styles.consentRow}>
             <View style={[styles.checkbox, draft.consent && styles.checkboxChecked]}>
               {draft.consent ? <Ionicons name="checkmark" size={15} color={UI.white} /> : null}
@@ -302,7 +372,7 @@ export default function RegistrationScreen() {
             <View style={styles.consentCopy}>
               <Text style={styles.consentTitle}>Consent recorded</Text>
               <Text style={styles.fieldHint}>
-                The woman has been informed about this record and authorized sharing.
+                Record consent only after confirming the woman has agreed to this profile and authorized sharing.
               </Text>
             </View>
           </Pressable>
@@ -320,9 +390,15 @@ export default function RegistrationScreen() {
           />
           <Text style={styles.fieldLabel}>Result</Text>
           <ChoiceGroup
-            options={['Confirmed', 'Not confirmed', 'Pending']}
+            options={['Positive', 'Negative', 'Inconclusive', 'Pending']}
             value={draft.pregnancyResult}
             onSelect={(value) => setField('pregnancyResult', value)}
+          />
+          <Text style={styles.fieldLabel}>Dating method</Text>
+          <ChoiceGroup
+            options={['Last menstrual period', 'Ultrasound', 'Clinician assessment', 'Not established']}
+            value={draft.datingMethod}
+            onSelect={(value) => setField('datingMethod', value)}
           />
           {fieldsByStep[2].map((field) => (
             <Field
@@ -330,16 +406,20 @@ export default function RegistrationScreen() {
               label={field.label}
               value={draft[field.key]}
               onChangeText={(value) => setField(field.key, value)}
+              keyboardType={field.numeric ? 'numeric' : 'default'}
             />
           ))}
-          {draft.pregnancyResult !== 'Confirmed' ? (
+          {draft.pregnancyResult !== 'Positive' && draft.pregnancyResult !== 'Confirmed' ? (
             <View style={styles.caution}>
               <Ionicons name="alert-circle-outline" size={18} color={UI.amber} />
               <Text style={styles.cautionText}>
-                A pregnancy episode should only be activated after an authorized clinician confirms pregnancy.
+                Record the result, but do not activate a pregnancy episode unless an authorized clinician confirms pregnancy.
               </Text>
             </View>
           ) : null}
+          <Text style={styles.fieldHint}>
+            Record dating values and the source exactly as verified by the clinician. M-CARE does not calculate a diagnosis or due date.
+          </Text>
         </Card>
       ) : null}
 
@@ -411,9 +491,14 @@ export default function RegistrationScreen() {
             <SummaryLine label="Patient" value={draft.name || 'Not recorded'} />
             <SummaryLine label="Phone" value={draft.phone || 'Not recorded'} />
             <SummaryLine label="Consent" value={draft.consent ? 'Recorded' : 'Missing'} />
-            <SummaryLine label="Pregnancy" value={`${draft.pregnancyResult}${draft.confirmationMethod ? ` · ${draft.confirmationMethod}` : ''}`} />
+            <SummaryLine label="Pregnancy result" value={`${draft.pregnancyResult}${draft.confirmationMethod ? ` · ${draft.confirmationMethod}` : ''}`} />
+            <SummaryLine label="Dating" value={draft.gestationalAgeWeeks ? `${draft.gestationalAgeWeeks} weeks ${draft.gestationalAgeDays || '0'} days · ${draft.datingSource || 'source not recorded'}` : draft.estimatedDueDate || 'Not recorded'} />
+            <SummaryLine label="Location" value={[draft.village, draft.cell, draft.sector, draft.district].filter(Boolean).join(', ') || 'Not recorded'} />
+            <SummaryLine label="Current concerns" value={draft.currentSymptoms || 'None recorded'} />
             <SummaryLine label="Blood pressure" value={draft.systolic && draft.diastolic ? `${draft.systolic}/${draft.diastolic} mmHg` : 'Not recorded'} />
-            <SummaryLine label="Laboratory tests" value={draft.missingAssessments || 'No outstanding items recorded'} />
+            <SummaryLine label="Outstanding tests / assessments" value={draft.missingAssessments || 'No outstanding items recorded'} />
+            <SummaryLine label="Next appointment" value={draft.nextAppointmentDate || 'Not recorded'} />
+            <SummaryLine label="Referral" value={draft.referralFacility ? `${draft.referralFacility} · ${draft.referralReason}` : 'None recorded'} />
             <SummaryLine label="Care plan" value={draft.carePlan || 'Not recorded'} />
           </View>
           {missingItems.length ? (
@@ -493,23 +578,6 @@ function SummaryLine({ label, value }: { label: string; value: string }) {
       <Text style={styles.summaryValue} numberOfLines={3}>{value}</Text>
     </View>
   );
-}
-
-function isValidDate(value: string) {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
-  if (!match) return false;
-  const [, yearText, monthText, dayText] = match;
-  const date = new Date(Number(yearText), Number(monthText) - 1, Number(dayText));
-  return (
-    date.getFullYear() === Number(yearText) &&
-    date.getMonth() === Number(monthText) - 1 &&
-    date.getDate() === Number(dayText)
-  );
-}
-
-function isPositiveNumber(value: string) {
-  const parsed = Number(value.trim());
-  return Number.isFinite(parsed) && parsed > 0;
 }
 
 const styles = StyleSheet.create({

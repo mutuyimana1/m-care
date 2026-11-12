@@ -10,19 +10,21 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Card, SectionHeading, StatusPill, UI } from '@/components/mcare-ui';
 import { useAuth } from '@/contexts/auth-context';
+import { useClinic } from '@/contexts/clinic-context';
 
-const BABY_IMAGE: ImageSourcePropType = require('@/assets/images/baby.png');
+const BABY_IMAGE: ImageSourcePropType = require('@/assets/images/babies.png');
 
 const CURRENT_WEEK = 21;
 const TOTAL_WEEKS = 40;
 
-const GLASS = 'rgba(255,255,255,0.58)';
-const GLASS_BORDER = 'rgba(255,255,255,0.9)';
+const GLASS = 'rgba(255,255,255,0.30)';
+const GLASS_BORDER = 'rgba(255,255,255,0.48)';
 
 function todayLabel() {
   return new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -43,8 +45,11 @@ function Vital({
   value: string;
   unit: string;
 }) {
+  const { width: screenWidth } = useWindowDimensions();
+  const vitalCardWidth = screenWidth < 360 ? '100%' : '47.5%';
+
   return (
-    <Glass style={styles.vital}>
+    <Glass style={[styles.vital, { width: vitalCardWidth }]}>
       <View style={styles.vitalHeader}>
         <View style={styles.vitalIcon}>{icon}</View>
         <Text style={styles.vitalLabel}>{label}</Text>
@@ -59,14 +64,37 @@ function Vital({
 
 export default function MotherHomeScreen() {
   const { user } = useAuth();
+  const { patients } = useClinic();
   const insets = useSafeAreaInsets();
+  const { width: screenWidth } = useWindowDimensions();
+  const isSmallScreen = screenWidth < 380;
+  const horizontalPadding = screenWidth < 360 ? 14 : screenWidth < 600 ? 18 : 28;
+  const heroHeight = Math.min(Math.max(screenWidth * 0.72, 190), 270);
+  const babySize = Math.min(screenWidth * 0.66, 270);
   const [unit, setUnit] = useState<'Weeks' | 'Months'>('Weeks');
 
   const fullName = user?.name ?? 'Aline';
-  const completed = unit === 'Weeks' ? CURRENT_WEEK : Math.floor(CURRENT_WEEK / 4.345);
+  const patient = patients.find(
+    (record) =>
+      user?.email &&
+      record.motherAccountEmail.toLowerCase() === user.email.toLowerCase() &&
+      record.consent &&
+      record.clinicianApproved,
+  );
+  const recordedWeek = Number(patient?.gestationalAgeWeeks);
+  const currentWeek =
+    patient?.pregnancyResult === 'Positive' &&
+    patient.postpartumStatus === 'pregnant' &&
+    Number.isFinite(recordedWeek)
+      ? recordedWeek
+      : patient?.postpartumStatus === 'postpartum'
+        ? 0
+        : CURRENT_WEEK;
+  const completed = unit === 'Weeks' ? currentWeek : Math.floor(currentWeek / 4.345);
   const remaining =
-    unit === 'Weeks' ? TOTAL_WEEKS - CURRENT_WEEK : Math.round((TOTAL_WEEKS - CURRENT_WEEK) / 4.345);
+    unit === 'Weeks' ? Math.max(TOTAL_WEEKS - currentWeek, 0) : Math.round(Math.max(TOTAL_WEEKS - currentWeek, 0) / 4.345);
   const noun = unit === 'Weeks' ? 'Week' : 'Month';
+  const hasConfirmedPregnancy = patient?.pregnancyResult === 'Positive' && patient.postpartumStatus === 'pregnant';
 
   return (
     <View style={styles.root}>
@@ -79,9 +107,9 @@ export default function MotherHomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingTop: insets.top + 12,
-          paddingHorizontal: 20,
+          paddingHorizontal: horizontalPadding,
           paddingBottom: 130,
-          gap: 16,
+          gap: screenWidth < 360 ? 12 : 16,
         }}>
         {/* Header */}
         <View style={styles.header}>
@@ -90,8 +118,8 @@ export default function MotherHomeScreen() {
               <Text style={styles.avatarText}>{fullName.charAt(0).toUpperCase()}</Text>
             </View>
             <View>
-              <Text style={styles.profileName}>{fullName}</Text>
-              <Text style={styles.profileDate}>{todayLabel()}</Text>
+              <Text style={styles.profileDate}>Good Morning</Text>
+              <Text style={styles.profileName}>Hello {fullName}!</Text>
             </View>
           </Glass>
           <Pressable accessibilityRole="button" accessibilityLabel="Notifications">
@@ -103,7 +131,7 @@ export default function MotherHomeScreen() {
 
         {/* Title + months pill + arrow */}
         <View style={styles.titleRow}>
-          <Text style={styles.title}>Pregnancy{'\n'}Stages</Text>
+          <Text style={styles.title}>{patient?.postpartumStatus === 'postpartum' ? 'Postpartum' : 'Pregnancy'}{'\n'}Stages</Text>
           <View style={styles.titleRight}>
             <Pressable
               accessibilityRole="button"
@@ -124,16 +152,26 @@ export default function MotherHomeScreen() {
         </View>
 
         {/* Hero: baby + two glass stat cards */}
-        <View style={styles.hero}>
-          <View style={styles.babyWrap} pointerEvents="none">
+        <View style={[styles.hero, { height: heroHeight }]}>
+          <View
+            style={[
+              styles.babyWrap,
+              {
+                width: babySize,
+                height: babySize,
+                left: (screenWidth - horizontalPadding * 2 - babySize) / 2,
+                top: (heroHeight - babySize) / 2,
+              },
+            ]}
+            pointerEvents="none">
             {BABY_IMAGE ? (
-              <Image source={BABY_IMAGE} style={styles.babyImage} resizeMode="contain" />
+              <Image source={BABY_IMAGE} style={styles.babyImage} resizeMode="cover" />
             ) : (
               <Text style={styles.babyEmoji}>👶🏽</Text>
             )}
           </View>
 
-          <Glass style={[styles.stat, styles.statLeft]}>
+          <Glass style={[styles.stat, styles.statLeft, isSmallScreen && styles.statCompact]}>
             <View style={styles.statTop}>
               <Text style={styles.statNumber}>{completed}</Text>
               <View style={styles.statIcon}>
@@ -143,7 +181,7 @@ export default function MotherHomeScreen() {
             <Text style={styles.statLabel}>Completed{'\n'}{noun}</Text>
           </Glass>
 
-          <Glass style={[styles.stat, styles.statRight]}>
+          <Glass style={[styles.stat, styles.statRight, isSmallScreen && styles.statCompact]}>
             <View style={styles.statTop}>
               <Text style={styles.statNumber}>{remaining}</Text>
               <View style={styles.statIcon}>
@@ -157,50 +195,68 @@ export default function MotherHomeScreen() {
             accessibilityRole="button"
             accessibilityLabel="View pregnancy stages"
             onPress={() => router.push('/mother-stages')}
-            style={[styles.accentCircle, styles.heroArrow]}>
+            style={[styles.accentCircle, styles.heroArrow, { bottom: -6, right: screenWidth < 360 ? 12 : 24 }]}>
             <Ionicons name="arrow-forward" size={20} color="#fff" />
           </Pressable>
         </View>
 
-        {/* Baby info strip */}
-        <Glass style={styles.babyInfo}>
-          <Text style={styles.babyTitle}>
-            Baby · {CURRENT_WEEK} week {CURRENT_WEEK * 7} day
-          </Text>
-          <View style={styles.babyRow}>
-            <Text style={styles.babyMeta}>
-              Avg.length <Text style={styles.babyMetaValue}>26.7cm</Text>
-            </Text>
-            <Text style={styles.babyMeta}>
-              Avg.weight <Text style={styles.babyMetaValue}>360g</Text>
-            </Text>
+        {/* Symptom overview cards from the reference design */}
+        <View style={styles.symptomCards}>
+          <View style={[styles.symptomCard, styles.backPainCard]}>
+            <View style={styles.symptomIcon}>
+              <MaterialCommunityIcons name="flower" size={20} color="#8D65B8" />
+            </View>
+            <View style={styles.symptomStatusRow}>
+              <View style={styles.statusDot} />
+              <Text style={styles.symptomStatus}>Normal</Text>
+            </View>
+            <Text style={styles.symptomTitle}>Back pain</Text>
           </View>
-        </Glass>
+          <View style={[styles.symptomCard, styles.fatigueCard]}>
+            <View style={styles.symptomIcon}>
+              <MaterialCommunityIcons name="needle" size={20} color="#9B8AAE" />
+            </View>
+            <View style={styles.symptomStatusRow}>
+              <View style={[styles.statusDot, styles.darkStatusDot]} />
+              <Text style={[styles.symptomStatus, { color: UI.muted }]}>Normal</Text>
+            </View>
+            <Text style={[styles.symptomTitle, { color: UI.ink }]}>Fatigue</Text>
+          </View>
+        </View>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="View reminders and next steps"
+          onPress={() => router.push('/mother/reminders')}
+          style={({ pressed }) => [styles.reminderButton, pressed && styles.pressed]}> 
+          <Ionicons name="notifications-outline" size={18} color={UI.accentDark} />
+          <Text style={styles.reminderText}>View reminders</Text>
+        </Pressable>
 
         {/* Vitals grid */}
-        <View style={styles.vitals}>
+        <View style={[styles.vitals, { columnGap: 12, rowGap: 12 }]}>
           <Vital
             icon={<MaterialCommunityIcons name="heart-pulse" size={22} color={UI.ink} />}
             label="Heart Rate"
-            value="86"
+            value={patient?.pulse || '—'}
             unit="bpm"
           />
           <Vital
             icon={<Ionicons name="add" size={24} color={UI.ink} />}
             label="Oxygen level"
-            value="97"
+            value={patient?.oxygenSaturation || '—'}
             unit="SpO₂"
           />
           <Vital
             icon={<Ionicons name="water-outline" size={22} color={UI.ink} />}
             label="Blood Status"
-            value="115/75"
+            value={patient?.systolic && patient.diastolic ? `${patient.systolic}/${patient.diastolic}` : '—'}
             unit="mmHg"
           />
           <Vital
             icon={<Ionicons name="thermometer-outline" size={22} color={UI.ink} />}
             label="Temperature"
-            value="36.6"
+            value={patient?.temperatureC || '—'}
             unit="°C"
           />
         </View>
@@ -213,28 +269,28 @@ export default function MotherHomeScreen() {
           </View>
           <View style={styles.rowContent}>
             <Text style={styles.stepTitle}>Check your test results</Text>
-            <Text style={styles.body}>One result is marked for follow-up by your care team.</Text>
+            <Text style={styles.body}>
+              {patient?.missingAssessments
+                ? `Your care team noted: ${patient.missingAssessments}`
+                : 'Ask your care team about your latest test results and any next steps.'}
+            </Text>
           </View>
-          <StatusPill label="Review" tone="amber" />
+          <StatusPill
+            label={patient?.missingAssessments ? 'Review' : 'Ask'}
+            tone={patient?.missingAssessments ? 'amber' : 'lavender'}
+          />
         </Card>
 
-        <View style={styles.disclaimer}>
-          <Ionicons name="information-circle-outline" size={18} color={UI.accentDark} />
-          <Text style={styles.disclaimerText}>
-            This demo dashboard is for general education and is not a substitute for advice from
-            your healthcare professional.
-          </Text>
-        </View>
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#F6ECFD' },
+  root: { flex: 1, backgroundColor: '#EDE3F7' },
   glass: {
     backgroundColor: GLASS,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: GLASS_BORDER,
     borderRadius: 24,
     shadowColor: '#8B5CC4',
@@ -250,7 +306,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     padding: 6,
-    paddingRight: 22,
+    paddingRight: 14,
     borderRadius: 32,
   },
   avatar: {
@@ -261,20 +317,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: '#fff', fontSize: 18, fontWeight: '800' },
+  avatarText: { color: '#c4b9b9', fontSize: 18, fontWeight: '800' },
   profileName: { color: UI.ink, fontSize: 15, fontWeight: '800' },
   profileDate: { color: UI.muted, fontSize: 11, marginTop: 2 },
   bell: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
 
-  titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  title: { color: UI.ink, fontSize: 30, lineHeight: 36, fontWeight: '700' },
-  titleRight: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 6 },
+  titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
+  title: { color: UI.ink, fontSize: 25, lineHeight: 32, fontWeight: '700', flexShrink: 1 },
+  titleRight: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 0 },
   unitPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 11,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
     borderRadius: 22,
   },
   unitText: { color: UI.ink, fontSize: 13, fontWeight: '600' },
@@ -292,55 +348,78 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
 
-  hero: { height: 330, marginTop: -8 },
+  hero: { width: '100%', marginTop: -4, overflow: 'visible' },
   babyWrap: {
-    ...StyleSheet.absoluteFill,
+    position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
-    left: 30,
-    right: -20,
-    top: 20,
-    borderRadius: 50,
+    borderRadius: 999,
     overflow: 'hidden',
   },
-  babyImage: { width: '100%', height: '100%', borderRadius: 50 },
-  babyEmoji: { fontSize: 190 },
-  stat: { position: 'absolute', width: 140, padding: 14, gap: 8 },
+  babyImage: { width: '100%', height: '100%', borderRadius: 999 },
+  babyEmoji: { fontSize: 150 },
+  stat: { position: 'absolute', width: 132, maxWidth: '43%', padding: 12, gap: 7, borderRadius: 20 },
+  statCompact: { width: 112, padding: 10 },
   statLeft: { top: 0, left: 0 },
-  statRight: { bottom: 40, right: 0 },
+  statRight: { bottom: 24, right: 0 },
   statTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  statNumber: { color: UI.ink, fontSize: 32, fontWeight: '600' },
+  statNumber: { color: UI.ink, fontSize: 28, fontWeight: '700' },
   statIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.30)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   statLabel: { color: UI.ink, fontSize: 13, lineHeight: 18, fontWeight: '500' },
-  heroArrow: { position: 'absolute', bottom: -10, right: 56 },
+  heroArrow: { position: 'absolute' },
 
-  babyInfo: { padding: 18, gap: 14, borderRadius: 26 },
+  babyInfo: { padding: 16, gap: 12, borderRadius: 22 },
   babyTitle: { color: UI.ink, fontSize: 16, fontWeight: '600' },
-  babyRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  babyRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
+  babyRowStack: { flexDirection: 'column', alignItems: 'flex-start' },
   babyMeta: { color: UI.muted, fontSize: 12 },
-  babyMetaValue: { color: UI.ink, fontSize: 18, fontWeight: '600' },
+  babyMetaValue: { color: UI.ink, fontSize: 16, fontWeight: '600' },
+  reminderButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    minHeight: 48,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.28)',
+    borderWidth: 1,
+    borderColor: 'rgba(143, 89, 187, 0.22)',
+  },
+  reminderText: { color: UI.accentDark, fontSize: 13, fontWeight: '800' },
+  pressed: { opacity: 0.8 },
 
-  vitals: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
-  vital: { width: '47.8%', flexGrow: 1, padding: 16, gap: 14, borderRadius: 26 },
+  vitals: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  vital: { flexGrow: 0, padding: 14, gap: 12, borderRadius: 22,backgroundColor: '#fdf6fe',},
   vitalHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   vitalIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#c486f8',
     alignItems: 'center',
     justifyContent: 'center',
   },
   vitalLabel: { color: UI.ink, fontSize: 13, fontWeight: '500', flexShrink: 1 },
-  vitalValue: { color: UI.ink, fontSize: 28, fontWeight: '700' },
+  vitalValue: { color: UI.ink, fontSize: 25, fontWeight: '700', flexShrink: 1 },
   vitalUnit: { color: UI.muted, fontSize: 13, fontWeight: '500' },
+
+  symptomCards: { flexDirection: 'row', gap: 10, width: '100%', marginTop: 2 },
+  symptomCard: { flex: 1, minHeight: 126, borderRadius: 22, padding: 12, justifyContent: 'space-between', overflow: 'hidden' },
+  backPainCard: { backgroundColor: '#C178F2' },
+  fatigueCard: { backgroundColor: 'rgba(255,255,255,0.82)' },
+  symptomIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.86)', alignItems: 'center', justifyContent: 'center' },
+  symptomStatusRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 8 },
+  statusDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FFFFFF' },
+  darkStatusDot: { backgroundColor: '#17131D' },
+  symptomStatus: { color: 'rgba(255,255,255,0.88)', fontSize: 11 },
+  symptomTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', marginTop: 2 },
 
   row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   rowContent: { flex: 1, gap: 4 },

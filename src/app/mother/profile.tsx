@@ -3,9 +3,19 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Card, InfoLine, Page, PageHeader, StatusPill, UI } from '@/components/mcare-ui';
 import { useAuth } from '@/contexts/auth-context';
+import { useClinic } from '@/contexts/clinic-context';
 
 export default function MotherProfileScreen() {
   const { user } = useAuth();
+  const { patients } = useClinic();
+  const patient = patients.find(
+    (record) =>
+      user?.email &&
+      record.motherAccountEmail.toLowerCase() === user.email.toLowerCase() &&
+      record.consent &&
+      record.clinicianApproved,
+  );
+  const isPostpartum = patient?.postpartumStatus === 'postpartum';
 
   return (
     <Page>
@@ -24,18 +34,28 @@ export default function MotherProfileScreen() {
             <Text style={styles.name}>{user?.name ?? 'Aline Uwase'}</Text>
             <Text style={styles.muted}>Maternal member · M-CARE demo</Text>
           </View>
-          <StatusPill label="Verified" />
+          <StatusPill label={patient ? 'Reviewed' : 'Not linked'} tone={patient ? 'green' : 'amber'} />
         </View>
       </Card>
 
       <Card>
-        <Text style={styles.sectionTitle}>Pregnancy profile</Text>
-        <InfoLine label="Pregnancy status" value="Confirmed" />
-        <InfoLine label="M-CARE ID" value="MC-24018" />
-        <InfoLine label="Estimated stage" value="Week 21" />
-        <InfoLine label="Preferred facility" value="Kigali Health Centre" />
-        <InfoLine label="Preferred language" value="Kinyarwanda" />
-        <InfoLine label="Consent to care record" value="Granted in demo" />
+        <Text style={styles.sectionTitle}>{isPostpartum ? 'Postpartum profile' : 'Pregnancy profile'}</Text>
+        {patient ? (
+          <>
+            <InfoLine label="Pregnancy status" value={isPostpartum ? 'Postpartum follow-up' : patient.pregnancyResult} />
+            <InfoLine label="M-CARE ID" value={patient.id} />
+            <InfoLine label="Estimated stage" value={patient.gestationalAgeWeeks ? `${patient.gestationalAgeWeeks} weeks ${patient.gestationalAgeDays || '0'} days` : 'Not recorded'} />
+            <InfoLine label="Estimated due date" value={patient.estimatedDueDate} />
+            <InfoLine label="Delivery date" value={patient.deliveryDate} />
+            <InfoLine label="Preferred facility" value={patient.facility} />
+            <InfoLine label="Preferred language" value={patient.preferredLanguage} />
+            <InfoLine label="Consent to care record" value="Granted" />
+          </>
+        ) : (
+          <Text style={styles.muted}>
+            No approved, consented maternal record is linked to this account. Ask your health facility to verify your identity and link your profile.
+          </Text>
+        )}
       </Card>
 
       <View style={styles.notice}>
