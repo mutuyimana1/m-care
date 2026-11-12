@@ -58,7 +58,7 @@ export default function DoctorHomeScreen() {
         <Card style={styles.metric}>
           <IconTile name="people-outline" />
           <Text style={styles.metricValue}>{patients.length}</Text>
-          <Text style={styles.metricLabel}>Demo profiles</Text>
+          <Text style={styles.metricLabel}>Profiles</Text>
         </Card>
         <Card style={styles.metric}>
           <IconTile name="flask-outline" color={UI.amber} />
@@ -79,7 +79,7 @@ export default function DoctorHomeScreen() {
         {query.trim() && matchingPatients.length === 0 ? (
           <View style={styles.emptySearch}>
             <Ionicons name="search-outline" size={18} color={UI.muted} />
-            <Text style={styles.emptyText}>No matching demo profile. Check details or register new.</Text>
+            <Text style={styles.emptyText}>No matching profile. Check details or register new.</Text>
           </View>
         ) : null}
         {matchingPatients.map((patient) => (

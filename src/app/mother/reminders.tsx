@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Card, InfoLine, Page, PageHeader, PrimaryButton, SectionHeading, UI } from '@/components/mcare-ui';
+import { Card, InfoLine, Page, PageHeader, SectionHeading, UI } from '@/components/mcare-ui';
 import { useAuth } from '@/contexts/auth-context';
 import { useClinic } from '@/contexts/clinic-context';
 
@@ -28,6 +28,8 @@ export default function MotherRemindersScreen() {
         eyebrow="FOLLOW-UP"
         title="Reminders & next steps"
         subtitle="Keep track of appointments, tests, and the plan agreed with your care team."
+        onBack={() => router.replace('/mother')}
+        backLabel="Back to home"
       />
 
       <Card style={styles.cardTone}>
@@ -69,8 +71,6 @@ export default function MotherRemindersScreen() {
           Do not wait for a message or app reply.
         </Text>
       </Card>
-
-      <PrimaryButton label="Back to home" icon="home-outline" onPress={() => router.replace('/mother')} />
     </Page>
   );
 }

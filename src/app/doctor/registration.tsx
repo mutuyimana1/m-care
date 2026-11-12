@@ -88,6 +88,7 @@ const initialDraft: PatientDraft = {
   oxygenSaturation: '',
   fundalHeightCm: '',
   fetalHeartRate: '',
+  estimatedBabyWeightGrams: '',
   hemoglobin: '',
   bloodGroup: '',
   rhesusFactor: '',
@@ -177,6 +178,7 @@ const fieldsByStep: Record<number, { key: DraftTextKey; label: string; multiline
     { key: 'oxygenSaturation', label: 'Oxygen saturation (%)', numeric: true },
     { key: 'fundalHeightCm', label: 'Fundal height (cm)', numeric: true },
     { key: 'fetalHeartRate', label: 'Fetal heart rate (beats/min)', numeric: true },
+    { key: 'estimatedBabyWeightGrams', label: 'Estimated baby weight (g)', numeric: true },
   ],
   6: [
     { key: 'hemoglobin', label: 'Hemoglobin result', numeric: true },

@@ -46,7 +46,7 @@ export default function MotherProfileScreen() {
             <InfoLine label="M-CARE ID" value={patient.id} />
             <InfoLine label="Estimated stage" value={patient.gestationalAgeWeeks ? `${patient.gestationalAgeWeeks} weeks ${patient.gestationalAgeDays || '0'} days` : 'Not recorded'} />
             <InfoLine label="Estimated due date" value={patient.estimatedDueDate} />
-            <InfoLine label="Delivery date" value={patient.deliveryDate} />
+            {isPostpartum ? <InfoLine label="Delivery date" value={patient.deliveryDate} /> : null}
             <InfoLine label="Preferred facility" value={patient.facility} />
             <InfoLine label="Preferred language" value={patient.preferredLanguage} />
             <InfoLine label="Consent to care record" value="Granted" />
@@ -57,18 +57,6 @@ export default function MotherProfileScreen() {
           </Text>
         )}
       </Card>
-
-      <View style={styles.notice}>
-        <Ionicons name="shield-checkmark-outline" size={19} color={UI.green} />
-        <Text style={styles.noticeText}>
-          Your real health information should only be shared with your permission and through
-          authorized care teams.
-        </Text>
-      </View>
-
-      <Text style={styles.footer}>
-        This sample profile is not connected to a health facility or a secure medical record.
-      </Text>
     </Page>
   );
 }

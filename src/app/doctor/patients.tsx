@@ -25,7 +25,7 @@ export default function PatientsScreen() {
       <PageHeader
         eyebrow="CARE RECORDS"
         title="Patient profiles"
-        subtitle={`${patients.length} demo profile${patients.length === 1 ? '' : 's'} available on this device.`}
+        subtitle={`${patients.length}profile${patients.length === 1 ? '' : 's'} available on this device.`}
       />
       <Field
         label="Search profiles"

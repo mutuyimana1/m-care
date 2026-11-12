@@ -19,8 +19,8 @@ export default function MotherTabsLayout() {
           renderingMode="template"
         />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="guidance">
-        <NativeTabs.Trigger.Label>Guidance</NativeTabs.Trigger.Label>
+      <NativeTabs.Trigger name="nutrition">
+        <NativeTabs.Trigger.Label>Nutrition</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           src={require('@/assets/images/tabIcons/explore.png')}
           renderingMode="template"
@@ -33,8 +33,8 @@ export default function MotherTabsLayout() {
           renderingMode="template"
         />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="reminders">
-        <NativeTabs.Trigger.Label>Reminders</NativeTabs.Trigger.Label>
+      <NativeTabs.Trigger name="records">
+        <NativeTabs.Trigger.Label>Records</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           src={require('@/assets/images/tabIcons/explore.png')}
           renderingMode="template"

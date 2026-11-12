@@ -62,6 +62,8 @@ export default function MotherSymptomsScreen() {
         eyebrow="CHECK IN"
         title="Share a symptom"
         subtitle="Tell your care team how you are feeling. This is not an emergency service."
+        onBack={() => router.back()}
+        backLabel="Back to care"
       />
 
       {urgent ? (
@@ -116,7 +118,7 @@ export default function MotherSymptomsScreen() {
             />
             <PrimaryButton label="Submit check-in" onPress={submit} disabled={!selected.length} />
             {submitted ? (
-              <Text style={styles.success}>Your check-in was added to the demo care-team review list.</Text>
+              <Text style={styles.success}>Your check-in was added to the care-team review list.</Text>
             ) : null}
           </Card>
           <Text style={styles.note}>
@@ -125,10 +127,6 @@ export default function MotherSymptomsScreen() {
         </>
       )}
 
-      <Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.back}>
-        <Ionicons name="arrow-back" size={18} color={UI.accentDark} />
-        <Text style={styles.backText}>Back to care</Text>
-      </Pressable>
     </Page>
   );
 }
@@ -147,6 +145,4 @@ const styles = StyleSheet.create({
   optionText: { flex: 1, color: UI.ink, fontSize: 13 },
   success: { color: UI.green, fontSize: 12, fontWeight: '700' },
   note: { color: UI.muted, fontSize: 10, lineHeight: 16 },
-  back: { flexDirection: 'row', alignItems: 'center', gap: 7, alignSelf: 'flex-start', minHeight: 42 },
-  backText: { color: UI.accentDark, fontSize: 12, fontWeight: '800' },
 });

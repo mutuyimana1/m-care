@@ -14,10 +14,15 @@ export default function DoctorSummaryScreen() {
   if (!patient) {
     return (
       <Page>
-        <PageHeader eyebrow="CARE RECORD" title="No summary available" subtitle="Choose a patient profile to view an assessment summary." />
+        <PageHeader
+          eyebrow="CARE RECORD"
+          title="No summary available"
+          subtitle="Choose a patient profile to view an assessment summary."
+          onBack={() => router.replace('/doctor/patients')}
+          backLabel="Back to patients"
+        />
         <Card>
-          <Text style={styles.copy}>This patient record is not available in the current demo session.</Text>
-          <PrimaryButton label="Back to patients" onPress={() => router.replace('/doctor/patients')} />
+          <Text style={styles.copy}>This patient record is not available in the current session.</Text>
         </Card>
       </Page>
     );
@@ -35,6 +40,8 @@ export default function DoctorSummaryScreen() {
         eyebrow="ASSESSMENT SUMMARY"
         title={`${patient.name} · summary`}
         subtitle={`${patient.id} · ${patient.facility || 'Facility not recorded'}`}
+        onBack={() => router.replace('/doctor/patients')}
+        backLabel="Back to patient list"
       />
 
       <Card style={styles.banner}>
@@ -81,7 +88,6 @@ export default function DoctorSummaryScreen() {
       </Card>
 
       <PrimaryButton label="Open patient record" onPress={() => router.push({ pathname: '/doctor/patient/[id]', params: { id: patient.id } })} />
-      <PrimaryButton label="Back to patient list" onPress={() => router.replace('/doctor/patients')} />
     </Page>
   );
 }

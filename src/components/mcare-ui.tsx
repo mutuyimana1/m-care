@@ -48,10 +48,14 @@ export function PageHeader({
   eyebrow,
   title,
   subtitle,
+  onBack,
+  backLabel = 'Go back',
 }: {
   eyebrow?: string;
   title: string;
   subtitle?: string;
+  onBack?: () => void;
+  backLabel?: string;
 }) {
   const { user, signOut } = useAuth();
 
@@ -61,6 +65,15 @@ export function PageHeader({
 
   return (
     <View style={styles.header}>
+      {onBack ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={backLabel}
+          onPress={onBack}
+          style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
+          <Ionicons name="chevron-back" size={21} color={UI.accentDark} />
+        </Pressable>
+      ) : null}
       <View style={styles.headerCopy}>
         {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
         <Text style={styles.title}>{title}</Text>
@@ -228,7 +241,7 @@ const styles = StyleSheet.create({
     paddingBottom: 36,
     gap: 20,
   },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 16 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   headerCopy: { flex: 1, gap: 4 },
   eyebrow: { color: UI.accentDark, fontSize: 11, fontWeight: '800', letterSpacing: 1.2 },
   title: { color: UI.ink, fontSize: 28, lineHeight: 34, fontWeight: '800', letterSpacing: -0.5 },
@@ -237,6 +250,16 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: UI.lavender,
+    borderWidth: 1,
+    borderColor: '#E9D8F7',
+  },
+  backButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: UI.lavender,

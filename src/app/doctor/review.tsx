@@ -82,12 +82,6 @@ export default function FollowUpScreen() {
         ))
       )}
 
-      <View style={styles.footnote}>
-        <Ionicons name="information-circle-outline" size={17} color={UI.accentDark} />
-        <Text style={styles.copy}>
-          This list is a session-only demo and is not a clinical task queue.
-        </Text>
-      </View>
     </Page>
   );
 }

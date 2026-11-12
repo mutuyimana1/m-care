@@ -32,13 +32,11 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const { signIn } = useAuth();
 
-  const { height, width } = useWindowDimensions();
-
-  const compact = height < 700;
+  const { width } = useWindowDimensions();
 
   const handleLogin = () => {
     if (!signIn(email, password)) {
-      Alert.alert('Unable to sign in', 'Check the email and password shown in the demo account cards.');
+      Alert.alert('Unable to sign in', 'Check the email and password.');
     }
   };
 
@@ -71,23 +69,13 @@ export default function LoginScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            { minHeight: height - 24 },
-          ]}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.content}>
             {/* Heading */}
-            <View
-              style={[
-                styles.heading,
-                {
-                  marginTop: height * (compact ? 0.08 : 0.12),
-                },
-              ]}
-            >
+            <View style={styles.heading}>
               <Text style={styles.title}>Login</Text>
 
               <View style={styles.signupPrompt}>
@@ -171,14 +159,14 @@ export default function LoginScreen() {
               </Pressable>
             </View>
 
-            <View style={styles.demoAccounts}>
+            {/* <View style={styles.demoAccounts}>
               <Text style={styles.demoTitle}>Try a demo account</Text>
               <Text style={styles.demoAccount}>Mother · mother@mcare.demo · Mother123!</Text>
               <Text style={styles.demoAccount}>Clinician · doctor@mcare.demo · Doctor123!</Text>
               <Text style={styles.demoNote}>
                 Demo access only. Do not enter real patient information.
               </Text>
-            </View>
+            </View> */}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -191,7 +179,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
     overflow: 'hidden',
-    borderRadius: 28,
+    // borderRadius: 28,
   },
 
   background: {
@@ -220,15 +208,17 @@ const styles = StyleSheet.create({
 
   scrollContent: {
     flexGrow: 1,
+    justifyContent: 'center',
     paddingHorizontal: 22,
     paddingBottom: 18,
   },
 
   content: {
-    flex: 1,
+    flexGrow: 1,
     width: '100%',
     maxWidth: 430,
     alignSelf: 'center',
+    justifyContent: 'center',
   },
 
   heading: {

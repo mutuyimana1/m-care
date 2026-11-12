@@ -4,7 +4,6 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   Image,
-  ImageSourcePropType,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -14,21 +13,18 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Card, SectionHeading, StatusPill, UI } from '@/components/mcare-ui';
+import { UI } from '@/components/mcare-ui';
 import { useAuth } from '@/contexts/auth-context';
 import { useClinic } from '@/contexts/clinic-context';
 
-const BABY_IMAGE: ImageSourcePropType = require('@/assets/images/babies.png');
+const BABY_IMAGE = require('@/assets/images/mother1.jpg');
+const MOTHER_IMAGE = require('@/assets/images/mother2.jpg');
 
 const CURRENT_WEEK = 21;
 const TOTAL_WEEKS = 40;
 
 const GLASS = 'rgba(255,255,255,0.30)';
 const GLASS_BORDER = 'rgba(255,255,255,0.48)';
-
-function todayLabel() {
-  return new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-}
 
 function Glass({ style, children }: { style?: object | object[]; children: React.ReactNode }) {
   return <View style={[styles.glass, style]}>{children}</View>;
@@ -64,7 +60,7 @@ function Vital({
 
 export default function MotherHomeScreen() {
   const { user } = useAuth();
-  const { patients } = useClinic();
+  const { patients, maternalActivities } = useClinic();
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
   const isSmallScreen = screenWidth < 380;
@@ -94,7 +90,9 @@ export default function MotherHomeScreen() {
   const remaining =
     unit === 'Weeks' ? Math.max(TOTAL_WEEKS - currentWeek, 0) : Math.round(Math.max(TOTAL_WEEKS - currentWeek, 0) / 4.345);
   const noun = unit === 'Weeks' ? 'Week' : 'Month';
-  const hasConfirmedPregnancy = patient?.pregnancyResult === 'Positive' && patient.postpartumStatus === 'pregnant';
+  const recentActivity = maternalActivities
+    .filter((activity) => activity.patientId === patient?.id)
+    .sort((a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime())[0];
 
   return (
     <View style={styles.root}>
@@ -115,11 +113,10 @@ export default function MotherHomeScreen() {
         <View style={styles.header}>
           <Glass style={styles.profile}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{fullName.charAt(0).toUpperCase()}</Text>
+              <Image source={MOTHER_IMAGE} style={styles.avatarImage} />
             </View>
             <View>
-              <Text style={styles.profileDate}>Good Morning</Text>
-              <Text style={styles.profileName}>Hello {fullName}!</Text>
+              <Text style={styles.profileName}>{fullName}!</Text>
             </View>
           </Glass>
           <Pressable accessibilityRole="button" accessibilityLabel="Notifications">
@@ -190,48 +187,36 @@ export default function MotherHomeScreen() {
             </View>
             <Text style={styles.statLabel}>Remaining{'\n'}{noun}</Text>
           </Glass>
-
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="View pregnancy stages"
-            onPress={() => router.push('/mother-stages')}
-            style={[styles.accentCircle, styles.heroArrow, { bottom: -6, right: screenWidth < 360 ? 12 : 24 }]}>
-            <Ionicons name="arrow-forward" size={20} color="#fff" />
-          </Pressable>
         </View>
 
-        {/* Symptom overview cards from the reference design */}
-        <View style={styles.symptomCards}>
-          <View style={[styles.symptomCard, styles.backPainCard]}>
-            <View style={styles.symptomIcon}>
-              <MaterialCommunityIcons name="flower" size={20} color="#8D65B8" />
+        <View style={styles.summaryCards}>
+          <View style={[styles.summaryCard, styles.babyWeightCard]}>
+            <View style={styles.summaryIcon}>
+              <MaterialCommunityIcons name="baby-face-outline" size={21} color={UI.accentDark} />
             </View>
-            <View style={styles.symptomStatusRow}>
-              <View style={styles.statusDot} />
-              <Text style={styles.symptomStatus}>Normal</Text>
-            </View>
-            <Text style={styles.symptomTitle}>Back pain</Text>
+            <Text style={styles.summaryLabel}>Baby weight</Text>
+            <Text style={styles.summaryValue}>
+              {patient?.estimatedBabyWeightGrams || '—'}
+              <Text style={styles.summaryUnit}> g</Text>
+            </Text>
+            <Text style={styles.summaryNote}>
+              {patient?.estimatedBabyWeightGrams ? 'Care-team estimate' : 'Not recorded'}
+            </Text>
           </View>
-          <View style={[styles.symptomCard, styles.fatigueCard]}>
-            <View style={styles.symptomIcon}>
-              <MaterialCommunityIcons name="needle" size={20} color="#9B8AAE" />
+          <View style={[styles.summaryCard, styles.babyBpmCard]}>
+            <View style={styles.summaryIcon}>
+              <MaterialCommunityIcons name="heart-pulse" size={21} color={UI.accentDark} />
             </View>
-            <View style={styles.symptomStatusRow}>
-              <View style={[styles.statusDot, styles.darkStatusDot]} />
-              <Text style={[styles.symptomStatus, { color: UI.muted }]}>Normal</Text>
-            </View>
-            <Text style={[styles.symptomTitle, { color: UI.ink }]}>Fatigue</Text>
+            <Text style={styles.summaryLabel}>Baby BPM</Text>
+            <Text style={styles.summaryValue}>
+              {patient?.fetalHeartRate || '—'}
+              <Text style={styles.summaryUnit}> bpm</Text>
+            </Text>
+            <Text style={styles.summaryNote}>
+              {patient?.fetalHeartRate ? 'Care-team reading' : 'Not recorded'}
+            </Text>
           </View>
         </View>
-
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="View reminders and next steps"
-          onPress={() => router.push('/mother/reminders')}
-          style={({ pressed }) => [styles.reminderButton, pressed && styles.pressed]}> 
-          <Ionicons name="notifications-outline" size={18} color={UI.accentDark} />
-          <Text style={styles.reminderText}>View reminders</Text>
-        </Pressable>
 
         {/* Vitals grid */}
         <View style={[styles.vitals, { columnGap: 12, rowGap: 12 }]}>
@@ -260,26 +245,61 @@ export default function MotherHomeScreen() {
             unit="°C"
           />
         </View>
+        <View style={styles.highlights}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Open maternal records and referral"
+            onPress={() => router.push('/mother/records')}
+            style={({ pressed }) => [styles.highlightCard, pressed && styles.pressed]}>
+            <View style={[styles.highlightIcon, styles.referralIcon]}>
+              <Ionicons name="git-branch-outline" size={20} color={UI.accentDark} />
+            </View>
+            <View style={styles.highlightCopy}>
+              <Text style={styles.highlightTitle}>
+                {patient?.referralFacility ? 'Active referral' : 'Referral'}
+              </Text>
+              <Text style={styles.highlightDetail} numberOfLines={1}>
+                {patient?.referralFacility || 'No active referral recorded'}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={UI.muted} />
+          </Pressable>
 
-        {/* Existing content kept */}
-        <SectionHeading title="Your next steps" />
-        <Card style={styles.row}>
-          <View style={styles.stepIcon}>
-            <Ionicons name="flask-outline" size={20} color={UI.amber} />
-          </View>
-          <View style={styles.rowContent}>
-            <Text style={styles.stepTitle}>Check your test results</Text>
-            <Text style={styles.body}>
-              {patient?.missingAssessments
-                ? `Your care team noted: ${patient.missingAssessments}`
-                : 'Ask your care team about your latest test results and any next steps.'}
-            </Text>
-          </View>
-          <StatusPill
-            label={patient?.missingAssessments ? 'Review' : 'Ask'}
-            tone={patient?.missingAssessments ? 'amber' : 'lavender'}
-          />
-        </Card>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="View recent maternal record"
+            onPress={() => router.push('/mother/records')}
+            style={({ pressed }) => [styles.highlightCard, pressed && styles.pressed]}>
+            <View style={[styles.highlightIcon, styles.recordIcon]}>
+              <Ionicons name="document-text-outline" size={20} color={UI.accentDark} />
+            </View>
+            <View style={styles.highlightCopy}>
+              <Text style={styles.highlightTitle}>Recent record</Text>
+              <Text style={styles.highlightDetail} numberOfLines={1}>
+                {recentActivity?.title || 'No activity recorded yet'}
+              </Text>
+              {recentActivity ? (
+                <Text style={styles.highlightMeta} numberOfLines={1}>{recentActivity.details}</Text>
+              ) : null}
+              {recentActivity ? (
+                <Text style={styles.highlightMeta}>
+                  {new Date(recentActivity.occurredAt).toLocaleDateString()}
+                </Text>
+              ) : null}
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={UI.muted} />
+          </Pressable>
+        </View>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="View reminders and next steps"
+          onPress={() => router.push('/mother/reminders')}
+          style={({ pressed }) => [styles.reminderButton, pressed && styles.pressed]}> 
+          <Ionicons name="notifications-outline" size={18} color={UI.accentDark} />
+          <Text style={styles.reminderText}>View reminders</Text>
+        </Pressable>
+
 
       </ScrollView>
     </View>
@@ -313,11 +333,11 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: UI.accent,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: '#c4b9b9', fontSize: 18, fontWeight: '800' },
+  avatarImage: { width: '100%', height: '100%' },
   profileName: { color: UI.ink, fontSize: 15, fontWeight: '800' },
   profileDate: { color: UI.muted, fontSize: 11, marginTop: 2 },
   bell: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
@@ -375,12 +395,6 @@ const styles = StyleSheet.create({
   statLabel: { color: UI.ink, fontSize: 13, lineHeight: 18, fontWeight: '500' },
   heroArrow: { position: 'absolute' },
 
-  babyInfo: { padding: 16, gap: 12, borderRadius: 22 },
-  babyTitle: { color: UI.ink, fontSize: 16, fontWeight: '600' },
-  babyRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
-  babyRowStack: { flexDirection: 'column', alignItems: 'flex-start' },
-  babyMeta: { color: UI.muted, fontSize: 12 },
-  babyMetaValue: { color: UI.ink, fontSize: 16, fontWeight: '600' },
   reminderButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -410,29 +424,41 @@ const styles = StyleSheet.create({
   vitalValue: { color: UI.ink, fontSize: 25, fontWeight: '700', flexShrink: 1 },
   vitalUnit: { color: UI.muted, fontSize: 13, fontWeight: '500' },
 
-  symptomCards: { flexDirection: 'row', gap: 10, width: '100%', marginTop: 2 },
-  symptomCard: { flex: 1, minHeight: 126, borderRadius: 22, padding: 12, justifyContent: 'space-between', overflow: 'hidden' },
-  backPainCard: { backgroundColor: '#C178F2' },
-  fatigueCard: { backgroundColor: 'rgba(255,255,255,0.82)' },
-  symptomIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.86)', alignItems: 'center', justifyContent: 'center' },
-  symptomStatusRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 8 },
-  statusDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FFFFFF' },
-  darkStatusDot: { backgroundColor: '#17131D' },
-  symptomStatus: { color: 'rgba(255,255,255,0.88)', fontSize: 11 },
-  symptomTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', marginTop: 2 },
-
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  rowContent: { flex: 1, gap: 4 },
-  stepIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    backgroundColor: UI.amberLight,
-    alignItems: 'center',
-    justifyContent: 'center',
+  summaryCards: { flexDirection: 'row', gap: 12, width: '100%' },
+  summaryCard: {
+    flex: 1,
+    minHeight: 126,
+    padding: 14,
+    gap: 7,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.78)',
   },
-  stepTitle: { color: UI.ink, fontSize: 14, fontWeight: '800' },
-  body: { color: UI.muted, fontSize: 13, lineHeight: 19 },
-  disclaimer: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
-  disclaimerText: { flex: 1, color: UI.muted, fontSize: 11, lineHeight: 16 },
+  babyWeightCard: { backgroundColor: 'rgba(255,255,255,0.68)' },
+  babyBpmCard: { backgroundColor: 'rgba(232,244,239,0.78)' },
+  summaryIcon: { width: 38, height: 38, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.75)' },
+  summaryLabel: { color: UI.muted, fontSize: 12, fontWeight: '600' },
+  summaryValue: { color: UI.ink, fontSize: 23, fontWeight: '800' },
+  summaryUnit: { color: UI.muted, fontSize: 12, fontWeight: '600' },
+  summaryNote: { color: UI.muted, fontSize: 10 },
+  highlights: { gap: 9, width: '100%' },
+  highlightCard: {
+    minHeight: 66,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
+    padding: 11,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.70)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.84)',
+  },
+  highlightIcon: { width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  referralIcon: { backgroundColor: '#F1E5FC' },
+  recordIcon: { backgroundColor: '#E6F3ED' },
+  highlightCopy: { flex: 1, gap: 2 },
+  highlightTitle: { color: UI.ink, fontSize: 13, fontWeight: '800' },
+  highlightDetail: { color: UI.accentDark, fontSize: 12, fontWeight: '600' },
+  highlightMeta: { color: UI.muted, fontSize: 10 },
+
 });

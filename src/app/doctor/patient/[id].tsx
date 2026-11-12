@@ -39,10 +39,14 @@ export default function PatientDetailsScreen() {
   if (!patient) {
     return (
       <Page>
-        <PageHeader eyebrow="CARE RECORD" title="Profile not found" />
+        <PageHeader
+          eyebrow="CARE RECORD"
+          title="Profile not found"
+          onBack={() => router.replace('/doctor/patients')}
+          backLabel="Back to patient list"
+        />
         <Card>
           <Text style={styles.copy}>This profile is not available in the current demo session.</Text>
-          <PrimaryButton label="Return to patient list" onPress={() => router.replace('/doctor/patients')} />
         </Card>
       </Page>
     );
@@ -56,6 +60,8 @@ export default function PatientDetailsScreen() {
         eyebrow="MATERNAL CARE RECORD"
         title={patient.name}
         subtitle={`${patient.id} · Added ${patient.createdAt}`}
+        onBack={() => router.replace('/doctor/patients')}
+        backLabel="Back to patient list"
       />
 
       <Card style={styles.statusCard}>
@@ -156,6 +162,7 @@ export default function PatientDetailsScreen() {
         <InfoLine label="Oxygen saturation" value={patient.oxygenSaturation ? `${patient.oxygenSaturation}%` : 'Not recorded'} />
         <InfoLine label="Fundal height" value={patient.fundalHeightCm ? `${patient.fundalHeightCm} cm` : 'Not recorded'} />
         <InfoLine label="Fetal heart rate" value={patient.fetalHeartRate ? `${patient.fetalHeartRate} bpm` : 'Not recorded'} />
+        <InfoLine label="Estimated baby weight" value={patient.estimatedBabyWeightGrams ? `${patient.estimatedBabyWeightGrams} g` : 'Not recorded'} />
       </Card>
 
       <Card>
@@ -286,7 +293,6 @@ export default function PatientDetailsScreen() {
         </Card>
       )}
 
-      <PrimaryButton label="Back to patient list" onPress={() => router.replace('/doctor/patients')} />
       <Text style={styles.footer}>
         Demo patient information only. Clinical decisions must be made by an authorized
         professional using verified records and local protocols.
