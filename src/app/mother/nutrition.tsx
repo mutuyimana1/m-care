@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 
+import { LocalizedText as Text } from '@/components/localized-text';
 import { Card, Page, PageHeader, SectionHeading, UI } from '@/components/mcare-ui';
 import { useAuth } from '@/contexts/auth-context';
 import { useClinic } from '@/contexts/clinic-context';

@@ -4,18 +4,20 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   Image,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
   useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { LocalizedText as Text } from '@/components/localized-text';
 import { UI } from '@/components/mcare-ui';
 import { useAuth } from '@/contexts/auth-context';
 import { useClinic } from '@/contexts/clinic-context';
+import { useLanguage } from '@/contexts/language-context';
 
 const BABY_IMAGE = require('@/assets/images/mother1.jpg');
 const MOTHER_IMAGE = require('@/assets/images/mother2.jpg');
@@ -59,8 +61,9 @@ function Vital({
 }
 
 export default function MotherHomeScreen() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { patients, maternalActivities } = useClinic();
+  const { language, setLanguage, t } = useLanguage();
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
   const isSmallScreen = screenWidth < 380;
@@ -68,6 +71,7 @@ export default function MotherHomeScreen() {
   const heroHeight = Math.min(Math.max(screenWidth * 0.72, 190), 270);
   const babySize = Math.min(screenWidth * 0.66, 270);
   const [unit, setUnit] = useState<'Weeks' | 'Months'>('Weeks');
+  const [profileMenuVisible, setProfileMenuVisible] = useState(false);
 
   const fullName = user?.name ?? 'Aline';
   const patient = patients.find(
@@ -111,14 +115,20 @@ export default function MotherHomeScreen() {
         }}>
         {/* Header */}
         <View style={styles.header}>
-          <Glass style={styles.profile}>
-            <View style={styles.avatar}>
-              <Image source={MOTHER_IMAGE} style={styles.avatarImage} />
-            </View>
-            <View>
-              <Text style={styles.profileName}>{fullName}!</Text>
-            </View>
-          </Glass>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('Profile options')}
+            onPress={() => setProfileMenuVisible(true)}
+            style={({ pressed }) => pressed && styles.pressed}>
+            <Glass style={styles.profile}>
+              <View style={styles.avatar}>
+                <Image source={MOTHER_IMAGE} style={styles.avatarImage} />
+              </View>
+              <View>
+                <Text style={styles.profileName}>{fullName}!</Text>
+              </View>
+            </Glass>
+          </Pressable>
           <Pressable accessibilityRole="button" accessibilityLabel="Notifications">
             <Glass style={styles.bell}>
               <Ionicons name="notifications-outline" size={22} color={UI.ink} />
@@ -302,6 +312,69 @@ export default function MotherHomeScreen() {
 
 
       </ScrollView>
+
+      <Modal
+        visible={profileMenuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setProfileMenuVisible(false)}>
+        <View style={[styles.profileMenuOverlay, { paddingTop: insets.top + 72 }]}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('Close profile menu')}
+            onPress={() => setProfileMenuVisible(false)}
+            style={StyleSheet.absoluteFill}
+          />
+          <View style={styles.profileMenuCard}>
+            <Text style={styles.profileMenuTitle}>{fullName}</Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                setProfileMenuVisible(false);
+                router.push('/mother/profile');
+              }}
+              style={({ pressed }) => [styles.profileMenuItem, pressed && styles.pressed]}>
+              <Ionicons name="person-outline" size={19} color={UI.accentDark} />
+              <Text style={styles.profileMenuItemText}>My profile</Text>
+              <Ionicons name="chevron-forward" size={17} color={UI.muted} />
+            </Pressable>
+
+            <View style={styles.languageSection}>
+              <Text style={styles.languageTitle}>Change language</Text>
+              {(['en', 'rw'] as const).map((option) => (
+                <Pressable
+                  key={option}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: language === option }}
+                  onPress={() => setLanguage(option)}
+                  style={[
+                    styles.languageOption,
+                    language === option && styles.languageOptionSelected,
+                  ]}>
+                  <Text style={styles.profileMenuItemText}>
+                    {option === 'en' ? 'English' : 'Kinyarwanda'}
+                  </Text>
+                  {language === option ? (
+                    <Ionicons name="checkmark-circle" size={18} color={UI.accentDark} />
+                  ) : null}
+                </Pressable>
+              ))}
+            </View>
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                setProfileMenuVisible(false);
+                signOut();
+                router.replace('/(auth)/login');
+              }}
+              style={({ pressed }) => [styles.profileMenuItem, pressed && styles.pressed]}>
+              <Ionicons name="log-out-outline" size={19} color={UI.red} />
+              <Text style={[styles.profileMenuItemText, styles.logoutText]}>Log out</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -328,6 +401,73 @@ const styles = StyleSheet.create({
     padding: 6,
     paddingRight: 14,
     borderRadius: 32,
+  },
+  profileMenuOverlay: {
+    flex: 1,
+    alignItems: 'flex-start',
+    paddingHorizontal: 18,
+    backgroundColor: 'rgba(24, 18, 30, 0.24)',
+  },
+  profileMenuCard: {
+    width: '100%',
+    maxWidth: 360,
+    padding: 14,
+    gap: 7,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.9)',
+    shadowColor: '#24152E',
+    shadowOpacity: 0.18,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 8,
+  },
+  profileMenuTitle: {
+    color: UI.ink,
+    fontSize: 15,
+    fontWeight: '800',
+    paddingHorizontal: 8,
+    paddingBottom: 4,
+  },
+  profileMenuItem: {
+    minHeight: 46,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
+    paddingHorizontal: 9,
+    borderRadius: 13,
+  },
+  profileMenuItemText: {
+    flex: 1,
+    color: UI.ink,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  languageSection: {
+    paddingTop: 9,
+    borderTopWidth: 1,
+    borderTopColor: '#EFE8F2',
+  },
+  languageTitle: {
+    color: UI.muted,
+    fontSize: 11,
+    fontWeight: '800',
+    paddingHorizontal: 9,
+    paddingBottom: 5,
+  },
+  languageOption: {
+    minHeight: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 9,
+    borderRadius: 12,
+  },
+  languageOptionSelected: {
+    backgroundColor: '#F6ECFD',
+  },
+  logoutText: {
+    color: UI.red,
   },
   avatar: {
     width: 44,

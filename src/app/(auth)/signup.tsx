@@ -1,6 +1,7 @@
 import { Link } from 'expo-router';
-import { SafeAreaView, StyleSheet, TextInput, View } from 'react-native';
+import { SafeAreaView, StyleSheet, View } from 'react-native';
 
+import { LocalizedTextInput as TextInput } from '@/components/localized-text';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors, Spacing } from '@/constants/theme';

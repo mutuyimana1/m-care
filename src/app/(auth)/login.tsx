@@ -9,13 +9,12 @@ import {
   ScrollView,
   StatusBar,
   StyleSheet,
-  Text,
-  TextInput,
   View,
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { LocalizedText as Text, LocalizedTextInput as TextInput } from '@/components/localized-text';
 import { Colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
 

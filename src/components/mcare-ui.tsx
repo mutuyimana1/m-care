@@ -3,8 +3,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View,
   type ScrollViewProps,
   type TextInputProps,
@@ -13,6 +11,7 @@ import type { ReactNode } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/contexts/auth-context';
+import { LocalizedText as Text, LocalizedTextInput as TextInput } from '@/components/localized-text';
 
 export const UI = {
   background: '#FBF8FD',

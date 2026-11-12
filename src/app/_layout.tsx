@@ -6,6 +6,7 @@ import { useColorScheme } from 'react-native';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { AuthProvider, useAuth } from '@/contexts/auth-context';
 import { ClinicProvider } from '@/contexts/clinic-context';
+import { LanguageProvider } from '@/contexts/language-context';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -18,12 +19,14 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <StatusBar style="dark" hidden={false} />
-      <AuthProvider>
-        <ClinicProvider>
-          <AnimatedSplashOverlay />
-          <RoleAwareStack />
-        </ClinicProvider>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <ClinicProvider>
+            <AnimatedSplashOverlay />
+            <RoleAwareStack />
+          </ClinicProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

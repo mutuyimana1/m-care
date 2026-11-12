@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
+import { LocalizedText as Text } from '@/components/localized-text';
 import { Card, Page, PageHeader, SectionHeading, UI } from '@/components/mcare-ui';
 
 const guidanceItems = [

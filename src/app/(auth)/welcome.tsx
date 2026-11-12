@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Pressable, StatusBar, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, StatusBar, StyleSheet, View, useWindowDimensions } from 'react-native';
+
+import { LocalizedText as Text } from '@/components/localized-text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Colors } from '@/constants/theme';

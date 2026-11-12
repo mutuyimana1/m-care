@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+
+import { LocalizedText as Text } from '@/components/localized-text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { UI } from '@/components/mcare-ui';
