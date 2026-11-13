@@ -111,6 +111,8 @@ const initialDraft: PatientDraft = {
   carePlan: '',
   referralFacility: '',
   referralReason: '',
+  referralStatus: 'not-started',
+  referralOutcome: '',
   postpartumStatus: 'pregnant',
   deliveryDate: '',
   postpartumFollowUpDate: '',
