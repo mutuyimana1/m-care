@@ -17,6 +17,7 @@ Use the following prototype-only credentials on the login screen:
 | --- | --- | --- |
 | Mother | `mother@mcare.demo` | `Mother123!` |
 | Clinician | `doctor@mcare.demo` | `Doctor123!` |
+| chw | `chw@mcare.demo` | `Chw123!` |
 
 The credential examples are in `src/data/demo-users.json`. Authentication is local demo
 authentication, not a production identity provider. The session and sample patient records are
