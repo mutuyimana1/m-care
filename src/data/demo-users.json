@@ -10,5 +10,11 @@
     "password": "Doctor123!",
     "name": "Dr. Eric Niyonzima",
     "role": "doctor"
+  },
+  {
+    "email": "chw@mcare.demo",
+    "password": "Chw123!",
+    "name": "Aliane merci",
+    "role": "chw"
   }
 ]

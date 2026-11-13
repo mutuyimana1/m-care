@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
 
 import { LocalizedText as Text } from '@/components/localized-text';
-import { Card, Page, PageHeader, SectionHeading, UI } from '@/components/mcare-ui';
+import { Card, Field, Page, PageHeader, PrimaryButton, SectionHeading, UI } from '@/components/mcare-ui';
 import { useAuth } from '@/contexts/auth-context';
-import { useClinic } from '@/contexts/clinic-context';
+import { useClinic, type NutritionCheckIn } from '@/contexts/clinic-context';
 
 type Trimester = 1 | 2 | 3;
 
@@ -70,6 +71,22 @@ const postpartumPlan: FoodPlan = {
   ],
 };
 
+type NutritionCheckInDraft = {
+  ateToday: NutritionCheckIn['ateToday'] | '';
+  ateFruitOrVegetables: NutritionCheckIn['ateFruitOrVegetables'] | '';
+  nauseaOrEatingDifficulty: NutritionCheckIn['nauseaOrEatingDifficulty'] | '';
+  foodAccessDifficulty: NutritionCheckIn['foodAccessDifficulty'] | '';
+  notes: string;
+};
+
+const emptyCheckIn: NutritionCheckInDraft = {
+  ateToday: '',
+  ateFruitOrVegetables: '',
+  nauseaOrEatingDifficulty: '',
+  foodAccessDifficulty: '',
+  notes: '',
+};
+
 function getTrimester(weeks: number): Trimester | null {
   if (!Number.isFinite(weeks) || weeks < 1 || weeks > 42) return null;
   if (weeks < 14) return 1;
@@ -79,7 +96,9 @@ function getTrimester(weeks: number): Trimester | null {
 
 export default function MotherNutritionScreen() {
   const { user } = useAuth();
-  const { patients } = useClinic();
+  const { patients, nutritionCheckIns, submitNutritionCheckIn } = useClinic();
+  const [checkIn, setCheckIn] = useState<NutritionCheckInDraft>(emptyCheckIn);
+  const [checkInSubmitted, setCheckInSubmitted] = useState(false);
   const patient = patients.find(
     (record) =>
       user?.email &&
@@ -91,6 +110,34 @@ export default function MotherNutritionScreen() {
   const trimester = getTrimester(weeks);
   const isPostpartum = patient?.postpartumStatus === 'postpartum';
   const plan = isPostpartum ? postpartumPlan : trimester ? trimesterPlans[trimester] : null;
+  const patientCheckIns = nutritionCheckIns.filter((entry) => entry.patientId === patient?.id);
+  const latestCheckIn = patientCheckIns[0];
+  const canSubmitCheckIn = Boolean(
+    patient &&
+      checkIn.ateToday &&
+      checkIn.ateFruitOrVegetables &&
+      checkIn.nauseaOrEatingDifficulty &&
+      checkIn.foodAccessDifficulty,
+  );
+
+  const saveCheckIn = () => {
+    if (
+      !patient ||
+      !checkIn.ateToday ||
+      !checkIn.ateFruitOrVegetables ||
+      !checkIn.nauseaOrEatingDifficulty ||
+      !checkIn.foodAccessDifficulty
+    ) return;
+    submitNutritionCheckIn(patient.id, {
+      ateToday: checkIn.ateToday,
+      ateFruitOrVegetables: checkIn.ateFruitOrVegetables,
+      nauseaOrEatingDifficulty: checkIn.nauseaOrEatingDifficulty,
+      foodAccessDifficulty: checkIn.foodAccessDifficulty,
+      notes: checkIn.notes.trim(),
+    });
+    setCheckIn(emptyCheckIn);
+    setCheckInSubmitted(true);
+  };
 
   return (
     <Page>
@@ -155,6 +202,60 @@ export default function MotherNutritionScreen() {
         </Card>
       )}
 
+      <Card style={styles.checkInCard}>
+        <SectionHeading title="My nutrition check-in" />
+        <Text style={styles.copy}>
+          A few quick questions help your authorized care team understand any food or nutrition concerns.
+        </Text>
+        {patient ? (
+          <>
+            <CheckInQuestion
+              label="Have you eaten today?"
+              options={['Yes', 'No', 'Not sure']}
+              value={checkIn.ateToday}
+              onChange={(value) => setCheckIn((current) => ({ ...current, ateToday: value }))}
+            />
+            <CheckInQuestion
+              label="Have you had fruit or vegetables?"
+              options={['Yes', 'No', 'Not sure']}
+              value={checkIn.ateFruitOrVegetables}
+              onChange={(value) => setCheckIn((current) => ({ ...current, ateFruitOrVegetables: value }))}
+            />
+            <CheckInQuestion
+              label="Any nausea or difficulty eating?"
+              options={['Yes', 'No']}
+              value={checkIn.nauseaOrEatingDifficulty}
+              onChange={(value) => setCheckIn((current) => ({ ...current, nauseaOrEatingDifficulty: value }))}
+            />
+            <CheckInQuestion
+              label="Any difficulty accessing food?"
+              options={['Yes', 'No']}
+              value={checkIn.foodAccessDifficulty}
+              onChange={(value) => setCheckIn((current) => ({ ...current, foodAccessDifficulty: value }))}
+            />
+            <Field
+              label="Anything else about food or eating?"
+              value={checkIn.notes}
+              onChangeText={(notes) => setCheckIn((current) => ({ ...current, notes }))}
+              multiline
+              numberOfLines={2}
+              maxLength={300}
+            />
+            <PrimaryButton label="Save nutrition check-in" onPress={saveCheckIn} disabled={!canSubmitCheckIn} />
+            {checkInSubmitted ? (
+              <Text style={styles.checkInSuccess}>Your check-in was saved for your care team.</Text>
+            ) : null}
+            {latestCheckIn ? (
+              <Text style={styles.checkInMeta}>
+                Last check-in: {new Date(latestCheckIn.recordedAt).toLocaleDateString()}
+              </Text>
+            ) : null}
+          </>
+        ) : (
+          <Text style={styles.copy}>Link an approved maternal record to save a nutrition check-in.</Text>
+        )}
+      </Card>
+
       <Card style={styles.safetyCard}>
         <View style={styles.focusHeading}>
           <Ionicons name="shield-checkmark-outline" size={20} color={UI.green} />
@@ -176,6 +277,38 @@ export default function MotherNutritionScreen() {
         <Ionicons name="arrow-forward" size={17} color={UI.accentDark} />
       </Pressable>
     </Page>
+  );
+}
+
+function CheckInQuestion<T extends 'Yes' | 'No' | 'Not sure'>({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: readonly T[];
+  value: T | '';
+  onChange: (value: T) => void;
+}) {
+  return (
+    <View style={styles.checkInQuestion}>
+      <Text style={styles.checkInLabel}>{label}</Text>
+      <View style={styles.answerRow}>
+        {options.map((option) => (
+          <Pressable
+            key={option}
+            accessibilityRole="button"
+            accessibilityState={{ selected: value === option }}
+            onPress={() => onChange(option)}
+            style={[styles.answerOption, value === option && styles.answerOptionSelected]}>
+            <Text style={[styles.answerText, value === option && styles.answerTextSelected]}>
+              {option}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+    </View>
   );
 }
 
@@ -216,6 +349,16 @@ const styles = StyleSheet.create({
   foodCopy: { flex: 1, gap: 3 },
   foodTitle: { color: UI.ink, fontSize: 13, fontWeight: '800' },
   safetyCard: { backgroundColor: UI.greenLight, borderColor: '#DDEDE4' },
+  checkInCard: { backgroundColor: '#F8F3FB' },
+  checkInQuestion: { gap: 7 },
+  checkInLabel: { color: UI.ink, fontSize: 12, fontWeight: '700' },
+  answerRow: { flexDirection: 'row', gap: 7 },
+  answerOption: { minHeight: 34, flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8, borderRadius: 12, backgroundColor: '#F1EDF4' },
+  answerOptionSelected: { backgroundColor: UI.accentDark },
+  answerText: { color: UI.muted, fontSize: 11, fontWeight: '700' },
+  answerTextSelected: { color: UI.white },
+  checkInSuccess: { color: UI.green, fontSize: 12, fontWeight: '700' },
+  checkInMeta: { color: UI.muted, fontSize: 10 },
   safetyTitle: { color: UI.green, fontSize: 14, fontWeight: '800' },
   disclaimer: { color: UI.muted, fontSize: 10, lineHeight: 15 },
   guidanceLink: { minHeight: 46, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },

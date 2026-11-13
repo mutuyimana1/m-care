@@ -18,7 +18,7 @@ import {
 import { useClinic } from '@/contexts/clinic-context';
 
 export default function DoctorHomeScreen() {
-  const { patients } = useClinic();
+  const { patients, symptomReports } = useClinic();
   const [query, setQuery] = useState('');
   const matchingPatients = useMemo(() => {
     const search = query.trim().toLowerCase();
@@ -31,6 +31,8 @@ export default function DoctorHomeScreen() {
     );
   }, [patients, query]);
   const pendingTests = patients.filter((patient) => patient.missingAssessments.trim()).length;
+  const openAlerts = symptomReports.filter((report) => report.status !== 'closed').length;
+  const openItems = pendingTests + openAlerts;
 
   const openPatient = (id: string) => {
     router.push({ pathname: '/doctor/patient/[id]', params: { id } });
@@ -63,8 +65,8 @@ export default function DoctorHomeScreen() {
         </Card>
         <Card style={styles.metric}>
           <IconTile name="flask-outline" color={UI.amber} />
-          <Text style={styles.metricValue}>{pendingTests}</Text>
-          <Text style={styles.metricLabel}>Follow-up items</Text>
+          <Text style={styles.metricValue}>{openItems}</Text>
+          <Text style={styles.metricLabel}>Open alerts & follow-up</Text>
         </Card>
       </View>
 
