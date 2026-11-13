@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import {
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -8,10 +9,12 @@ import {
   type TextInputProps,
 } from 'react-native';
 import type { ReactNode } from 'react';
+import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/contexts/auth-context';
 import { LocalizedText as Text, LocalizedTextInput as TextInput } from '@/components/localized-text';
+import { useLanguage } from '@/contexts/language-context';
 
 export const UI = {
   background: '#FBF8FD',
@@ -57,35 +60,86 @@ export function PageHeader({
   backLabel?: string;
 }) {
   const { user, signOut } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
+  const [languageMenuVisible, setLanguageMenuVisible] = useState(false);
 
   const logout = () => {
     signOut();
   };
 
   return (
-    <View style={styles.header}>
-      {onBack ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={backLabel}
-          onPress={onBack}
-          style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
-          <Ionicons name="chevron-back" size={21} color={UI.accentDark} />
-        </Pressable>
-      ) : null}
-      <View style={styles.headerCopy}>
-        {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
-        <Text style={styles.title}>{title}</Text>
-        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+    <>
+      <View style={styles.header}>
+        {onBack ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={backLabel}
+            onPress={onBack}
+            style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
+            <Ionicons name="chevron-back" size={21} color={UI.accentDark} />
+          </Pressable>
+        ) : null}
+        <View style={styles.headerCopy}>
+          {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
+          <Text style={styles.title}>{title}</Text>
+          {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        </View>
+        <View style={styles.headerActions}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('Change language')}
+            onPress={() => setLanguageMenuVisible(true)}
+            style={({ pressed }) => [styles.avatar, pressed && styles.pressed]}>
+            <Ionicons name="language-outline" size={20} color={UI.accentDark} />
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Sign out ${user?.name ?? ''}`}
+            onPress={logout}
+            style={({ pressed }) => [styles.avatar, pressed && styles.pressed]}>
+            <Ionicons name="log-out-outline" size={20} color={UI.accentDark} />
+          </Pressable>
+        </View>
       </View>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`Sign out ${user?.name ?? ''}`}
-        onPress={logout}
-        style={({ pressed }) => [styles.avatar, pressed && styles.pressed]}>
-        <Ionicons name="log-out-outline" size={20} color={UI.accentDark} />
-      </Pressable>
-    </View>
+      <Modal
+        visible={languageMenuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setLanguageMenuVisible(false)}>
+        <View style={styles.languageOverlay}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('Close language selection')}
+            onPress={() => setLanguageMenuVisible(false)}
+            style={StyleSheet.absoluteFill}
+          />
+          <View style={styles.languageCard}>
+            <Text style={styles.languageTitle}>Change language</Text>
+            {(['en', 'rw'] as const).map((option) => (
+              <Pressable
+                key={option}
+                accessibilityRole="button"
+                accessibilityState={{ selected: language === option }}
+                onPress={() => {
+                  setLanguage(option);
+                  setLanguageMenuVisible(false);
+                }}
+                style={[
+                  styles.languageOption,
+                  language === option && styles.languageOptionSelected,
+                ]}>
+                <Text style={styles.languageOptionText}>
+                  {option === 'en' ? 'English' : 'Kinyarwanda'}
+                </Text>
+                {language === option ? (
+                  <Ionicons name="checkmark-circle" size={18} color={UI.accentDark} />
+                ) : null}
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
 
@@ -241,6 +295,7 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  headerActions: { flexDirection: 'row', gap: 7 },
   headerCopy: { flex: 1, gap: 4 },
   eyebrow: { color: UI.accentDark, fontSize: 11, fontWeight: '800', letterSpacing: 1.2 },
   title: { color: UI.ink, fontSize: 28, lineHeight: 34, fontWeight: '800', letterSpacing: -0.5 },
@@ -255,6 +310,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E9D8F7',
   },
+  languageOverlay: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 22, backgroundColor: 'rgba(24,18,30,0.28)' },
+  languageCard: { width: '100%', maxWidth: 360, padding: 16, gap: 8, borderRadius: 20, backgroundColor: UI.white, borderWidth: 1, borderColor: UI.border },
+  languageTitle: { color: UI.ink, fontSize: 16, fontWeight: '800', paddingBottom: 4 },
+  languageOption: { minHeight: 44, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, borderRadius: 12 },
+  languageOptionSelected: { backgroundColor: UI.lavender },
+  languageOptionText: { flex: 1, color: UI.ink, fontSize: 13, fontWeight: '700' },
   backButton: {
     width: 42,
     height: 42,

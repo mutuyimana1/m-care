@@ -78,6 +78,8 @@ export type PatientRecord = {
   carePlan: string;
   referralFacility: string;
   referralReason: string;
+  referralStatus: ReferralStatus;
+  referralOutcome: string;
   postpartumStatus: 'pregnant' | 'postpartum';
   deliveryDate: string;
   postpartumFollowUpDate: string;
@@ -93,20 +95,65 @@ export type MaternalSymptomReport = {
   patientId: string;
   symptoms: string[];
   notes: string;
+  onset: string;
+  severity: 'Mild' | 'Moderate' | 'Severe';
+  pattern: 'Constant' | 'Comes and goes';
+  worsening: 'Yes' | 'No' | 'Not sure';
+  contactedChw: boolean;
+  visitedFacility: boolean;
+  temperatureReading: string;
+  bloodPressureReading: string;
+  voiceRecordingUri?: string;
+  voiceTranscript?: string;
+  voiceTranscriptAuthorized?: boolean;
   reportedAt: string;
+  status: SymptomReportStatus;
+  actions: SymptomReportAction[];
   reviewed: boolean;
   reviewedBy?: string;
   reviewedAt?: string;
 };
+
+export type SymptomReportStatus = 'new' | 'acknowledged' | 'contacted' | 'referred' | 'closed';
+
+export type SymptomReportAction = {
+  status: SymptomReportStatus;
+  actor: string;
+  note: string;
+  occurredAt: string;
+};
+
+export type SymptomReportInput = Omit<
+  MaternalSymptomReport,
+  'id' | 'patientId' | 'reportedAt' | 'status' | 'actions' | 'reviewed' | 'reviewedBy' | 'reviewedAt'
+>;
 
 export type FollowUpRequest = {
   id: string;
   patientId: string;
   message: string;
   requestedAt: string;
+  responses: FollowUpResponse[];
   reviewed: boolean;
   reviewedBy?: string;
   reviewedAt?: string;
+};
+
+export type FollowUpResponse = {
+  message: string;
+  responder: string;
+  respondedAt: string;
+};
+
+export type NutritionCheckIn = {
+  id: string;
+  patientId: string;
+  ateToday: 'Yes' | 'No' | 'Not sure';
+  ateFruitOrVegetables: 'Yes' | 'No' | 'Not sure';
+  nauseaOrEatingDifficulty: 'Yes' | 'No';
+  foodAccessDifficulty: 'Yes' | 'No';
+  notes: string;
+  recordedAt: string;
 };
 
 export type MaternalActivity = {
@@ -118,14 +165,30 @@ export type MaternalActivity = {
   occurredAt: string;
 };
 
+export type ReferralStatus = 'not-started' | 'sent' | 'received' | 'completed';
+
 type ClinicContextValue = {
   patients: PatientRecord[];
   symptomReports: MaternalSymptomReport[];
+  voiceNotes: Record<string, string>;
   followUpRequests: FollowUpRequest[];
+  nutritionCheckIns: NutritionCheckIn[];
   maternalActivities: MaternalActivity[];
   addPatient: (patient: Omit<PatientRecord, 'id' | 'createdAt'>) => PatientRecord;
-  submitSymptomReport: (patientId: string, symptoms: string[], notes: string) => void;
+  submitSymptomReport: (patientId: string, report: SymptomReportInput) => string;
+  saveVoiceNote: (patientId: string, uri: string) => void;
+  updateSymptomReportStatus: (
+    reportId: string,
+    status: SymptomReportStatus,
+    actor: string,
+    note: string,
+  ) => void;
   requestFollowUp: (patientId: string, message: string) => void;
+  respondToFollowUpRequest: (requestId: string, responder: string, response: string) => void;
+  submitNutritionCheckIn: (
+    patientId: string,
+    checkIn: Omit<NutritionCheckIn, 'id' | 'patientId' | 'recordedAt'>,
+  ) => void;
   recordMaternalActivity: (patientId: string, title: string, details: string, result: string) => void;
   reviewSymptomReport: (reportId: string, reviewer: string) => void;
   reviewFollowUpRequest: (requestId: string, reviewer: string) => void;
@@ -135,7 +198,7 @@ type ClinicContextValue = {
 const demoPatient: PatientRecord = {
   id: 'MC-24018',
   name: 'Beata Mukamana',
-  phone: 'Demo only (not a working number)',
+  phone: '0784988435',
   motherAccountEmail: 'mother@mcare.demo',
   dateOfBirth: '1997-04-12',
   nationalId: 'DEMO-MC-24018',
@@ -143,12 +206,12 @@ const demoPatient: PatientRecord = {
   district: 'Kigali',
   sector: 'Kacyiru',
   cell: 'Kamatamu',
-  village: 'Demo Village',
+  village: 'Village',
   facility: 'Kigali Health Centre',
-  facilityContactPhone: 'Demo only (not a working number)',
-  emergencyContactName: 'Demo emergency contact',
-  emergencyContactPhone: 'Demo only (not a working number)',
-  communityHealthWorker: 'Demo community health worker',
+  facilityContactPhone: '0784988435',
+  emergencyContactName: '114',
+  emergencyContactPhone: '0784988435',
+  communityHealthWorker: 'Aliane merci',
   consent: true,
   consentRecordedAt: '2026-09-10',
   confirmationMethod: 'Ultrasound',
@@ -159,7 +222,7 @@ const demoPatient: PatientRecord = {
   lastMenstrualPeriod: '2026-06-18',
   estimatedDueDate: '2027-03-25',
   datingMethod: 'Ultrasound',
-  datingSource: 'Clinician-recorded demo estimate',
+  datingSource: 'within the clinic',
   gestationalAgeWeeks: '21',
   gestationalAgeDays: '0',
   gravida: '2',
@@ -170,13 +233,13 @@ const demoPatient: PatientRecord = {
   previousDeliveryMode: 'Vaginal delivery ',
   lastBirthDate: '2023-02-14',
   birthSpacing: 'Approximately 3 years 4 months ',
-  currentSymptoms: 'No concerns reported at the latest demo visit.',
+  currentSymptoms: 'No concerns reported.',
   complications: 'None reported ',
   conditions: 'None reported ',
   surgicalHistory: 'None reported ',
   familyHistory: 'No relevant family history reported .',
   mentalHealthHistory: 'No psychosocial concerns reported .',
-  medications: 'Prenatal supplement (demo; use only as prescribed)',
+  medications: 'Prenatal supplement',
   allergies: 'None reported ',
   systolic: '112',
   diastolic: '72',
@@ -200,7 +263,7 @@ const demoPatient: PatientRecord = {
   malaria: 'Negative ',
   sickleCell: 'Screen negative ',
   ultrasoundSummary: 'Dating ultrasound recorded ',
-  investigationSource: 'Clinician-entered demo results',
+  investigationSource: 'Clinician-entered results',
   otherTests: 'Routine antenatal panel ',
   nextAppointmentDate: '2026-11-20',
   riskFactors: 'No risk factors identified in this sample assessment.',
@@ -209,11 +272,13 @@ const demoPatient: PatientRecord = {
   followUp: 'Review pending result at next antenatal visit.',
   carePlan: 'Continue scheduled antenatal follow-up and review pending tests.',
   referralFacility: 'Kigali Referral Hospital ',
-  referralReason: 'Routine specialist review scheduled for 20 Nov 2026 (demo only).',
+  referralReason: 'Sample facility referral for report SYM-DEMO-002 .',
+  referralStatus: 'sent',
+  referralOutcome: '',
   postpartumStatus: 'pregnant',
   deliveryDate: '',
   postpartumFollowUpDate: '',
-  careTeamMessage: 'Bring your maternal passport to the next visit (demo message).',
+  careTeamMessage: 'Bring your maternal passport to the next visit .',
   clinicianApproved: true,
   reviewedBy: 'Dr. Eric Niyonzima',
   reviewedAt: '2026-09-10',
@@ -228,8 +293,70 @@ const ClinicContext = createContext<ClinicContextValue | null>(null);
 
 export function ClinicProvider({ children }: PropsWithChildren) {
   const [patients, setPatients] = useState([demoPatient]);
-  const [symptomReports, setSymptomReports] = useState<MaternalSymptomReport[]>([]);
+  const [symptomReports, setSymptomReports] = useState<MaternalSymptomReport[]>([
+    {
+      id: 'SYM-DEMO-001',
+      patientId: demoPatient.id,
+      symptoms: ['Vaginal or heavy bleeding', 'Severe abdominal pain'],
+      notes: 'Sample report for CHW dashboard testing; not a real patient report.',
+      onset: 'Today',
+      severity: 'Severe',
+      pattern: 'Constant',
+      worsening: 'Yes',
+      contactedChw: false,
+      visitedFacility: false,
+      temperatureReading: '36.8',
+      bloodPressureReading: '112/72',
+      voiceTranscript: 'Sample voice transcription: I noticed bleeding and abdominal pain this morning.',
+      voiceTranscriptAuthorized: true,
+      reportedAt: '2026-11-12T08:30:00.000Z',
+      status: 'new',
+      actions: [],
+      reviewed: false,
+    },
+    {
+      id: 'SYM-DEMO-002',
+      patientId: demoPatient.id,
+      symptoms: ['Severe headache or vision changes'],
+      notes: 'Sample follow-up report for dashboard testing; not a real patient report.',
+      onset: 'Yesterday',
+      severity: 'Moderate',
+      pattern: 'Comes and goes',
+      worsening: 'No',
+      contactedChw: true,
+      visitedFacility: false,
+      temperatureReading: '37.2',
+      bloodPressureReading: '118/76',
+      reportedAt: '2026-11-11T13:15:00.000Z',
+      status: 'referred',
+      actions: [
+        {
+          status: 'acknowledged',
+          actor: 'community health worker',
+          note: 'Sample alert acknowledged for dashboard testing.',
+          occurredAt: '2026-11-11T13:20:00.000Z',
+        },
+        {
+          status: 'contacted',
+          actor: 'community health worker',
+          note: 'Sample call attempt documented for dashboard testing.',
+          occurredAt: '2026-11-11T13:35:00.000Z',
+        },
+        {
+          status: 'referred',
+          actor: 'community health worker',
+          note: 'Sample referral sent to Kigali Referral Hospital.',
+          occurredAt: '2026-11-11T14:00:00.000Z',
+        },
+      ],
+      reviewed: true,
+      reviewedBy: 'community health worker',
+      reviewedAt: '2026-11-11T14:00:00.000Z',
+    },
+  ]);
+  const [voiceNotes, setVoiceNotes] = useState<Record<string, string>>({});
   const [followUpRequests, setFollowUpRequests] = useState<FollowUpRequest[]>([]);
+  const [nutritionCheckIns, setNutritionCheckIns] = useState<NutritionCheckIn[]>([]);
   const [maternalActivities, setMaternalActivities] = useState<MaternalActivity[]>([
     {
       id: 'ACT-MC-24018-REVIEW',
@@ -244,7 +371,9 @@ export function ClinicProvider({ children }: PropsWithChildren) {
     () => ({
       patients,
       symptomReports,
+      voiceNotes,
       followUpRequests,
+      nutritionCheckIns,
       maternalActivities,
       addPatient: (patient) => {
         const record = {
@@ -266,17 +395,20 @@ export function ClinicProvider({ children }: PropsWithChildren) {
         ]);
         return record;
       },
-      submitSymptomReport: (patientId, symptoms, notes) => {
+      submitSymptomReport: (patientId, report) => {
         const reportedAt = new Date().toISOString();
+        const id = `SYM-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        const newReport: MaternalSymptomReport = {
+          ...report,
+          id,
+          patientId,
+          reportedAt,
+          status: 'new',
+          actions: [],
+          reviewed: false,
+        };
         setSymptomReports((current) => [
-          {
-            id: `SYM-${Date.now()}`,
-            patientId,
-            symptoms,
-            notes,
-            reportedAt,
-            reviewed: false,
-          },
+          newReport,
           ...current,
         ]);
         setMaternalActivities((current) => [
@@ -284,9 +416,43 @@ export function ClinicProvider({ children }: PropsWithChildren) {
             id: `ACT-${Date.now()}`,
             patientId,
             title: 'Symptom check-in submitted',
-            details: [symptoms.join(', '), notes].filter(Boolean).join(' · '),
-            result: 'Waiting for care-team review',
+            details: [report.symptoms.join(', '), report.notes].filter(Boolean).join(' · '),
+            result: `New report ${id} is waiting for care-team review`,
             occurredAt: reportedAt,
+          },
+          ...current,
+        ]);
+        return id;
+      },
+      saveVoiceNote: (patientId, uri) => {
+        setVoiceNotes((current) => ({ ...current, [patientId]: uri }));
+      },
+      updateSymptomReportStatus: (reportId, status, actor, note) => {
+        const report = symptomReports.find((item) => item.id === reportId);
+        if (!report) return;
+        const occurredAt = new Date().toISOString();
+        setSymptomReports((current) =>
+          current.map((item) =>
+            item.id === reportId
+              ? {
+                  ...item,
+                  status,
+                  actions: [...item.actions, { status, actor, note, occurredAt }],
+                  reviewed: status !== 'new',
+                  reviewedBy: status !== 'new' ? actor : item.reviewedBy,
+                  reviewedAt: status !== 'new' ? occurredAt : item.reviewedAt,
+                }
+              : item,
+          ),
+        );
+        setMaternalActivities((current) => [
+          {
+            id: `ACT-${Date.now()}`,
+            patientId: report.patientId,
+            title: `Symptom report ${status}`,
+            details: note || report.symptoms.join(', '),
+            result: `Updated by ${actor}`,
+            occurredAt,
           },
           ...current,
         ]);
@@ -299,6 +465,7 @@ export function ClinicProvider({ children }: PropsWithChildren) {
             patientId,
             message,
             requestedAt,
+            responses: [],
             reviewed: false,
           },
           ...current,
@@ -309,8 +476,58 @@ export function ClinicProvider({ children }: PropsWithChildren) {
             patientId,
             title: 'Follow-up requested',
             details: message,
-            result: 'Sent to the demo care-team queue',
+            result: 'Sent to the care-team queue',
             occurredAt: requestedAt,
+          },
+          ...current,
+        ]);
+      },
+      respondToFollowUpRequest: (requestId, responder, response) => {
+        const request = followUpRequests.find((item) => item.id === requestId);
+        if (!request || !response.trim()) return;
+        const respondedAt = new Date().toISOString();
+        setFollowUpRequests((current) =>
+          current.map((item) =>
+            item.id === requestId
+              ? {
+                  ...item,
+                  responses: [...item.responses, { message: response.trim(), responder, respondedAt }],
+                  reviewed: true,
+                  reviewedBy: responder,
+                  reviewedAt: respondedAt,
+                }
+              : item,
+          ),
+        );
+        setMaternalActivities((current) => [
+          {
+            id: `ACT-${Date.now()}`,
+            patientId: request.patientId,
+            title: 'Professional replied to a message',
+            details: response.trim(),
+            result: `Responded by ${responder}`,
+            occurredAt: respondedAt,
+          },
+          ...current,
+        ]);
+      },
+      submitNutritionCheckIn: (patientId, checkIn) => {
+        const recordedAt = new Date().toISOString();
+        const entry: NutritionCheckIn = {
+          ...checkIn,
+          id: `NUT-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          patientId,
+          recordedAt,
+        };
+        setNutritionCheckIns((current) => [entry, ...current]);
+        setMaternalActivities((current) => [
+          {
+            id: `ACT-${Date.now()}`,
+            patientId,
+            title: 'Nutrition check-in submitted',
+            details: checkIn.notes || 'Daily food and access check-in completed.',
+            result: checkIn.foodAccessDifficulty === 'Yes' ? 'Food access concern noted for care-team review' : 'Saved to the session care record',
+            occurredAt: recordedAt,
           },
           ...current,
         ]);
@@ -396,7 +613,7 @@ export function ClinicProvider({ children }: PropsWithChildren) {
         );
       },
     }),
-    [followUpRequests, maternalActivities, patients, symptomReports],
+    [followUpRequests, maternalActivities, nutritionCheckIns, patients, symptomReports, voiceNotes],
   );
 
   return <ClinicContext.Provider value={value}>{children}</ClinicContext.Provider>;
