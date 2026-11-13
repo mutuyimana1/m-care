@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo, useState, type PropsWithChildren } 
 
 import demoUsers from '@/data/demo-users.json';
 
-export type UserRole = 'mother' | 'doctor';
+export type UserRole = 'mother' | 'doctor' | 'chw';
 
 export type AppUser = {
   email: string;
@@ -32,7 +32,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         );
         if (!account) return null;
 
-        if (account.role !== 'mother' && account.role !== 'doctor') return null;
+        if (account.role !== 'mother' && account.role !== 'doctor' && account.role !== 'chw') return null;
         const signedInUser: AppUser = {
           email: account.email,
           name: account.name,

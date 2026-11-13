@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { LocalizedText as Text } from '@/components/localized-text';
 import {
@@ -16,7 +16,7 @@ import {
   UI,
 } from '@/components/mcare-ui';
 import { useAuth } from '@/contexts/auth-context';
-import { useClinic } from '@/contexts/clinic-context';
+import { useClinic, type ReferralStatus, type SymptomReportStatus } from '@/contexts/clinic-context';
 import { getMaternalCompleteness } from '@/utils/maternal-completeness';
 
 export default function PatientDetailsScreen() {
@@ -26,16 +26,21 @@ export default function PatientDetailsScreen() {
     patients,
     symptomReports,
     followUpRequests,
-    reviewSymptomReport,
-    reviewFollowUpRequest,
+    nutritionCheckIns,
+    updateSymptomReportStatus,
+    respondToFollowUpRequest,
     updatePatient,
   } = useClinic();
   const patientId = Array.isArray(id) ? id[0] : id;
   const patient = patients.find((record) => record.id === patientId);
   const [deliveryDate, setDeliveryDate] = useState(new Date().toISOString().slice(0, 10));
   const [postpartumFollowUpDate, setPostpartumFollowUpDate] = useState('');
+  const [referralOutcomeDraft, setReferralOutcomeDraft] = useState('');
+  const [contactNotes, setContactNotes] = useState<Record<string, string>>({});
+  const [requestResponses, setRequestResponses] = useState<Record<string, string>>({});
   const patientReports = symptomReports.filter((report) => report.patientId === patientId);
   const patientRequests = followUpRequests.filter((request) => request.patientId === patientId);
+  const patientNutritionCheckIns = nutritionCheckIns.filter((entry) => entry.patientId === patientId);
 
   if (!patient) {
     return (
@@ -213,6 +218,55 @@ export default function PatientDetailsScreen() {
         <InfoLine label="Message for the woman" value={patient.careTeamMessage} />
       </Card>
 
+      <Card>
+        <SectionHeading title="Referral management" />
+        <InfoLine label="Destination facility" value={patient.referralFacility || 'No referral facility recorded'} />
+        <InfoLine label="Current status" value={referralStatusLabel(patient.referralStatus)} />
+        <InfoLine label="Receiving facility outcome" value={patient.referralOutcome || 'Not recorded'} />
+        {patient.referralFacility ? (
+          <View style={styles.statusOptions}>
+            {referralStatuses.map((status) => (
+              <Pressable
+                key={status.value}
+                accessibilityRole="button"
+                disabled={status.value === 'completed' && !patient.referralOutcome.trim()}
+                accessibilityState={{ selected: patient.referralStatus === status.value }}
+                onPress={() => updatePatient(patient.id, { referralStatus: status.value })}
+                style={[
+                  styles.statusOption,
+                  patient.referralStatus === status.value && styles.statusOptionSelected,
+                ]}>
+                <Text style={[styles.statusOptionText, patient.referralStatus === status.value && styles.statusOptionTextSelected]}>
+                  {status.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : (
+          <Text style={styles.copy}>Add a receiving facility before updating referral status.</Text>
+        )}
+        {patient.referralStatus === 'received' ? (
+          <>
+            <Field
+              label="Receiving facility outcome"
+              value={referralOutcomeDraft}
+              onChangeText={setReferralOutcomeDraft}
+              placeholder="Record the outcome shared by the facility"
+              multiline
+              numberOfLines={2}
+            />
+            <PrimaryButton
+              label="Record outcome and complete referral"
+              disabled={!referralOutcomeDraft.trim()}
+              onPress={() => updatePatient(patient.id, {
+                referralOutcome: referralOutcomeDraft.trim(),
+                referralStatus: 'completed',
+              })}
+            />
+          </>
+        ) : null}
+      </Card>
+
       <PrimaryButton
         label="View assessment summary"
         icon="document-text-outline"
@@ -224,19 +278,61 @@ export default function PatientDetailsScreen() {
           <SectionHeading title="Woman-reported symptoms" action={`${patientReports.length} report${patientReports.length === 1 ? '' : 's'}`} />
           {patientReports.map((report) => (
             <View key={report.id} style={styles.report}>
+              <SectionHeading title={`Report ${report.id}`} action={symptomStatusLabel(report.status)} />
               <Text style={styles.reportTitle}>{report.symptoms.join(', ')}</Text>
+              <InfoLine label="Started" value={report.onset} />
+              <InfoLine label="Self-reported severity" value={report.severity} />
+              <InfoLine label="Pattern" value={report.pattern} />
+              <InfoLine label="Getting worse" value={report.worsening} />
+              <InfoLine label="Contacted CHW" value={report.contactedChw ? 'Yes' : 'No'} />
+              <InfoLine label="Visited a facility" value={report.visitedFacility ? 'Yes' : 'No'} />
+              {report.temperatureReading ? <InfoLine label="Temperature reading" value={`${report.temperatureReading} °C`} /> : null}
+              {report.bloodPressureReading ? <InfoLine label="Blood pressure reading" value={report.bloodPressureReading} /> : null}
               <Text style={styles.copy}>{report.notes || 'No additional notes'}</Text>
               <Text style={styles.reportDate}>{new Date(report.reportedAt).toLocaleString()}</Text>
-              <Text style={report.reviewed ? styles.reviewedText : styles.followUpText}>
-                {report.reviewed ? 'Reviewed' : 'Needs clinician review'}
-              </Text>
-              {!report.reviewed ? (
-                <PrimaryButton
-                  label="Mark symptom report reviewed"
-                  onPress={() => reviewSymptomReport(report.id, user?.name ?? 'Authorized clinician')}
-                />
+              {report.actions.map((action, index) => (
+                <Text key={`${report.id}-${index}`} style={styles.reportDate}>
+                  {symptomStatusLabel(action.status)} · {action.actor} · {action.occurredAt}
+                  {action.note ? ` · ${action.note}` : ''}
+                </Text>
+              ))}
+              {report.status !== 'closed' ? (
+                <>
+                  <Field
+                    label="Contact attempt or observation"
+                    value={contactNotes[report.id] ?? ''}
+                    onChangeText={(value) => setContactNotes((current) => ({ ...current, [report.id]: value }))}
+                    placeholder="Add a brief note"
+                    multiline
+                    numberOfLines={2}
+                  />
+                  <View style={styles.actionButtons}>
+                    {report.status === 'new' ? (
+                      <PrimaryButton
+                        label="Acknowledge alert"
+                        onPress={() => updateSymptomReportStatus(report.id, 'acknowledged', user?.name ?? 'Authorized clinician', contactNotes[report.id] ?? '')}
+                      />
+                    ) : null}
+                    <PrimaryButton
+                      label="Record contact attempt"
+                      onPress={() => updateSymptomReportStatus(report.id, 'contacted', user?.name ?? 'Authorized clinician', contactNotes[report.id] ?? '')}
+                    />
+                    <PrimaryButton
+                      label="Mark referred"
+                      disabled={!patient.referralFacility.trim()}
+                      onPress={() => {
+                        updateSymptomReportStatus(report.id, 'referred', user?.name ?? 'Authorized clinician', contactNotes[report.id] ?? '');
+                        updatePatient(patient.id, { referralStatus: 'sent' });
+                      }}
+                    />
+                    <PrimaryButton
+                      label="Close alert"
+                      onPress={() => updateSymptomReportStatus(report.id, 'closed', user?.name ?? 'Authorized clinician', contactNotes[report.id] ?? '')}
+                    />
+                  </View>
+                </>
               ) : (
-                <Text style={styles.reportDate}>Reviewed by {report.reviewedBy} · {report.reviewedAt}</Text>
+                <Text style={styles.reviewedText}>Alert closed</Text>
               )}
             </View>
           ))}
@@ -251,17 +347,50 @@ export default function PatientDetailsScreen() {
             <View key={request.id} style={styles.report}>
               <Text style={styles.reportTitle}>{request.message}</Text>
               <Text style={styles.reportDate}>{new Date(request.requestedAt).toLocaleString()}</Text>
-              <Text style={request.reviewed ? styles.reviewedText : styles.followUpText}>
-                {request.reviewed ? 'Reviewed' : 'Needs follow-up'}
+              <Text style={request.responses.length ? styles.reviewedText : styles.followUpText}>
+                {request.responses.length ? 'Reply sent' : 'Waiting for professional response'}
               </Text>
-              {!request.reviewed ? (
-                <PrimaryButton
-                  label="Mark request reviewed"
-                  onPress={() => reviewFollowUpRequest(request.id, user?.name ?? 'Authorized clinician')}
-                />
-              ) : (
-                <Text style={styles.reportDate}>Reviewed by {request.reviewedBy} · {request.reviewedAt}</Text>
-              )}
+              {request.responses.map((response, index) => (
+                <View key={`${request.id}-response-${index}`} style={styles.responseBubble}>
+                  <Text style={styles.reportDate}>{response.responder} · {new Date(response.respondedAt).toLocaleString()}</Text>
+                  <Text style={styles.copy}>{response.message}</Text>
+                </View>
+              ))}
+              <Field
+                label="Reply to the woman"
+                value={requestResponses[request.id] ?? ''}
+                onChangeText={(value) => setRequestResponses((current) => ({ ...current, [request.id]: value }))}
+                placeholder="Write a professional response"
+                multiline
+                numberOfLines={3}
+                maxLength={500}
+              />
+              <PrimaryButton
+                label="Send response"
+                disabled={!requestResponses[request.id]?.trim()}
+                onPress={() => {
+                  const response = requestResponses[request.id]?.trim();
+                  if (!response) return;
+                  respondToFollowUpRequest(request.id, user?.name ?? 'Authorized clinician', response);
+                  setRequestResponses((current) => ({ ...current, [request.id]: '' }));
+                }}
+              />
+            </View>
+          ))}
+        </Card>
+      ) : null}
+
+      {patientNutritionCheckIns.length ? (
+        <Card>
+          <SectionHeading title="Nutrition check-ins" action={`${patientNutritionCheckIns.length}`} />
+          {patientNutritionCheckIns.map((entry) => (
+            <View key={entry.id} style={styles.report}>
+              <Text style={styles.reportDate}>{new Date(entry.recordedAt).toLocaleString()}</Text>
+              <InfoLine label="Ate today" value={entry.ateToday} />
+              <InfoLine label="Fruit or vegetables" value={entry.ateFruitOrVegetables} />
+              <InfoLine label="Nausea or difficulty eating" value={entry.nauseaOrEatingDifficulty} />
+              <InfoLine label="Difficulty accessing food" value={entry.foodAccessDifficulty} />
+              {entry.notes ? <Text style={styles.copy}>{entry.notes}</Text> : null}
             </View>
           ))}
         </Card>
@@ -318,9 +447,38 @@ const styles = StyleSheet.create({
   followUp: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, padding: 11, borderRadius: 12, backgroundColor: UI.amberLight },
   followUpText: { flex: 1, color: UI.amber, fontSize: 11, lineHeight: 17, fontWeight: '700' },
   report: { gap: 5, paddingTop: 10, borderTopWidth: 1, borderTopColor: UI.border },
+  responseBubble: { padding: 10, borderRadius: 12, backgroundColor: '#F0F7F3' },
+  actionButtons: { gap: 7 },
+  statusOptions: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
+  statusOption: { minHeight: 34, justifyContent: 'center', paddingHorizontal: 10, borderRadius: 12, backgroundColor: '#F1EDF4' },
+  statusOptionSelected: { backgroundColor: UI.accentDark },
+  statusOptionText: { color: UI.muted, fontSize: 11, fontWeight: '700' },
+  statusOptionTextSelected: { color: UI.white },
   reportTitle: { color: UI.ink, fontSize: 12, fontWeight: '800' },
   reportDate: { color: UI.muted, fontSize: 10 },
   reviewedText: { color: UI.green, fontSize: 11, fontWeight: '700' },
   completenessRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   footer: { color: UI.muted, fontSize: 10, lineHeight: 15, textAlign: 'center' },
 });
+
+const referralStatuses: { value: ReferralStatus; label: string }[] = [
+  { value: 'not-started', label: 'Not started' },
+  { value: 'sent', label: 'Sent' },
+  { value: 'received', label: 'Received' },
+  { value: 'completed', label: 'Completed' },
+];
+
+function referralStatusLabel(status: ReferralStatus) {
+  return referralStatuses.find((item) => item.value === status)?.label ?? 'Not started';
+}
+
+function symptomStatusLabel(status: SymptomReportStatus) {
+  const labels: Record<SymptomReportStatus, string> = {
+    new: 'New',
+    acknowledged: 'Acknowledged',
+    contacted: 'Contacted',
+    referred: 'Referred',
+    closed: 'Closed',
+  };
+  return labels[status];
+}
