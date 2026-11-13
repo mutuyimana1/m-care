@@ -2,9 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image, StyleSheet, View } from 'react-native';
 
 import { LocalizedText as Text } from '@/components/localized-text';
-import { Card, Page, PageHeader, SectionHeading, StatusPill, UI } from '@/components/mcare-ui';
+import { Card, InfoLine, Page, PageHeader, SectionHeading, StatusPill, UI } from '@/components/mcare-ui';
 import { useAuth } from '@/contexts/auth-context';
-import { useClinic } from '@/contexts/clinic-context';
+import { useClinic, type ReferralStatus } from '@/contexts/clinic-context';
 
 const MOTHER_IMAGE = require('@/assets/images/mother2.jpg');
 
@@ -79,6 +79,12 @@ export default function MotherRecordsScreen() {
             </Text>
           </View>
         </View>
+        <InfoLine label="Referral status" value={referralStatusText(patient?.referralStatus)} />
+        <InfoLine
+          label="Receiving facility receipt"
+          value={patient?.referralStatus === 'received' || patient?.referralStatus === 'completed' ? 'Confirmed' : 'Not confirmed'}
+        />
+        <InfoLine label="Referral outcome" value={patient?.referralOutcome || 'Not recorded'} />
       </Card>
 
       <SectionHeading title="Care tracker" />
@@ -130,6 +136,16 @@ export default function MotherRecordsScreen() {
       </Text>
     </Page>
   );
+}
+
+function referralStatusText(status?: ReferralStatus) {
+  const labels: Record<ReferralStatus, string> = {
+    'not-started': 'Not started',
+    sent: 'Sent',
+    received: 'Received',
+    completed: 'Completed',
+  };
+  return status ? labels[status] : labels['not-started'];
 }
 
 function TrackerRow({

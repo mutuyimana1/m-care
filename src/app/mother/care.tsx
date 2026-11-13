@@ -11,16 +11,15 @@ import { useMemo, useState } from 'react';
 import { Alert, Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { LocalizedText as Text } from '@/components/localized-text';
-import { Card, Field, Page, PageHeader, PrimaryButton, SectionHeading, UI } from '@/components/mcare-ui';
+import { Card, Field, Page, PageHeader, PrimaryButton, SectionHeading, StatusPill, UI } from '@/components/mcare-ui';
 import { useAuth } from '@/contexts/auth-context';
 import { useClinic } from '@/contexts/clinic-context';
 
 export default function MotherCareScreen() {
   const { user } = useAuth();
-  const { patients, followUpRequests, requestFollowUp, recordMaternalActivity } = useClinic();
+  const { patients, voiceNotes, followUpRequests, requestFollowUp, recordMaternalActivity, saveVoiceNote } = useClinic();
   const [message, setMessage] = useState('');
   const [sent, setSent] = useState(false);
-  const [voiceUri, setVoiceUri] = useState<string | null>(null);
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recorderState = useAudioRecorderState(recorder);
   const patient = patients.find(
@@ -30,8 +29,11 @@ export default function MotherCareScreen() {
       record.consent &&
       record.clinicianApproved,
   );
-  const latestRequest = useMemo(
-    () => followUpRequests.find((request) => request.patientId === patient?.id),
+  const voiceUri = patient ? voiceNotes[patient.id] ?? null : null;
+  const patientRequests = useMemo(
+    () => followUpRequests
+      .filter((request) => request.patientId === patient?.id)
+      .sort((a, b) => new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime()),
     [followUpRequests, patient?.id],
   );
   const isPostpartum = patient?.postpartumStatus === 'postpartum';
@@ -70,7 +72,7 @@ export default function MotherCareScreen() {
           Alert.alert('Recording not saved', 'Please try recording your voice note again.');
           return;
         }
-        setVoiceUri(recordingUri);
+        saveVoiceNote(patient.id, recordingUri);
         recordMaternalActivity(
           patient.id,
           'Voice note recorded',
@@ -88,7 +90,6 @@ export default function MotherCareScreen() {
       await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
       await recorder.prepareToRecordAsync();
       recorder.record();
-      setVoiceUri(null);
     } catch (error) {
       Alert.alert(
         recorderState.isRecording ? 'Could not save recording' : 'Could not start recording',
@@ -175,9 +176,35 @@ export default function MotherCareScreen() {
       </Card>
 
       <Card>
-        <SectionHeading title="Ask your care team to follow up" />
+        <SectionHeading title="Talk to a health professional" />
+        <Text style={styles.copy}>
+          Send a message to your authorized care team. This is human support, not an AI chatbot; replies are not guaranteed immediately.
+        </Text>
         {patient ? (
           <>
+            {patientRequests.length ? (
+              <View style={styles.conversation}>
+                <SectionHeading title="Conversation history" />
+                {patientRequests.map((request) => (
+                  <View key={request.id} style={styles.messageThread}>
+                    <View style={styles.messageBubble}>
+                      <Text style={styles.messageLabel}>You · {new Date(request.requestedAt).toLocaleString()}</Text>
+                      <Text style={styles.copy}>{request.message}</Text>
+                    </View>
+                    {request.responses.length ? request.responses.map((response, index) => (
+                      <View key={`${request.id}-response-${index}`} style={styles.replyBubble}>
+                        <Text style={styles.messageLabel}>
+                          {response.responder} · {new Date(response.respondedAt).toLocaleString()}
+                        </Text>
+                        <Text style={styles.copy}>{response.message}</Text>
+                      </View>
+                    )) : (
+                      <StatusPill label="Waiting for professional response" tone="amber" />
+                    )}
+                  </View>
+                ))}
+              </View>
+            ) : null}
             <Field
               label="Your question or request"
               value={message}
@@ -187,13 +214,11 @@ export default function MotherCareScreen() {
               numberOfLines={3}
               maxLength={500}
             />
-            <PrimaryButton label="Send follow-up request" onPress={sendRequest} disabled={!message.trim()} />
+            <PrimaryButton label="Send message" onPress={sendRequest} disabled={!message.trim()} />
             {sent ? <Text style={styles.success}>Your request was added to the demo care-team queue.</Text> : null}
-            {latestRequest ? (
-              <Text style={styles.copy}>
-                Latest request: “{latestRequest.message}” · {new Date(latestRequest.requestedAt).toLocaleDateString()}
-              </Text>
-            ) : null}
+            <Text style={styles.note}>
+              This demo inbox is not monitored in real time and has no guaranteed response time. For emergency symptoms, call 114 or seek care now; do not wait for a message.
+            </Text>
           </>
         ) : (
           <Text style={styles.copy}>
@@ -240,6 +265,12 @@ const styles = StyleSheet.create({
   appointmentCard: { backgroundColor: '#F6ECFD', borderColor: '#EBDDFA' },
   appointmentDate: { color: UI.accentDark, fontSize: 16, fontWeight: '800' },
   success: { color: UI.green, fontSize: 12, fontWeight: '700' },
+  conversation: { gap: 8 },
+  messageThread: { gap: 7, paddingTop: 8, borderTopWidth: 1, borderTopColor: UI.border },
+  messageBubble: { alignSelf: 'flex-start', maxWidth: '94%', padding: 11, gap: 4, borderRadius: 14, backgroundColor: '#F6ECFD' },
+  replyBubble: { alignSelf: 'flex-end', maxWidth: '94%', padding: 11, gap: 4, borderRadius: 14, backgroundColor: UI.greenLight },
+  messageLabel: { color: UI.muted, fontSize: 10, fontWeight: '700' },
+  note: { color: UI.muted, fontSize: 10, lineHeight: 15 },
   referral: { paddingTop: 10, borderTopWidth: 1, borderTopColor: UI.border, gap: 4 },
   referralTitle: { color: UI.accentDark, fontSize: 12, fontWeight: '800' },
   careTeamCard: { backgroundColor: '#F9F5FB' },
