@@ -1,6 +1,4 @@
 # Local environment and runtime files
-.env
-.env.*
 !.env.example
 .venv/
 .venv-*/
@@ -11,3 +9,5 @@ __pycache__/
 
 # Large local ASR model weights (install separately; GitHub file limit)
 ai_service/kinyarwanda_asr/model/model.safetensors
+config.bat
+node_modules
