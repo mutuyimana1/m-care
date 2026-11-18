@@ -117,6 +117,8 @@ const initialDraft: PatientDraft = {
   deliveryDate: '',
   postpartumFollowUpDate: '',
   careTeamMessage: '',
+  lastIvrCallDate: '',
+  lastIvrOutcome: '',
 };
 
 const fieldsByStep: Record<number, { key: DraftTextKey; label: string; multiline?: boolean; numeric?: boolean }[]> = {

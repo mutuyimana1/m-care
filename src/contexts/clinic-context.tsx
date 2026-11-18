@@ -84,6 +84,8 @@ export type PatientRecord = {
   deliveryDate: string;
   postpartumFollowUpDate: string;
   careTeamMessage: string;
+  lastIvrCallDate: string;
+  lastIvrOutcome: string;
   clinicianApproved: boolean;
   reviewedBy: string;
   reviewedAt: string;
@@ -193,6 +195,7 @@ type ClinicContextValue = {
   reviewSymptomReport: (reportId: string, reviewer: string) => void;
   reviewFollowUpRequest: (requestId: string, reviewer: string) => void;
   updatePatient: (patientId: string, updates: Partial<PatientRecord>) => void;
+  triggerIvrCall: (patientId: string, simulatedOutcome?: 'Healthy' | 'Danger Sign' | 'Call CHW') => void;
 };
 
 const demoPatient: PatientRecord = {
@@ -279,6 +282,8 @@ const demoPatient: PatientRecord = {
   deliveryDate: '',
   postpartumFollowUpDate: '',
   careTeamMessage: 'Bring your maternal passport to the next visit .',
+  lastIvrCallDate: '',
+  lastIvrOutcome: '',
   clinicianApproved: true,
   reviewedBy: 'Dr. Eric Niyonzima',
   reviewedAt: '2026-09-10',
@@ -611,6 +616,61 @@ export function ClinicProvider({ children }: PropsWithChildren) {
             patient.id === patientId ? { ...patient, ...updates } : patient,
           ),
         );
+      },
+      triggerIvrCall: (patientId, simulatedOutcome = 'Healthy') => {
+        const occurredAt = new Date().toISOString();
+        const outcome = simulatedOutcome;
+        setPatients((current) =>
+          current.map((patient) =>
+            patient.id === patientId
+              ? {
+                  ...patient,
+                  lastIvrCallDate: occurredAt,
+                  lastIvrOutcome: outcome,
+                }
+              : patient,
+          ),
+        );
+        if (outcome === 'Danger Sign') {
+          const reportId = `IVR-${Date.now().toString(36).toUpperCase()}`;
+          const dangerReport: MaternalSymptomReport = {
+            id: reportId,
+            patientId,
+            symptoms: ['IVR Alert: Severe pain or danger sign reported via phone keypad (Key 2)'],
+            notes: 'Mother pressed key 2 during automated Telnyx IVR telephone check-in. Urgent follow-up needed.',
+            onset: 'Today',
+            severity: 'Severe',
+            pattern: 'Constant',
+            worsening: 'Yes',
+            contactedChw: false,
+            visitedFacility: false,
+            temperatureReading: '',
+            bloodPressureReading: '',
+            reportedAt: occurredAt,
+            status: 'new',
+            actions: [
+              {
+                status: 'new',
+                actor: 'Telnyx IVR System',
+                note: 'Outbound automated voice check-in completed; mother pressed 2',
+                occurredAt,
+              },
+            ],
+            reviewed: false,
+          };
+          setSymptomReports((current) => [dangerReport, ...current]);
+        }
+        setMaternalActivities((current) => [
+          {
+            id: `ACT-${Date.now()}`,
+            patientId,
+            title: 'Automated IVR call placed',
+            details: `Telnyx Voice check-in completed. Outcome: ${outcome}`,
+            result: outcome === 'Danger Sign' ? 'Critical alert fired to CHW queue' : 'Routine record logged',
+            occurredAt,
+          },
+          ...current,
+        ]);
       },
     }),
     [followUpRequests, maternalActivities, nutritionCheckIns, patients, symptomReports, voiceNotes],

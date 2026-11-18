@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useState } from 'react';
 import { Alert, Linking, Pressable, StyleSheet, View } from 'react-native';
 
@@ -21,7 +20,7 @@ import { getMaternalSymptomCode } from '@/utils/maternal-symptom-codes';
 
 export default function CommunityHealthWorkerScreen() {
   const { user } = useAuth();
-  const { patients, symptomReports, updatePatient, updateSymptomReportStatus } = useClinic();
+  const { patients, symptomReports, updatePatient, updateSymptomReportStatus, triggerIvrCall } = useClinic();
   const [contactNotes, setContactNotes] = useState<Record<string, string>>({});
   const [referralOutcomes, setReferralOutcomes] = useState<Record<string, string>>({});
   const assignedPatients = patients.filter(
@@ -36,8 +35,34 @@ export default function CommunityHealthWorkerScreen() {
     .sort((left, right) => right.reportedAt.localeCompare(left.reportedAt));
   const openCount = alerts.filter((report) => report.status !== 'closed').length;
   const newCount = alerts.filter((report) => report.status === 'new').length;
+  const ivrCheckedCount = assignedPatients.filter((patient) => patient.lastIvrCallDate).length;
   const referrals = assignedPatients.filter((patient) => patient.referralStatus !== 'not-started');
   const waitingForFacility = referrals.filter((patient) => patient.referralStatus !== 'completed').length;
+
+  const promptIvrCall = (patient: PatientRecord) => {
+    Alert.alert(
+      'Automated IVR Check-in',
+      `Trigger an automated Telnyx phone call to ${patient.name} (${patient.phone})?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Simulate: Healthy (Key 1)',
+          onPress: () => {
+            triggerIvrCall(patient.id, 'Healthy');
+            Alert.alert('Call Completed', `Automated IVR call to ${patient.name} answered. Mother pressed Key 1 (Healthy).`);
+          },
+        },
+        {
+          text: 'Simulate: Danger Sign (Key 2)',
+          style: 'destructive',
+          onPress: () => {
+            triggerIvrCall(patient.id, 'Danger Sign');
+            Alert.alert('Urgent Alert Fired', `Mother pressed Key 2 (Severe symptoms). New alert added to your feed!`);
+          },
+        },
+      ],
+    );
+  };
 
   const saveAction = (
     report: MaternalSymptomReport,
@@ -104,6 +129,7 @@ export default function CommunityHealthWorkerScreen() {
         <View style={styles.metrics}>
           <Metric label="Open alerts" value={openCount} />
           <Metric label="New" value={newCount} />
+          <Metric label="IVR checked" value={ivrCheckedCount} />
           <Metric label="Awaiting facility" value={waitingForFacility} />
         </View>
       </Card>
@@ -127,24 +153,42 @@ export default function CommunityHealthWorkerScreen() {
           <InfoLine label="Preferred language" value={patient.preferredLanguage} />
           <InfoLine label="Community" value={`${patient.village}, ${patient.cell}, ${patient.sector}`} />
           <InfoLine label="Assigned health facility" value={patient.facility} />
+          <InfoLine
+            label="Automated IVR call"
+            value={
+              patient.lastIvrCallDate
+                ? `${new Date(patient.lastIvrCallDate).toLocaleDateString()} (${patient.lastIvrOutcome || 'Healthy'})`
+                : 'No call logged yet'
+            }
+          />
           <Text style={styles.caseNote}>
             Mother identity and pregnancy details are shown only for cases assigned to this CHW account.
           </Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ disabled: patient.phone.toLowerCase().includes('demo') }}
-            disabled={patient.phone.toLowerCase().includes('demo')}
-            onPress={() => void callMother(patient)}
-            style={({ pressed }) => [
-              styles.callButton,
-              patient.phone.toLowerCase().includes('demo') && styles.disabledAction,
-              pressed && styles.pressed,
-            ]}>
-            <Ionicons name="call-outline" size={17} color={UI.accentDark} />
-            <Text style={styles.callButtonText}>
-              {patient.phone.toLowerCase().includes('demo') ? 'Call unavailable for demo number' : 'Call mother'}
-            </Text>
-          </Pressable>
+          <View style={styles.patientActionRow}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ disabled: patient.phone.toLowerCase().includes('demo') }}
+              disabled={patient.phone.toLowerCase().includes('demo')}
+              onPress={() => void callMother(patient)}
+              style={({ pressed }) => [
+                styles.callButton,
+                patient.phone.toLowerCase().includes('demo') && styles.disabledAction,
+                pressed && styles.pressed,
+              ]}>
+              <Ionicons name="call-outline" size={16} color={UI.accentDark} />
+              <Text style={styles.callButtonText}>
+                {patient.phone.toLowerCase().includes('demo') ? 'Demo number' : 'Call mother'}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => promptIvrCall(patient)}
+              style={({ pressed }) => [styles.ivrButton, pressed && styles.pressed]}>
+              <Ionicons name="phone-portrait-outline" size={16} color={UI.green} />
+              <Text style={styles.ivrButtonText}>Trigger IVR Call</Text>
+            </Pressable>
+          </View>
         </Card>
       ))}
 
@@ -152,21 +196,30 @@ export default function CommunityHealthWorkerScreen() {
       {alerts.map((report) => {
         const patient = assignedPatients.find((item) => item.id === report.patientId);
         if (!patient) return null;
+        const isIvrReport = report.symptoms.some((s) => s.toLowerCase().includes('ivr')) || report.id.startsWith('IVR');
 
         return (
           <Card key={report.id} style={styles.caseCard}>
             <View style={styles.caseHeading}>
-              <View style={styles.alertIcon}>
-                <Ionicons name="alert-circle-outline" size={21} color={UI.amber} />
+              <View style={[styles.alertIcon, isIvrReport && { backgroundColor: '#FFEBEE' }]}>
+                <Ionicons
+                  name={isIvrReport ? 'phone-portrait-outline' : 'alert-circle-outline'}
+                  size={21}
+                  color={isIvrReport ? '#D32F2F' : UI.amber}
+                />
               </View>
               <View style={styles.caseCopy}>
                 <Text style={styles.caseTitle}>{patient.name}</Text>
                 <Text style={styles.caseMeta}>{patient.id} · Report {report.id}</Text>
               </View>
-              <StatusPill
-                label={statusLabel(report.status)}
-                tone={report.status === 'new' ? 'amber' : report.status === 'closed' ? 'green' : 'lavender'}
-              />
+              {isIvrReport ? (
+                <StatusPill label="Telnyx IVR" tone="amber" />
+              ) : (
+                <StatusPill
+                  label={statusLabel(report.status)}
+                  tone={report.status === 'new' ? 'amber' : report.status === 'closed' ? 'green' : 'lavender'}
+                />
+              )}
             </View>
 
             <View style={styles.notificationBanner}>
@@ -202,21 +255,13 @@ export default function CommunityHealthWorkerScreen() {
             {report.temperatureReading ? <InfoLine label="Temperature reading" value={`${report.temperatureReading} °C`} /> : null}
             {report.bloodPressureReading ? <InfoLine label="Blood pressure reading" value={report.bloodPressureReading} /> : null}
             {report.notes ? <Text style={styles.caseNote}>{report.notes}</Text> : null}
-            {report.voiceTranscriptAuthorized &&
-            (report.voiceTranscript || report.voiceRecordingUri) ? (
+            {report.voiceTranscriptAuthorized && report.voiceTranscript ? (
               <View style={styles.transcriptCard}>
-                {report.voiceTranscript ? (
-                  <>
-                    <View style={styles.transcriptHeading}>
-                      <Ionicons name="chatbox-ellipses-outline" size={17} color={UI.accentDark} />
-                      <Text style={styles.transcriptTitle}>Authorized voice transcript</Text>
-                    </View>
-                    <Text style={styles.caseNote}>{report.voiceTranscript}</Text>
-                  </>
-                ) : null}
-                {report.voiceRecordingUri ? (
-                  <VoiceRecording uri={report.voiceRecordingUri} />
-                ) : null}
+                <View style={styles.transcriptHeading}>
+                  <Ionicons name="chatbox-ellipses-outline" size={17} color={UI.accentDark} />
+                  <Text style={styles.transcriptTitle}>Authorized transcript</Text>
+                </View>
+                <Text style={styles.caseNote}>{report.voiceTranscript}</Text>
               </View>
             ) : null}
             {report.actions.length ? (
@@ -355,23 +400,6 @@ function Metric({ label, value }: { label: string; value: number }) {
   );
 }
 
-function VoiceRecording({ uri }: { uri: string }) {
-  const player = useAudioPlayer(uri);
-  const playerStatus = useAudioPlayerStatus(player);
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={playerStatus.playing ? 'Pause authorized voice recording' : 'Play authorized voice recording'}
-      onPress={() => (playerStatus.playing ? player.pause() : player.play())}
-      style={({ pressed }) => [styles.audioButton, pressed && styles.pressed]}>
-      <Ionicons name={playerStatus.playing ? 'pause' : 'play'} size={17} color={UI.accentDark} />
-      <Text style={styles.audioButtonText}>
-        {playerStatus.playing ? 'Pause voice recording' : 'Play voice recording'}
-      </Text>
-    </Pressable>
-  );
-}
-
 const referralLabel = (status: ReferralStatus) => {
   const labels: Record<ReferralStatus, string> = {
     'not-started': 'Not started',
@@ -413,8 +441,11 @@ const styles = StyleSheet.create({
   caseTitle: { color: UI.ink, fontSize: 14, fontWeight: '800' },
   caseMeta: { color: UI.muted, fontSize: 10 },
   caseNote: { color: UI.muted, fontSize: 12, lineHeight: 18 },
-  callButton: { minHeight: 46, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14, backgroundColor: UI.lavender },
+  patientActionRow: { flexDirection: 'row', gap: 10 },
+  callButton: { flex: 1, minHeight: 46, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 14, backgroundColor: UI.lavender },
   callButtonText: { color: UI.accentDark, fontSize: 12, fontWeight: '800' },
+  ivrButton: { flex: 1, minHeight: 46, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 14, backgroundColor: UI.greenLight, borderWidth: 1, borderColor: '#C8E6C9' },
+  ivrButtonText: { color: UI.green, fontSize: 12, fontWeight: '800' },
   disabledAction: { opacity: 0.6 },
   notificationBanner: { flexDirection: 'row', alignItems: 'flex-start', gap: 9, padding: 11, borderRadius: 13, backgroundColor: '#F6ECFD' },
   notificationText: { flex: 1, color: UI.accentDark, fontSize: 11, lineHeight: 16, fontWeight: '700' },
@@ -427,8 +458,6 @@ const styles = StyleSheet.create({
   transcriptCard: { gap: 8, padding: 12, borderRadius: 14, backgroundColor: '#F7F2FA' },
   transcriptHeading: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   transcriptTitle: { color: UI.accentDark, fontSize: 12, fontWeight: '800' },
-  audioButton: { minHeight: 40, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, borderRadius: 11, backgroundColor: UI.white },
-  audioButtonText: { color: UI.accentDark, fontSize: 11, fontWeight: '800' },
   timeline: { gap: 7, padding: 11, borderRadius: 13, backgroundColor: '#F7F5F8' },
   timelineTitle: { color: UI.ink, fontSize: 12, fontWeight: '800' },
   timelineEntry: { color: UI.muted, fontSize: 10, lineHeight: 15 },
