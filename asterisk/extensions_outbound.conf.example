@@ -1,0 +1,13 @@
+; Include in extensions.conf only after an authorized outbound trunk is configured.
+; AMI originates the PJSIP mobile leg and enters here after the destination answers.
+[mcare-outbound]
+exten => _X!,1,NoOp(M-CARE outbound call ${EXTEN})
+ same => n,Set(__MC_OUTBOUND_CALL_ID=${EXTEN})
+ same => n,AGI(mcare_outbound_ivr.php,${EXTEN})
+ same => n,Hangup()
+
+; A provider endpoint must not inherit an outbound-capable context for inbound
+; traffic. Add inbound routing only after it has been separately reviewed.
+[mcare-deny-inbound]
+exten => _X!,1,NoOp(Rejected inbound call on outbound-only M-CARE trunk)
+ same => n,Hangup()

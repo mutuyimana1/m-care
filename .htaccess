@@ -1,0 +1,8 @@
+Options -Indexes
+DirectoryIndex index.php
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([A-Za-z0-9_-]+)/?$ $1.php [L,QSA]
+SetEnv MCARE_ASR_SERVICE_URL http://127.0.0.1:8101
+SetEnv MCARE_ASR_SERVICE_TOKEN afdb635c5f17bdc0b1cc238aa7514328e637abe89ae585537127653d5b1200d5

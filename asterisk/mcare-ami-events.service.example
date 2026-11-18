@@ -1,0 +1,22 @@
+[Unit]
+Description=M-CARE Asterisk outbound call event listener
+After=network.target asterisk.service mariadb.service
+Requires=asterisk.service
+
+[Service]
+Type=simple
+User=asterisk
+Group=asterisk
+WorkingDirectory=/opt/lampp/htdocs/care
+EnvironmentFile=/etc/mcare/outbound.env
+ExecStart=/usr/bin/php /opt/lampp/htdocs/care/asterisk/outbound_ami_events.php
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/opt/lampp/htdocs/care
+
+[Install]
+WantedBy=multi-user.target

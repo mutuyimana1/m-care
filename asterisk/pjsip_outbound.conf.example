@@ -1,0 +1,35 @@
+; TEMPLATE ONLY. MTN must provide the real host, port, transport, IP/auth model,
+; allowed codecs, source-IP policy, and number format before these sections are
+; copied into the live PJSIP configuration. Never invent values in this file.
+;
+; Define a provider-facing transport bound only to the PBX's intended private or
+; provider-approved interface. Do not reuse the loopback-only test transport.
+;
+; Authenticated SIP trunk pattern (replace every angle-bracket value privately):
+; [mcare-provider-auth]
+; type=auth
+; auth_type=userpass
+; username=<MTN-provided-username>
+; password=<MTN-provided-secret>
+;
+; [mcare-provider-aor]
+; type=aor
+; contact=sip:<MTN-provided-SIP-host>:<MTN-provided-port>
+;
+; [mcare-mtn]
+; type=endpoint
+; transport=<provider-facing-transport-name>
+; context=mcare-deny-inbound
+; disallow=all
+; allow=<MTN-approved-codec-list>
+; outbound_auth=mcare-provider-auth
+; aors=mcare-provider-aor
+; direct_media=no
+; rtp_symmetric=yes
+; force_rport=yes
+; rewrite_contact=yes
+;
+; If MTN requires REGISTER-based authentication, use a registration object with
+; the exact server_uri/client_uri/expiration values they supply. If MTN uses
+; source-IP authentication, omit outbound_auth and configure identify/match only
+; for the exact provider source addresses. Do not enable both patterns by guess.

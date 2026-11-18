@@ -1,0 +1,79 @@
+{
+  "version": "0.1.0",
+  "language": "rw",
+  "status": "needs_clinical_and_language_review",
+  "notice": "Development vocabulary only. Expressions and mappings must be reviewed by fluent Kinyarwanda-speaking maternal-health professionals before clinical use.",
+  "symptoms": {
+    "headache": {
+      "concept": "headache",
+      "review_status": "pending",
+      "expressions": ["umutwe urandya", "umutwe uribwa", "kuribwa umutwe", "ndwaye umutwe", "umutwe urababara", "umutwe urandya cyane", "umutwe uribwa cyane", "kuribwa umutwe cyane", "ndwaye umutwe cyane"]
+    },
+    "vision_change": {
+      "concept": "vision_change",
+      "review_status": "pending",
+      "expressions": ["kutabona neza", "amaso abona ibihu", "amaso arimo kubona ibihu", "kubona ibihu", "ndabona ibihu", "ibihu mu maso"]
+    },
+    "fever": {
+      "concept": "fever",
+      "review_status": "pending",
+      "expressions": ["kugira umuriro", "mfite umuriro", "ndafite umuriro", "umuriro mwinshi", "gufatwa n'umuriro", "gufatwa n’umuriro"]
+    },
+    "abdominal_pain": {
+      "concept": "abdominal_pain",
+      "review_status": "pending",
+      "expressions": ["kuribwa mu nda", "inda irandya", "ububabare mu nda", "ndababara mu nda", "inda irababara", "ububabare bukabije mu nda"]
+    },
+    "bleeding": {
+      "concept": "bleeding",
+      "review_status": "pending_context_review",
+      "expressions": ["kuva amaraso", "ndava amaraso", "amaraso arava", "kuva amaraso menshi", "amaraso menshi"]
+    },
+    "breathing_difficulty": {
+      "concept": "breathing_difficulty",
+      "review_status": "pending",
+      "expressions": ["guhumeka bigoranye", "kubura umwuka", "ndabura umwuka", "guhumeka birangora", "kunanirwa guhumeka"]
+    },
+    "convulsions": {
+      "concept": "convulsions",
+      "review_status": "pending_context_review",
+      "expressions": ["gufatwa n'igicuri", "gufatwa n’igicuri", "igicuri", "gutitira cyane"]
+    },
+    "reduced_fetal_movement": {
+      "concept": "reduced_fetal_movement",
+      "review_status": "pending_context_review",
+      "expressions": ["umwana ntiyinyeganyeza", "umwana ntakinyeganyega", "umwana yahagaritse kunyeganyega", "umwana ntakinyeganyeza nka mbere"]
+    },
+    "vomiting": {
+      "concept": "vomiting",
+      "review_status": "pending",
+      "expressions": ["kuruka", "ndaruka", "ndimo kuruka", "ndagira isesemi"]
+    },
+    "swelling": {
+      "concept": "swelling",
+      "review_status": "pending_context_review",
+      "expressions": ["kubyimba", "amaboko yabyimbye", "amaguru yabyimbye", "mu maso harabyimbye"]
+    }
+  },
+  "intent_terms": {
+    "nutrition": ["ibiryo", "kurya", "imirire", "amafunguro", "ndarya iki", "imirire myiza"],
+    "appointment": ["gahunda yo gusura", "igihe cyo gusura", "ikigo nderabuzima", "gusura muganga", "itariki yo kwisuzumisha"],
+    "medication": ["umuti", "imiti", "ibinini", "igipimo cy'umuti", "igipimo cy’umuti"],
+    "postpartum": ["nyuma yo kubyara", "maze kubyara", "konka", "konsa", "kwonsa"]
+  },
+  "potential_warning_expressions": {
+    "convulsions": ["gufatwa n'igicuri", "gufatwa n’igicuri"],
+    "severe_bleeding": ["kuva amaraso menshi", "amaraso menshi"],
+    "breathing_difficulty": ["guhumeka bigoranye", "kubura umwuka", "ndabura umwuka", "kunanirwa guhumeka"],
+    "severe_headache_or_vision": ["umutwe uribwa cyane", "kuribwa umutwe cyane", "ndwaye umutwe cyane", "kutabona neza", "amaso abona ibihu", "amaso arimo kubona ibihu", "kubona ibihu", "ndabona ibihu", "ibihu mu maso"],
+    "severe_abdominal_pain": ["ububabare bukabije mu nda"],
+    "reduced_fetal_movement": ["umwana ntiyinyeganyega", "umwana ntakinyeganyega", "umwana yahagaritse kunyeganyega"],
+    "fever": ["umuriro mwinshi"]
+  },
+  "evaluation_examples": [
+    {"text": "Ndwaye umutwe cyane kandi amaso arimo kubona ibihu.", "expected_language": "rw", "expected_symptoms": ["headache", "vision_change"], "review_status": "synthetic_pending_review"},
+    {"text": "Mfite umuriro kandi ndabura umwuka.", "expected_language": "rw", "expected_symptoms": ["fever", "breathing_difficulty"], "review_status": "synthetic_pending_review"},
+    {"text": "I have a severe headache and blurry vision.", "expected_language": "en", "expected_symptoms": ["headache", "vision_change"], "review_status": "synthetic_pending_review"},
+    {"text": "Ndwaye umutwe and I feel feverish.", "expected_language": "rw", "expected_symptoms": ["headache", "fever"], "review_status": "synthetic_pending_review"}
+  ]
+}

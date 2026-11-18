@@ -1,0 +1,4 @@
+; Local development RTP range. No external media gateway is configured.
+[general]
+rtpstart=20000
+rtpend=20199

@@ -1,0 +1,8 @@
+; Include this stanza from manager.conf after replacing both placeholders.
+; Keep manager.conf's bindaddr on loopback and firewall TCP/5038 from all other hosts.
+[mcare_outbound]
+secret = REPLACE_WITH_A_LONG_RANDOM_SECRET
+deny = 0.0.0.0/0.0.0.0
+permit = 127.0.0.1/255.255.255.255
+read = call,system
+write = call,originate

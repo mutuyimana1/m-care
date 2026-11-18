@@ -1,0 +1,10 @@
+; DEVELOPMENT ONLY. Loopback signaling. Replace each test password before use.
+[transport-udp-local]
+type=transport
+protocol=udp
+bind=127.0.0.1:5060
+allow_reload=yes
+
+# Copy pjsip_users.conf.example to pjsip_users.conf beside this file first.
+# The example user file contains only local test endpoints.
+#include "pjsip_users.conf"

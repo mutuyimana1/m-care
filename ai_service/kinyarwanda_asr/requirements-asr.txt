@@ -1,0 +1,7 @@
+# Install in addition to ../requirements.txt to enable local speech recognition.
+torch>=2.3,<3
+transformers>=4.50,<6
+numpy>=1.26,<3
+scipy>=1.11,<2
+soundfile>=0.12,<1
+python-multipart>=0.0.9,<1

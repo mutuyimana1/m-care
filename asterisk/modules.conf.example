@@ -1,0 +1,4 @@
+; Minimal development module loader. No SIP trunk modules are configured here.
+[modules]
+autoload=yes
+noload=chan_sip.so

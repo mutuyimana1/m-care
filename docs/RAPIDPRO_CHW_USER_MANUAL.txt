@@ -1,0 +1,573 @@
+User Manual
+2ACRONYMS AND ABBREVIATIONS
+ANC - Antenatal Care
+CBF - Complementary Breastfeeding
+CBN - Community Based Nutrition
+CCM - Community Case Management
+CHIS - Community Health Information System
+CHW - Community Health Worker
+DHIS2 - District Health Information System 2
+DOB - Date of Birth
+EBF - Exclusive Breastfeeding
+ID - Identification
+MNCH - Maternal,Neonatal and Child health
+MUAC - Mid-upper arm circumference
+NBC - New Born Care
+OpenMRS - Open Medical Records System
+PNC - Postnatal Care
+SMS - Short Messaging Service
+INTRODUCTION
+Since 2009, Rwanda has used RapidSMS, an open source software solution using SMStocollect
+data, to accelerate the reduction of maternal, newborn and child mortality. CHWs (communityhealth workers) use the system during their routine activities supporting maternal, neonatal andchild health (MNCH) at the community. It is used to track the pregnancy life cycle, neonatal care(NBC) and postnatal care (PNC), community case management (CCM) and nutrition status(CBN);
+it tracks a mother and newborn through the first 5 years of the child’s continuumlife. Additional
+scope has been developed to cover family planning, tuberculosis, and Malaria. Over the years, the needs of the end users as well as health managers have shifted. Thishasrequired an upgrade of the RapidSMS system to a more responsive systemthat; can integratewith other health data tools, such as DHIS2 and OpenMRS, have enhanced capacity for dataanalysis, is easier to support and maintain and use,, and can accommodate other health programsimplemented at the community level without trading off functionality and efficiency. In that regard,
+the RapidSMS in Rwanda transitioned to Rapidpro to continue with the gains made in thehealth
+3system so far. Rapid pro will solve the aforementioned challenges as well as work with thenational
+RapidPro infrastructure backend to support the community health information system(CHIS). RapidPro is an Open Source platform that uses interactive messaging systems throughaneasyvisual interface
+1
+. It is used to send and receive SMS messages that can be used to collect dataand send SMS reminders. Data collected is then used for data analysis to give insights that areused in decision making. It is easy to use with user friendly interfaces that help the CHWs conduct
+their functions. A CHW will be able to register clients and submit health events. In turn, thesystemwill send SMS reminders, feedback and notifications to CHWs when the clients services aredueto facilitate follow-up. This guide aims to provide a clear step by step guide to the end-user, on how to use andinteract
+with the Rapidpro system to conduct daily tasks at the community level. The guide will usetext
+as well as screenshots and other media that will help the user understand how to use thesystemquickly and clearly.
+41.0 GETTING STARTED
+The CHWs will be registered on the OpenMRS system. The registration will include their locationdetails and telephone contacts. The CHW’s contact information will then be pulledintotheCHIS_Rwanda group on Rapidpro. Only contacts in the group are able to interact withtheRapidPro flows. All old CHW data will be migrated into the OpenMRS system and only new contacts will needtobe added to the system. Once the contacts are added, the CHWs will be able to sendtherespective SMS forms. Do note that a CHW will need to be first registered before they cansubmit
+SMS forms. End users will be provided with a short code that they will submit the SMS forms to. Responsesto the CHWs will also be sent through the same short code.
+52.0 REGISTERING A PREGNANCY
+As a CHW, one of the tasks is to register and track pregnant women in the community. Thisisdone during the routine household visits or any other time that you encounter a pregnant woman. To do this; you will need: the client’s ID number or your phone number. You must also haveyour
+mobile phone with you. Pregnancy registration is what introduces the client to the system, it is the first thing to be recordedbefore any other report can be submitted. During pregnancy registration, the followingdataiscaptured: the client ID, last LMP date, 2nd ANC date, gravidity, parity, previous symptoms, current
+symptoms, location of client, weight, height, toilet availability, availability of handwashingfacilityas well as the MUAC. 2.1. Pregnancy registration codes
+Pregnancy registration is denoted by the code PRE. The SMS sent to record a pregnancymust
+therefore start with the code PRE. Example of an SMS: PRE 1234567891011123 13.08.201923.10.2019 02 01 GS NP HP WT72.3 HT165 TO NH MUAC21.5
+Each of the items in this format is used to collect different information about the pregnant woman. Note! Each item is separated by a space. This format MUST be followed for the pregnancyto be recorded successfully. Pregnancy registration SMS format
+1 - Pregnancy reporting code
+2 - patient ID
+3 - LMP date
+4 - Second ANC date
+5 - Gravidity
+6 - Parity
+7 - Previous symptoms
+8 - Current Symptoms
+9 - Location
+10 - Weight
+11 - Height
+12 - Toilet
+13 - Handwashing
+14 - MUAC
+1. PRE - Pregnancy Reporting Code
+This is the code that indicates that this is a pregnancy registration. 2. Patient ID
+These are 16 digits used to identify a client. It is also used to track the client throughout her
+pregnancy. No two (2) numbers are alike; each pregnant woman has her own unique patient ID.
+6This number can take the form of two different formats (as shown in the above figure):
+a) 16 digits of the woman’s national ID - these digits are obtained fromthe woman’snational ID card. b) 10 digits of the CHW’s number, plus 6 digits denoting today's day, month andyear of
+registration (ddmmyy). Note! If a CHW encounters more than one (1) client without an ID on the same day, they shoulduse the previous day’s date. This can be done for upto a maximum of 5 days.
+Fig. Patient ID in a pregnancy registration message
+When registering a client, the report might be rejected to one or more errors. Here are patient IDErrors during client pregnancy registration:
+● During registration, the patient ID number must be filled in in the correct format andMUST NOT be skipped. If it is skipped, a short message will be sent to the CHWreading- Patient ID is missing. This will require the CHW to re-register the woman with thecorrect
+patient ID. ● If the woman had already been registered, a short message will be sent to theCHWreading-This Patient ID has already been used for registration of pregnancy, Pleasereport
+if something happened to this pregnancy. In this case, the CHWis required tofindout
+what happened to the woman’s pregnancy. ● If the CHW phone number had been used for registration of the client, then thesystemwill also check for the CHW’s number. If both the client’s national ID and the CHWphonenumber do not match, then the system will send an SMS to the CHWreading- Theprovided phone number in Patient ID does not match your number. ● Similarly, if the date format provided when using the CHWphone number duringregistration is incorrect, then an SMS is sent to the CHW and reads - The providedddmmyy in Patient ID does not match the format. Note! These errors will require the CHW to repeat the registration with the correct details for thereport to be submitted. 3. LMP date
+This is the date of the last menstrual period (LMP) that the woman experienced. This datecannot
+be today or the day after today (it must be a previous date). It also cannot be beyond 10monthsago. The LMP date takes the format of dd.mm.yyyy (day in 2 digits, month in 2 digits, andyear in
+74 digits). Example: 27.07.2020. The LMP date is captured to help you, the CHW:
+● know the number of women who got pregnant at a particular time
+● know the next ANC dates. This is to improve ANC attendance for each pregnant woman.
+If a woman should forget their ANC dates, then the CHW can easily remind them. ● Know the number of women under your jurisdiction delivering in a specific duration- day, week, and month for planning. ● Know the estimated delivery date of the woman. ● For reminders to be sent to the woman 14 and 7 days before the estimated date of delivery. The LMP date is required and MUST NOT be left blank when registering for a pregnant woman.
+It must also be in the right format. If the rules above are broken, you will receive a messagehighlighting what is incorrect on the LMP date. ● If the LMP is not provided, you will receive an SMS reply stating - Last menstrual perioddate is missing. ● If the date format is not correct (does not follow the dd.mm.yyyy format), you will receivean SMS that reads -last menstrual period date should be in this format dd.mm.yyyy. ● If the date format is a day that is past today’s date, then you receive a messagenotifyingthem when the date should be, this will read - Last menstrual period date shouldbelessthan current date. ● If a CHW registers a client with an LMP date that is beyond 10 months ago, thenthesystem will decline to register such a woman and send out a message to the CHWreading- The last menstrual period date can’t be earlier than Current date- 10 months (Date), Kindly check the date again and resubmit it. 4. Second ANC Date
+The second ANC date is captured so as to send an SMS reminder to the CHWwho will remindthe mother of an ANC health facility visit. This is a required field and cannot be left empty duringpregnancy registration. The date format for the second ANC date takes the format of dd.mm.yyyy. The date should also be a date that is greater than the current date. i.e. the date shouldbeafter
+the date the pregnancy is registered but cannot be later than the expected date of delivery. Second ANC date is required and MUST NOT be left black, it should also be in the right format. ● If the ANC field is left empty, you will receive a message reading that the secondANCismissing. This will require you to resend the registration with the second ANCdate. ● If the second ANC date format is incorrect, a reply to the message sent will read; pleaseprovide Second ANC Appointment Date in this format dd.mm.yyyy. ● If the second ANC appointment date is less than the date today (in the past), thenyouwill
+get an error message that reads; next ANC Appointment Date should be greater thancurrent date. This will require you to put a date that is greater than today’s date (adateinthe future). ● If the second ANC date is past the date of expected delivery, it will return a messagethat
+reads, next ANC Appointment should not be later than Expected Delivery Date(Date). Thedate in brackets will be the expected date of delivery.
+8Fig. An example of an error return message when ANC appointment date does not follow rules
+5. Gravidity
+This defines the number of times a woman has been pregnant, irrespective of whether thepregnancy was carried to term or not. It is captured during pregnancy registration to produceanysignal or report if the woman is at risk. When capturing gravidity, the following rules MUSTbefulfilled:
+● This information MUST be provided, it is a required field. ● It should be greater or equal to 1 but not more than 30. ● If a woman had recorded previous pregnancies, the current gravidity MUST not belessthan the past reported pregnancies. The following is observed when any of the gravidity rules are broken:
+● If the gravity field is left empty, then the CHW will receive a SMS notification that Gravidityis missing. They will be required to resend the pregnancy registration with thecorrect
+gravidity number. ● If the gravidity number is less than 1 or greater than 30, then you will get an SMSreplythat reads; Gravidity should be between 1 and 30. This will require you to input anumber
+that is between 1 and 30. ● If gravidity is less than the previously reported pregnancies, then you will get an SMSreplyindicating; The system already has registered # of pregnancies for (ID Number), Gravidityshould be more than #. The # will indicate the number of already reported pregnanciesfor
+a specific mother.
+Fig. Gravidity in a pregnancy registration message
+6. Parity
+Parity defines the number of times that a woman has given birth to a foetus with a gestational age
+9of 24 weeks and above whether live or still born. This information is captured to knowthenumber
+of times that the woman has delivered and to produce any signal or report if she is at risk. Whenrecording parity, the following requirements MUST be fulfilled:
+● Parity field CANNOT be left blank; it is a required field. ● Format MUST be 2 digits/numbers. ● It must be greater than zero but less than the gravidity number. Parity errors during client pregnancy registration:
+● If the parity field is left blank, then you will get an SMS reading; Parity is missing. ● If the format is not two (2) valid numbers, then you will receive a message that Onlynumbers are allowed to be provided in Parity. ● If parity is a number zero or less, or more than the Gravidity number, then an SMSreplyupon registering the pregnancy will read; Parity should be less than gravidity number. 7. Previous symptoms
+Previous symptoms are captured to identify the symptoms that the pregnant woman facedduringher previous pregnancies or during delivery. This is used to produce any signal or report if thewoman is at risk. A woman with previous symptoms will be flagged as being at risk. For apregnancy to be properly registered, the following previous symptoms rules MUST be followed:
+● Previous symptoms MUST not be left blank; it is a required field. ● If gravidity is one (1), then previous symptoms can only be NR (No Previous Risks). ● If NR (No Previous Risks) is recorded, then no other code should be input. ● Previous symptoms or symptoms can be GS, MU, HD, RM, OL, YG, NR, KX, YJ, LZ, FMand if you have more than 1 they must be separated by a space. ● Repeated miscarriage (RM) can only be reported if the difference between parityandgravidity is more than two (2). ● No code should be duplicated.
+Fig. Message with multiple previous symptoms
+Previous symptoms errors during client pregnancy registration:
+If the above rules are not followed, you will receive error messages and the pregnancy will not berecorded successfully. ● If the previous symptoms field is not filled, you will receive a short message indicating;
+Previous pregnancy symptom Is missing. ● If the incorrect symptoms codes are input or the codes for various symptoms arenot
+separated by a space, the SMS reply will be: One or more previous pregnancy symptomsdo not match. These can be GS, MU, HD, RM, OL, YG, NR, KX, YJ, LZ, FMandif youhave more than 1 symptom, they must be separated by a space. ● If you record RM (repeated miscarriage) but the difference between parity and gravidityis
+10less than two (2), you will get a response: RM can only be reported for women withat least
+3 miscarriage. ● If any code is duplicated, you will get a response;These codes: HD, RMandYG, areduplicated and shall be reported only once. ● If you record other previous symptoms in addition to NR, you will get a reply indicatingthat: if NR is reported then other codes can't be reported as Previous Symptoms. 8. Current symptoms
+These are the symptoms that the pregnant woman is experiencing during the current pregnancy. They are captured to help produce any signal or report in case she is at risk. It is a requiredfieldand MUST be filled during registration. To successfully register a pregnant woman, the followingrules must be followed when it comes to the current symptoms:
+The field cannot be left empty. ● Current symptoms are VO, PC, OE, NS, MA, JA, FP, FE, DS, DI, SA, RB, NP, HY, CH, AF. ● If there is more than 1 they must be separated by a space. ● If NP is reported as code, the system should not allow for any other code. Current symptoms errors during client pregnancy registration:
+● If this field is not provided, you will receive an SMS stating that; Current pregnancysymptom is missing. ● If you do not use the correct codes for the current symptoms, or you do not separatethesymptoms with a space between them, you will get a reply stating that; Oneor morereported symptoms in Current pregnancy symptoms do not match. These can beVO, PC, OE, NS, MA, JA, FP, FE, DS, DI, SA, RB, NP, HY, CH, AF and if you have morethan1symptoms, they must be separated by a space. ● If NP is reported as code, the system should not allow for any other code. If yourecordNP with any other code, an SMS will be sent stating that; if NP is reported thenother
+codes can't be reported as Current Symptoms.
+Fig. Message showing multiple current symptoms
+9. Location
+This is the location where the pregnancy was confirmed by a medical professional; a healthcentreor hospital. It is important to ensure that the pregnancy has been confirmed by a health provider.
+If a mother has not obtained pregnancy confirmation from a medical professional, advisethemtovisit the nearest health facility. Location is a required field, can be HP (hospital) or HC(healthcentre), and must only be one location at a time. Location errors during client pregnancy registration
+● If location is not provided during pregnancy registration, you will receive an SMSstating
+11that; Location is missing. ● If the wrong location codes are captured or more than one location code entered, youwill
+receive a feedback SMS that says; Please be sure that you have entered the appropriatePRE location. It should be HP or HC. 10. Weight
+The weight of the mother is captured during the pregnancy registration to produce any signal or
+report whether the woman is at risk. For the pregnancy registration to be complete, ● The weight field MUST be filled. ● The weight recorded MUST be between 35 and 150kgs in the format of WT## or WT###. Weight errors during client pregnancy registration
+● If the weight field is left blank, you will receive an SMS highlighting that; Mother weight ismissing. You will be required to input this information for the pregnancy registrationtobecomplete. ● If the mother’s weight captured is below 35kgs or above 150kgs, or the format is incorrect
+(WT## or WT###), then you will receive a reply that The weight of the mother shouldbein the format of WT### or WT###. #. Please double check if you have provided thecorrect
+weight. 11. Height
+The height of the mother is captured during the pregnancy registration to produce any signal or
+report whether the woman is at risk. For the pregnancy registration to be complete, ● The height field MUST be filled. ● The height recorded MUST be between 50 and 250cms in the format of HT## or HT###. Height errors during client pregnancy registration
+● If the height field is left blank, you will receive an SMS highlighting that; Mother height ismissing. You will be required to input this information for the pregnancy registrationtobecomplete. ● If the mother’s height captured is below 50cms or above 250cms, or the format is incorrect
+(HT## or HT###), then you will receive a reply that The height should be in the format of
+HT## or HT###. Please double check if you have provided the correct height. 12. Toilet availability
+Information about toilet availability is captured for WASH purposes; it highlights whether themother has access to a toilet facility. This field is required and MUST be filled with any of thetwo(2) options; NT (Has No Toilet) or TO (Has Toilet). Toilet availability errors during client pregnancy registration
+● If this field is missing, you will get an SMS indicating that Toilet code is missing. ● If you fill in more than one code at a time, you will get a reply indicating that: Pleasebesure that you have entered the appropriate Toilet code. It should be TOor NT. 13. Handwash
+Hand Wash denotes information on the availability of a handwashing facility in the pregnant
+woman’s homestead. This is captured for WASH purposes. It is a required field andrecordsavailability (HW) or lack of (NH) a hand washing facility; it can be one or the other but not bothat
+the same time. Hand Wash errors during client pregnancy registration
+12● If the handwash field is left empty, you will receive an SMS stating that Hand washcodeIs missing. ● If both codes are submitted, you will receive an SMS requesting for only one code; Pleasebe sure that you have entered the appropriate Hand wash code. It should be HWor NH. 14. MUAC
+Mid-upper arm circumference (MUAC) is the circumference of the upper left armand is usedtoaccess the nutritional status of a client. It is taken using a MUAC tape and is in cms. In thiscase,
+it is recorded in the format of MUAC## or MUAC##.# with no comma. Example: MUAC25or
+MUAC 25.3. MUAC recording errors during client pregnancy registration
+● If you record MUAC in the wrong format, you will receive an SMS indicating that: Pleasebe sure you have entered the MUAC without units of cm. It should include be in theformat
+of MUAC## or MUAC##.# and with having no comma. 2.2. Pregnancy registration confirmation
+When the correct information has been captured and the pregnancy report submitted, youwill
+receive a confirmation message. However, if there are any errors in the message, youwill berequired to input the correct information and resubmit the record. Once the correct informationissubmitted, you will receive a confirmation message confirming the pregnancy report hasbeensuccessfully submitted (see figure below) and will read: the pregnancy report for mother:
+1234567890098765 has been received.
+Fig. Pregnancy registration SMS sent and confirmed.
+133.0 ANC CONSULTATION
+A pregnant woman is required to visit a health facility after pregnancy confirmation. This visit tothe health facility is known as the ANC consultation. When a woman goes to the health facilityfor
+ANC consultation, the CHW records this and submits an ANC consultation report. Thereport
+captures the patient ID, date of ANC visit, number of the visit, current symptoms, location, weight
+and MUAC. The ANC consultation SMS takes the format of: :ANC <Patient ID> <Dateof ANCVisit> <No. of ANC Visit> <Current Symptoms> <Location> <Mother Weight><MUAC>. ANC consultation SMS format
+3.1. ANC consultation Codes
+1. ANC
+This is the code that is used to denote a report as an ANC consultation report. Without thiscodethe system will not recognize the type of report this is. 2. Patient ID Number
+These are 16 digits used to identify a client. It is the same ID number that is used to register awoman’s pregnancy. If the CHW whose number was used was replaced or the pregnant womanrelocates to a different place, the woman should not be given a new ID, her old IDshouldbeused. 3. Date of ANC Visit
+This is the date that the mother visited the health facility for an ANC visit. It is captured tonot onlyknow when the last ANC visit was but also to know when the next visit is. For theANCconsultation to be successfully recorded, the date of the ANC visit should follow a fewrules:
+● Cannot be left empty, it is a required field and MUST be recorded. ● The date format for the ANC visit takes the format of dd.mm.yyyy. ● The date should also be a date that is less than or equal to the current date. ● It should be <= (PRE.LastMenstrualPeriod date + 10 Months). ● If a previous ANC visit has taken place and this is for ANC3 or ANC4, then thedateof
+ANC visit should also be greater than > last reported Date of ANC visit. Date of ANC visit errors while recording the client ANC consultation
+If the ANC date field is left empty, you will receive a message reading that the date of ANCvisit
+is missing.
+If the ANC date format is incorrect, a reply to the message sent will read; Please provideDateof
+ANC visit in this format dd.mm.yyyy.
+If the date of ANC is more than the date today (in the future), then you will get an error message
+14that reads; Date of ANC visit can't be a future date. This will require you to put a date that islessthan today’s date (a date in the past).
+If the current ANC visit date is not <= (PRE.LastMenstrualPeriod date + 10 Months), thereturnmessage will read: Date of ANC visit for this patient should be less than PRE.LastMenstrualPerioddate + 10 Months(Date).
+If a mother had had a previous ANC visit recorded, and the date of the current ANCvisit islessthan the last reported ANC visit date, then you will get an error message: Date() of this ANCvisit
+of this patient should be greater than the date() of last ANC visit. 4. Number of ANC Visit
+This denotes the number of ANC visits. After the initial pregnancy registration, this number isalways captured to know how many times the mother has gone to a health facility for ANCservices. The ANC visit number must fulfill the following rules:
+● Must not be left blank; it is a required field and must be filled in. ● It should be ANC2, ANC3 or ANC4. ● Must be unique and can't be reported as duplicate. ● ANC visits should be in sequence, so ANC3 can’t be reported if ANC2 has not been reportedandANC4 can’t be reported if ANC3 has not been reported. Number of ANC visit errors while recording the client ANC consultation
+● If the number of ANC field is left empty, you will receive a message readingthat theNumber of ANC visit is missing. ● If you record the number of ANC visits as other numbers other than ANC2, ANC3 or ANC4, you will receive an error message that reads: Number of ANC visits can either beANC2, ANC3 or ANC4. ● If the number of ANC visit is duplicated, you will receive a return message that reads: Youhave already reported ANC# for this patient before. ● If ANC3 is recorded before ANC2, then you will receive a message saying that: ANC3can’t be reported unless ANC2 has been reported. ● If ANC4 is recorded before ANC3, you will get an error message that reads: ANC4can’t
+be reported unless ANC3 has been reported. 5. Current Symptoms
+These are the symptoms that the pregnant woman is experiencing during the current pregnancy. They are captured to help produce any signal or report in case she is at risk. It is a requiredfieldand MUST be filled during an ANC consultation. To successfully record an ANC consultation, thefollowing rules must be followed when it comes to the current symptoms:
+● The field cannot be left empty. ● Current symptoms are VO, PC, OE, NS, MA, JA, FP, FE, DS, DI, SA, RB, NP, HY, CH, and AF. ● If there is more than 1 they must be separated by a space. ● If NP is reported as code, the system should not allow for any other code. Current symptoms errors while recording the client ANC consultation:
+● If this field is not provided, you will receive an SMS stating that; Current Symptomsaremissing.
+15● If you do not use the correct codes for the current symptoms, or you do not separatethesymptoms with a space between them, you will get a reply stating that; Please checkthat
+you have the correct type of current symptom or symptoms in the appropriateplaceinyour ANC message. These can be VO, PC, OE, NS, MA, JA, FP, FE, DS, DI, SA, RB, NP, HY, CH, and AF. If you have more than 1 they must be separated by a space. ● If NP is reported as code, the system should not allow for any other code. If yourecordNP with any other code, an SMS will be sent stating that; if NP is reported thenother
+codes can't be reported as current Symptoms. 6. Location
+This is the location of an ANC visit; a health centre or hospital. It is important that a pregnant
+woman is seen by a health provider on a regular basis. If a mother has not visited a healthfacilityfor ANC after pregnancy confirmation, advise them to visit the nearest health facility. Locationisa required field, can be HP (hospital) or HC (health centre), and must only be one locationat atime. Location errors while recording the client ANC consultation
+If location is not provided during pregnancy registration, you will receive an SMSstatingthat;
+Location is missing.
+If the wrong location codes are captured or more than one location code entered, you will receivea feedback SMS that says; Please be sure that you have entered the appropriate ANClocation.
+It should be HP or HC. 7. Weight
+The weight of the mother is captured during the pregnancy registration to know the weight of themother and indicate any signal or report whether the woman is at risk. For an ANCconsultationto be complete, ● The weight field MUST be filled. ● The weight recorded MUST be between 35 and 150kgs in the format of WT## or WT###. Weight errors while recording the client ANC consultation
+● If the weight field is left blank, you will receive an SMS highlighting that; Mother weight ismissing. You will be required to input this information for the pregnancy registrationtobecomplete. ● If the mother’s weight captured is below 35kgs or above 150kgs, or the format is incorrect
+(WT## or WT###), then you will receive a reply that The weight of the mother shouldbein the format of WT### or WT###. #. Please double check if you have provided thecorrect
+weight. 8. MUAC
+Mid-upper arm circumference (MUAC) is the circumference of the upper left armand is usedtoassess the nutritional status of a client. It is taken using a MUAC tape and is in cms. In thiscase,
+it is recorded in the format of MUAC## or MUAC##.# with no comma. Example: MUAC25or
+MUAC 25.3. MUAC recording errors while recording the client ANC consultation
+● If you record MUAC in the wrong format, you will receive an SMS indicating that: Pleasebe sure you have entered the MUAC without units of cm. It should include be in theformat
+of MUAC## or MUAC##.# and with having no comma. ANC consultation confirmation
+16When the correct information has been captured and the ANC consultation report submitted, youwill receive a confirmation message. However, if there are any errors in the message, youwill berequired to input the correct information and resubmit the record. Once the correct informationissubmitted, you will receive a confirmation message confirming the pregnancy report hasbeensuccessfully submitted.
+174.0 RISK REPORT
+A risk report is filed when the CHW has visited a mother who has symptoms. The report isusedto signal whether the mother is at risk. For this report to be submitted, a woman’s pregnancyMUST be registered first. To send a risk report, the following information is captured: thepatient
+ID, the current symptoms, location and mother weight. Example: RISK 1234567891011234FEHO 70. 4.1. SMS Codes for risk reporting
+1. RISK
+This is the code that is used to report a risk observed on a mother. See sample RISKSMSformand response below.
+2. Patient ID
+These are 16 digits used to identify a client. It is the same ID number that is used to register awoman’s pregnancy. If the CHW whose number was used was replaced or the pregnant womanrelocates to a different place, the woman should not be given a new ID, her old IDshouldbeused. 3. Current symptoms
+These are symptoms observed on a mother after a child’s birth. This is a required field andcannot
+be left blank. For the risk report to be submitted successful, the following rules must befollowedwhen recording current symptoms;
+● The field must not be blank. ● The symptoms can be VO, PC, OE, NS, MA, JA, FP, FE, DS, DI, SA, RB, HY, CH, and/or
+AF. ● You can record more than one symptom but they must be separated by a spacebetweenthem. ● NP can't be reported as RISK. Current symptoms errors during risk reporting
+● If this field is not provided, you will receive an SMS stating that; Current symptomsaremissing. ● If you do not use the correct codes for the current symptoms, or you do not separatethesymptoms with a space between them, you will get a reply stating that; Please checkthat
+you have the correct type of current symptom or symptoms in the appropriateplacein
+18your RISK Report. These can be VO, PC, OE, NS, MA, JA, FP, FE, DS, DI, SA, RB, HY, CH, and AF. If you have more than 1 they must be separated by a space. ● If you record NP, an SMS will be sent stating that; NP can't be reported as RISK. 4. Location
+This specifies the location of the mother during Risk. Location is a required field, and only beonelocation at a time. Location errors during risk reporting
+If location is not provided during risk reporting, you will receive an SMS stating that; Locationismissing.
+If the wrong location codes are captured or more than one location code entered, you will receivea feedback SMS that says; Please be sure that you have entered the appropriate RISKlocation.
+It should be HO, HP, OR, HC. 5. Mother weight
+The weight of the mother is captured to produce any signal or report whether the womanis at risk. For the risk report to be complete, ● The weight field MUST be filled. ● The weight recorded MUST be between 35 and 150kgs in the format of WT## or WT###. Weight errors during client pregnancy registration
+● If the weight field is left blank, you will receive an SMS highlighting that; Mother weight ismissing. You will be required to input this information for the pregnancy registrationtobecomplete. ● If the mother’s weight captured is below 35kgs or above 150kgs, or the format is incorrect
+(WT## or WT###), then you will receive a reply that; The weight of the mother shouldbein the format of WT### or WT###. #. Please double check if you have provided thecorrect
+weight. Risk form confirmation
+When the correct information has been captured and the risk report submitted, you will receiveaconfirmation message. However, if there are any errors in the message, you will be requiredtoinput the correct information and resubmit the record. Once the correct information for a riskreport
+is submitted, you will receive a confirmation message that the report has been submitted. Seethe screenshot above.
+195.0 Results Form
+This is a follow-up to a RISK report submitted. This report can only be filed if there is aRISKreport already submitted. A CHW MUST send the results report less than 4 days after theRISKreport is sent. The system will send automatic reminders to the ASM (CHW) after 4 daysif aresults report is not sent. This process of getting intervals shall continue unless CHW/ASMreportsthat the mother is well or the cycle gets completed. The details captured in the resultsreport
+include patient ID, reported symptoms (as reported in the risk report), location, interventioncode, and the mother status. Find a sample SMS form and response below:
+SMS Codes for results reporting
+1. RES
+This is the code that denotes a results risk report. 2. Patient ID
+These are 16 digits used to identify a client. It is the same ID number that is used to register awoman’s pregnancy and to report a risk. If the CHW whose number was used was replacedor
+the woman relocates to a different place, the woman should not be given a newID, her oldIDshould be used. 3. Reported symptoms
+These are symptoms from the original RISK message. This field cannot be left blank. For theriskresults report to be successfully submitted, the reported symptoms MUST followthese rules:
+● The field cannot be left blank. ● The mother MUST have a previously reported risk. ● Reported symptom(s) can be VO, PC, OE, NS, MA, JA, FP, FE, DS, DI, SA, RB, HY, CH, and AF. ● If more than one symptom is reported, the symptoms must be separated by a space. Reported symptoms errors during risk results reporting
+● If this field is not provided, you will receive an SMS stating that; Reported symptomsaremissing. ● If there is no risk record for a patient when reporting the results risk report, thenanSMSreply should be sent to CHW; This patient does not have any Risk report and Result report
+can only be submitted for a submitted Risk report.
+20● if the wrong reported symptoms code is used or if you have more than 1 they must beseparated by a space. If this rule is violated then an SMS reply should be sent toCHW;
+Please check that you have the correct type of reported symptomor symptomsintheappropriate place in your Result Report. These can be VO, PC, OE, NS, MA, JA, FP, FE, DS, DI, SA, RB, HY, CH, and AF. If you have more than 1 they must be separatedbyaspace. 4. Location
+This is the location of the mother during a risk results report. Location is a required field, andonlybe one location at a time. Location errors during risk results reporting
+If location is not provided during risk reporting, you will receive an SMS stating that; Locationismissing.
+If the wrong location codes are captured or more than one location code entered, you will receivea feedback SMS that says; Please be sure that you have entered the appropriate RISKlocation.
+It should be HO, HP, OR, HC. 5. Intervention code
+This is intervention given to the mother when a risk is reported. The intervention includestreatment, advice given or a referral to a health centre. For the results risk to be submitted, thefollowing must be fulfilled:
+● It must not be left blank. ● Only one intervention can be reported at a time.
+Intervention code errors during risk results reporting
+● If intervention code is not provided during risk reporting, you will receive an SMSstatingthat; Intervention code is missing. ● If the wrong intervention code is used, or more than code is used, you will receiveanSMSsaying: Please be sure that you have entered the appropriate Result Report interventioncode. It should be AA or PR. 6. Mother status
+This is the status of the mother at the time of results risk reporting. The mother status reportshowthe mother is doing: whether she is well or unwell. This is a required field and cannot beleft. Reporting that the mother is well will automatically stop any reminders for risk follow-up. Mother status errors during risk results reporting
+● If mother status is not provided during risk reporting, you will receive an SMSstatingthat;
+Mother status is missing. ● If the wrong mother status is used, or more than code is used, you will receiveanSMSsaying: Please be sure that you have entered the appropriate Mother Status Code. It
+should be MW or MS. SMS Reminders in results risk reporting
+21After a risk report is submitted, the CHW/ASM should send a follow-up report (RES) reportingless than 4 days. Once the risk report is submitted, the system will send an automatic reminder
+to the CHW/ASM after 4 days if a risk results report (RES) isn’t sent. This process of gettingintervals shall continue unless CHW/ASM reports MW or the cycle gets completed. TheSMSreminder will read; Please submit the Results Report for [patient_id] whose RISKreport wassubmitted on [RISK_Submission_date]. Risk results report confirmation
+When the correct information has been captured and the risk results report (RES) submitted, youwill receive a confirmation message. However, if there are any errors in the message, youwill berequired to input the correct information and resubmit the record. Once the correct informationfor
+a risk report is submitted, you will receive a confirmation message that the report hasbeensubmitted.
+226.0 RED alert report
+Red alert reports should be submitted within 24hours. This report is sent to signal that someoneis at risk of death if they do not receive assistance immediately. The patient can be a pregnant
+woman, a postpartum mother or a newborn. When submitting a Red alert report, youwill berequired to capture; Patient ID, current symptoms, location and weight of the client. Exampleof
+a red alert message: RED CO HE OR WT88.0
+1. RED
+This is the code that indicates that this is a red alert. It highlights that the client requires
+immediate medical attention. 2. Patient ID
+These are 16 digits used to identify a client. It is the same ID number that is used to register awoman’s pregnancy and to report a red alert. If the CHW whose number was used was replacedor the woman relocates to a different place, the woman should not be given a newID, her oldIDshould be used. 3. Current symptoms
+These are symptoms that the patient is suffering from. These are the symptoms that makethepatient require immediate medical attention. The field cannot be left blank and can be morethanone. Current symptoms errors in a RED alert
+● If this field is not provided, you will receive an SMS stating that; Current symptomsaremissing. ● If there is no risk record for a patient when reporting the results risk report, thenanSMSreply should be sent to CHW; This patient does not have any Risk report and Result report
+can only be submitted for a submitted Risk report. ● if the wrong reported symptoms code is used or if you have more than 1 they must beseparated by a space. If this rule is violated then an SMS reply should be sent toCHW;
+Current symptom or symptoms can be AP, CO, HE, LA, MC, PA, PS, SC, SL andUN. If
+you have more than 1 they must be separated by a space. If this rule is violatedthenanSMS reply should be sent to CHW: Please check that you have the correct type of current
+symptom or symptoms in the appropriate place in your Red Alert Report. Thesecanbe
+23AP, CO, HE, LA, MC, PA, PS, SC, SL and UN. If you have more than 1 they must beseparated by a space. 4. Location
+This is the location of the patient during the red alert. The location field cannot be left blankandonly one location can be recorded at a time. Location can be HO or OR. Location errors in a RED alert
+If location is not provided during RED alert reporting, you will receive an SMS stating that; Locationis missing.
+If the wrong location codes are captured or more than one location code entered, you will receivea feedback SMS that says; Please be sure that you have entered the appropriate Red
+Alert location. It should be HO or OR. A woman already in CL or HP can't be in Red alert. 5. Weight
+The weight is captured to produce any signal or report whether the client is at risk. For theriskreport to be complete, ● The weight field MUST be filled. ● The weight recorded MUST be between 35 and 150kgs in the format of WT## or WT###. Weight errors during client pregnancy registration
+● If the weight field is left blank, you will receive an SMS highlighting that; Mother weight ismissing. You will be required to input this information for the pregnancy registrationtobecomplete. ● If the mother’s weight captured is below 35kgs or above 150kgs, or the format is incorrect
+(WT## or WT###), then you will receive a reply that; The weight of the mother shouldbein the format of WT### or WT###. #. Please double check if you have provided thecorrect
+weight. RED Alert report confirmation
+When the correct information has been captured and the RED alert report submitted, youwill
+receive a confirmation message. However, if there are any errors in the message, youwill berequired to input the correct information and resubmit the record. Once the correct informationfor
+a risk report is submitted, you will receive a confirmation message that the report hasbeensubmitted.
+247.0 RED Alert Results Report
+RED alert results report is used as a follow-up to the RED report submitted. While followingupared alert, the following information is provided: Patient ID, date of the emergency, reportedsymptoms, location, intervention, and mother status. Below is a sample SMS and response.
+1. RAR
+This is the Red alert results code. It denotes a follow-up to a red alert. 2. Patient ID
+These are 16 digits used to identify a client. It is the same ID number that is used to register awoman’s pregnancy or report a birth and to report a red alert report. If the CHWwhosenumber
+was used was replaced or the woman relocates to a different place, the woman shouldnot begiven a new ID, her old ID should be used. 3. Date of emergency
+This is the date that the emergency was reported. For the RAR report to be submitted, thedatefield must follow the following rules:
+● Must not be left blank. ● Format should be dd.mm.yyyy. ● Should be equal or less than today’s date. ● Should be similar to the RED alert date. Date of emergency errors in a RED alert results report
+● If this field is left blank when submitting the RAR report, then you will receiveanSMSreading: Date of emergency is missing. ● If the date format is incorrect, the return message will read, Date of emergency shouldbein this format dd.mm.yyyy. ● If the date is not equal to or less than today ( a date in the future), the reply will be: Dateof emergency should be equal to or less than current date. ● If the date of emergency is different from the date of the red alert, you will receiveareturnmessage: Date of emergency does not match the date of red alert. Note! A red alert must have been submitted for the client for you to be able to record aredalert
+results report. 4. Reported symptoms
+These are the symptoms that were reported in the original red alert message. This is a requiredfield and cannot be left blank. If more than one symptom is recorded, they should be separatedby a space.
+25Reported symptoms errors in a RED alert results report
+● If this field is left blank when submitting the RAR report, then you will receiveanSMSreading: Reported symptoms are missing. ● Reported symptom (s) for a woman before delivery can be AP, CO, HE, LA, MC, PA, PS, SC, SL and UN. If you have more than 1 they must be separated by a space. If thisruleis violated then an SMS reply will read: Please check that you have the correct typeof
+reported symptom or symptoms in the appropriate place in your Red Alert Result Report. These can be AP, CO, HE, LA, MC, PA, PS, SC, SL and UN. If you have more than1theymust be separated by a space. ● Reported symptom (s) for a woman after delivery can be COP, HFP, SBP, SHPor BSP.
+If you have more than 1 they must be separated by a space. If this rule is violatedthenanSMS reply is sent: Please check that you have the correct type of reported symptomor
+symptoms in the appropriate place in your Red Alert Result Report. These can beCOP, HFP, SBP, SHP or BSP. If you have more than 1 they must be separated by a space. ● Reported symptom (s) for a newborn after birth can be CON, WU, HBT, LBT, NBT, CDG, YS, RSB, IUC, NCB, RV, ADS, NSC, NBF or SP. If you have more than 1 they must beseparated by a space. If this rule is violated then an SMS reply will read: Pleasecheckthat you have the correct type of reported symptom or symptoms in the appropriateplacein your Red Alert Result Report. These can be CON, WU, HBT, LBT, NBT, CDG, YS, RSB,
+IUC, NCB, RV, ADS, NSC, NBF or SP. If you have more than 1 they must be separatedby a space. ● Each reported symptom shall be checked with previous Symptoms reported in RedAlert.
+If any or all of it does not match, then a reply SMS will be sent reading: Oneor MoreReported symptoms do not match the previous symptoms reported in Red Alert. 5. Location
+This is the location of the patient during the red alert results report. The location field cannot beleft blank and only one location can be recorded at a time. Location can be HO, HP, OR, HC. Location errors in a RED alert results report
+● If location is not provided during red alert response reporting, you will receiveanSMSstating that; Location is missing. ● If the wrong location codes are captured or more than one location code entered, youwill
+receive a feedback SMS that says; Please be sure that you have entered the
+● appropriate Red Alert Result location. It should be HO, HP, OR, HC. 6. Intervention
+Intervention code captures the treatment, advice given or referral to the health center duringared alert response response. This code can be AL, AT or NA. It is a required field thus cannot
+be left blank.
+Intervention code errors in a red alert results report
+● If the field is left blank, you will get an SMS telling that: Intervention Code is missing.
+26● If more than one intervention code is input, you will receive a message tellingyouto:
+Please be sure that you have entered the appropriate Intervention Code. It shouldbeAL, AT or NA. 7. Mother status
+This is the status of the mother at the time of results red alert results reporting. The mother statusreports how the mother is doing: whether she is well or unwell. This is a required field andcannot
+be left. Mother status errors in a red alert results report
+● If mother status is not provided during risk reporting, you will receive an SMSstatingthat;
+Mother status is missing. ● If the wrong mother status is used, or more than code is used, you will receiveanSMSsaying: Please be sure that you have entered the appropriate Mother Status Code. It
+should be MW or MS. RED Alert results report confirmation
+When the correct information has been captured and the RED alert results report submitted, youwill receive a confirmation message. However, if there are any errors in the message, youwill berequired to input the correct information and resubmit the record. Once the correct informationfor
+a risk report is submitted, you will receive a confirmation message that the report hasbeensubmitted.
+278.0 Reporting a birth
+To report the birth of a child, you are required to fill in a birth report. A birth report is filledfor awoman who had been previously registered as pregnant. If a mother had not been registeredwhile pregnant, register the mother’s pregnancy first then proceed to report the birth of thechild. Note! You will not be able to register the birth of a child if the mother’s pregnancy has not beenregistered. If the pregnancy was not registered, register the mother's pregnancy first. The birth report has the code BIR. Other information captured while reporting a birth include: theclient ID (which is the ID the mother was registered with), the child number, date of delivery, gender of the child, current symptoms, location of delivery, whether child is breastfeedingandtheweight at birth. This is captured in the SMS format highlighted below, each itemis separatedfromthe other through a space.
+1 - Birth report
+2 - Patient ID
+3 - Child number
+4 - Date of delivery
+5 - Gender
+6 - Current symptoms
+7 - Location
+8 - Breastfeeding
+9 - Child weight
+Birth Registration Codes
+1. BIR
+This is the code used to report the birth of a child. Without this code, the systemwill not beableto recognize the report as a birth report. 2. Patient ID
+When registering a child, the mother’s ID in the system is used for registering a newly bornchild.
+If the mother had not been previously registered, you MUST register the mother first beforeproceeding. The mother’s code will be the one that was used to register her pregnancy. If theCHW whose number was used was replaced or the pregnant woman relocates to a different place,
+the woman should not be given a new ID, her old ID should be used. 3. Child number
+The child number is based on the number of children the woman has had. The child number isused to differentiate twins and triplets or multiple births. It is a required field thus cannot beleft
+blank. Child number is a number between 01 and 06, cannot be 00, and must not be repeated. If
+only one baby is born, then the child number is 01 and only one report is sent. If two babiesareborn then two reports are sent. A first birth report is sent with child number “01” and informationconcerning the first baby. A second report is sent with child number “02” with informationconcerning the second baby in the case of twins.
+28Child number errors during birth registration
+● If the child number field is left empty, you will receive an SMS reading: Child Number ismissing. You will be required to input a correct birth number for the birth registrationtobecomplete. ● If the number indicated is not between 01 and 06, then you will receive an SMSnotification;
+Please check you have the correct child number. This number should be a 2 digit number,
+the first digit is always 0 and the second digit varies between 1-6. ● If the child number has already been registered, you will get an error message highlightingthat: Child Number ## has already been reported as BIR. 4. Date of delivery
+This is the date the pregnant woman delivers a baby. It must be captured when reportingabirthand follows the format of dd.mm.yyyy. For the birth report to be submitted successfully, thefollowing rules must be following when submitting the information on date of delivery:
+● MUST be captured, the field cannot be left blank. ● Format must be correct: dd.mm.yyyy. ● Date must be equal or less than today’s date. ● Number of days between the last menstrual period date (as captured during pregnancyregistration) and date of delivery should not be more than 42 weeks. Date of delivery errors during birth registration
+● If this field is left blank when submitting the birth report, then you will receiveanSMSreading: Date of birth is missing. ● If the date format is incorrect, the return message will read, Date of birth should beinthisformat dd.mm.yyyy. ● If the date is not equal to or less than today ( a date in the future), the reply will be: Dateof birth should be equal to or less than current date. ● If the days between the last menstrual period and the date of birth is more than42days,
+then you will receive a message that reads: The difference between Last menstrual date(LMP) and birth date of this patient is more than 42 weeks , please check it againandresubmit the record. Note! If a woman is not registered as PRE in the system then this condition will not applyto her. 5. Gender
+This is the gender of the newborn child. It is a required field and can be female or male. Onlyonegender can be recorded at a time. Gender errors during birth registration
+● If the gender of the child is not filled, you will receive an SMS reading: Gender is missing. You will be required to input this information for the birth registration to be complete. ● If more than one gender is input, you will receive a notification reading: Pleasebesurethat you have entered the appropriate Gender Code. It should be BO or GI. 6. Current symptoms
+29These are symptoms observed when the child is born. This is a required field and cannot beleft
+blank. For the birth registration to be successful, the following rules must be followedwhensubmitting the child current symptoms;
+● The field must not be blank. ● The symptoms can be RB, NP, AF, CI, CM and PM or SB. ● You can record more than one symptom but they must be separated by a spacebetweenthem. ● If NP is recorded, no other symptom can be recorded. Current symptoms errors during birth registration
+● If the current symptoms field is missing, you will receive an SMS reading: Current
+symptoms are missing. You will be required to input this information for thebirthregistration to be complete. ● If you record more than one symptom without a space between the symptoms, youwill
+receive a message reading: Please check that you have the correct type of current
+symptom or symptoms in the appropriate place in your Birth Report. These canbeRB, NP, AF, CI, CM and PM or SB. If you have more than 1 they must be separatedbyaspace. ● If you record NP with any other current symptom, you will receive an SMS: If NPis reportedthen other codes can't be reported as current Symptoms. 7. Location
+This is the location where the pregnant woman gave birth. A woman can give birth at theclinicfacility, at home, at a hospital facility, en route to a health facility or at a health centre. Theselocations are denoted by the following codes: CL, HO, HP, OR and HC. To successfully submit
+a birth report, the following rules must be fulfilled for location details:
+● The location MUST be indicated. ● Only one location can be recorded at a time. Location errors during birth registration
+● If the location is not filled, you will receive an SMS reading: Location is missing. Youwill
+be required to input this information for the birth registration to be complete. ● If more than one location is input, you will receive a notification reading: Pleasebesurethat you have entered the appropriate Birth location. It should be HO, HP, OR, HCor CL. 8. Breastfeeding
+This information is captured to know whether the child is breastfeeding or breastfed withinthefirst
+hour of life. It reports child breastfeeding within the first hour of life (BF1), whether thechildisexclusively breastfeeding (EBF) or not breastfeeding (NB). Only one of these three(3) codescanbe sent at a time. Breastfeeding errors during birth registration
+● If the breastfeeding is not filled, you will receive an SMS reading: Breastfeeding is missing. You will be required to input this information for the birth registration to be complete. ● If more than one breastfeeding code is input, you will receive a notification reading: Pleasebe sure that you have entered the appropriate Breastfeeding Code. It should be BF1, EBFor NB.
+309. Child weight
+This is the weight of the child at birth. It is captured to know the weight of the child as well asreport if the child is at risk based on weight (underweight, lost weight or gained weight). It iscaptured on Kilograms (Kgs). Child weight errors during birth registration
+● If the breastfeeding is not filled, you will receive an SMS reading: Child weight is missing. You will be required to input this information for the birth registration to be complete. ● If the child weight is not recorded in the format of WT#. # or WT#.# and between0.5and9.9., then you will receive a message reading: more than one breastfeeding codeisinput, you will receive a notification reading: Please be sure you have entered the childweight
+without units of KG. It should include be in the format of WT#.# or WT#.# and between0.5& 9.9 with having no comma. Birth report submission confirmation
+When the correct information has been captured and the birth report submitted, you will receivea confirmation message. However, if there are any errors in the message, you will be requiredtoinput the correct information and resubmit the record. Once the correct information is submitted, you will receive a confirmation message confirming the birth report has been successfullysubmitted (see figure below).
+319.0 Newborn Care Report
+Fig. Newborn care report sms format
+1 - Newborn care report code
+2 - Patient ID
+3 - Child Number
+4 - Number of standard NBC visit
+5 - Date of birth
+6 - Current symptoms
+7 - Breastfeeding
+8 - Intervention code
+9 - Child status
+Newborn Care Report
+1. NBC
+Once a child is born and returns to the community, you- the CHW - is scheduled for homevisits:
+one, three, seven, 14th, 30th and 42nd day after birth. During these visits, you will be requiredto fill a newborn care report. This report highlights how the child is carrying on after birth. It isalso used to flag any risks to the child. NBC is the code used to report newborn child care. Without this code, the systemwill not beable to recognize the report as a report on how a newborn is doing since birth. This report canonly be filled for children who are between 1 and 60 days. 2. Patient ID
+When registering a child, the mother’s ID in the system is used for registering a newly bornchildas well as reporting on the newborn child care. If the mother had not been previously registered, you MUST register the mother first before proceeding. The mother’s code will be the onethat wasused to register her pregnancy. If the CHW whose number was used was replaced or the pregnant
+woman relocates to a different place, the woman should not be given a new ID, her old IDshouldbe used. Similarly, if a birth has not been registered, you must first register the birth proceedingwithreporting on the newborn care. 3. Child Number
+The child number is a count on the number of children that are born to a mother. The childnumber
+is based on the placement of the child in the birth order. It is a required field thus cannot beleft
+blank. This number is a required field, and is a number between 01 and 06, and cannot be00. It
+must also not be repeated when reporting new born child visits. must not be repeated. This is a count on the number of children that are born to a mother. A first born would have01, asecond born would have a 02 upto a maximum of 06. Child number errors during New Born Child Reporting
+32● If the child number field is left empty, you will receive an SMS reading: Child Number ismissing. You will be required to input a correct birth number for the report to be complete. ● If the number indicated is not between 01 and 06, then you will receive an SMSnotification;
+Please check you have the correct child number. This number should be a 2 digit number,
+the first digit is always 0 and the second digit varies between 1-6. ● If same Child Number is been reported again on the same day then SMS reply will besent
+to you reading: Child Number ## has already been reported as NBC on this date. 4. Number of standard NBC visits
+This is the code that denotes the newborn home visit number by the CHW. It is denotedbyNBC, NBC2, NBC3, NBC4 or NBC5. It is based on the scheduled newborn child visits by the CHWafter
+the birth of a child. For the newborn care report to be submitted successfully, the followingrulesmust be followed:
+● The field MUST NOT be left blank. ● Only one NBC code can be used at a time. ● The codes can only be allowed if the current date subtract date of birth is equal toor lessthan 60days. ● You cannot record NBC2 before NBC, NBC3 before NBC2, NBC4 before NBC3, NBC5before NBC3. Standard NBC visits errors during NBC reporting
+● If the number of standard NBC visit field is left empty, you will receive an SMSreading:
+Number of standard NBC visit is missing. You will be required to input a correct birthnumber for the report to be complete. ● If the more than NBC code is recorded, you will receive a message telling you; Pleasebesure that you have entered the appropriate NBC Code. It should be NBC2, NBC3, NBC4or NBC5. ● If you submit a report for a child whose date of birth is more than 60 days ago, youwill
+receive an SMS saying: NBC report can only be reported if current Date-Dob is lessthanor equal to 60 days. ● If you record NBC2 before NBC, NBC3 before NBC2, NBC4 before NBC3, NBC5beforeNBC3, you will receive a message saying: NBC report for NBC# cannot be reportedunlessNBC# is reported. Example: NBC report for NBC3 cannot be reported unless NBC2isreported. 5. Date of birth
+This is the date the child was born. It must be captured when reporting a standard NBCvisit andfollows the format of dd.mm.yyyy. For the NBC visit to be submitted successfully, the followingrules must be followed when submitting the information on DOB:
+● MUST be captured, the field cannot be left blank. ● Format must be correct: dd.mm.yyyy. ● Date must be equal or less than today’s date. ● DOB should be the same date given as the date of delivery given for the same childwhenreporting a birth should report has been given for the same child. The two (2) dates MUSTbe the same. Date of birth errors during Standard NBC visits reporting
+33● If this field is left blank when submitting the birth report, then you will receiveanSMSreading: Date of birth is missing. ● If the date format is incorrect, the return message will read, Date of birth should beinthisformat dd.mm.yyyy. ● If the date of birth is not equal to or less than today’s date, the reply will be: Dateof birthshould be equal to or less than current date. ● If the date of birth and the date of delivery (in the birth report) is not the same, anSMSwill
+be sent to you saying: The date of birth (date) of this child is not matching thedateof
+delivery (date) in BIR report. 6. Current symptoms
+These are symptoms observed during a standard NBC home visit. It is a required field andcannot
+be left blank. The following rules must be followed when submitting the current symptoms;
+● The field must not be blank. ● The symptoms can be SB, RB, NP, AF, CI, CM, IB, DB and PM. ● You can record more than one symptom. If you record more than one symptom, thesymptoms MUST be separated by a space between them. ● If NP is recorded, no other symptom can be recorded. Current symptoms errors during Standard NBC visits reporting
+● If the current symptoms field is missing, you will receive an SMS reading: Current
+symptoms are missing. You will be required to input this information for thebirthregistration to be complete. ● If you record more than one symptom without a space between the symptoms, youwill
+receive a message reading: Please check that you have the correct type of current
+symptom or symptoms in the appropriate place in your NBC Report. These canbeSB, RB, NP, AF, CI, CM, IB, DB and PM. If you have more than 1 they must be separatedbya space
+● If you record NP with any other current symptom, you will receive an SMS: If NP is reportedthenother codes can't be reported as current Symptoms. 7. Breastfeeding
+This information is captured to know whether the child is breastfeeding properly and themodeof
+breastfeeding. It reports whether the child is exclusively breastfeeding (EBF), not breastfeeding(NB) or using the complimentary breastfeeding (CBF). Only one of these three(3) codes canbesent at a time. Breastfeeding errors when Standard NBC visits reporting
+● If the breastfeeding is not filled, you will receive an SMS reading: Breastfeeding is missing. You will be required to input this information for the birth registration to be complete. ● If more than one breastfeeding code is input, you will receive a notification reading: Pleasebe sure that you have entered the appropriate breastfeeding Code. It should be EBF, NBor CBF. 8. Intervention code
+Intervention code captures the treatment, advice given or referral to the health center duringaNBC home visit. They can be AA (when advice is given) or PR (when the child is referredtoahealth facility). This is a required field thus cannot be left blank.
+34Intervention code errors when Standard NBC visits reporting
+● If the field is left blank when reporting NBC visits, you will get an SMStellingthat:
+Intervention Code is missing. ● If more than one intervention code is input, you will receive a message tellingyouto:
+Please be sure that you have entered the appropriate NBC intervention code. It shouldbeAA or PR. 9. Child status
+This code communicates whether the child is well (CW) or unwell/sick (CS) during a NBCvisit. It
+is a required field thus cannot be left blank. Child status errors when reporting a Standard NBC visit
+● If the field is left blank when reporting NBC visits, you will get an SMS telling that: Childstatus is missing. ● If more than one child status is input, you will receive a message telling you to: Pleasebesure that you have entered the appropriate Child Status Code. It should be CWor CS. Newborn Care Form Confirmation
+When the correct information has been captured and the NBC report submitted, you will receivea confirmation message. However, if there are any errors in the message, you will be requiredtoinput the correct information and resubmit the record. Once the correct information is submitted, you will receive a confirmation message denoting successful submission of the report.
+10.0 Child Health Form
+This report is used to report the health of a child. When filing a child health report the followingdetails will be captured: the patient ID, child number, date of birth, vaccination series received, vaccination series completion status, current symptoms, location, child weight andMUAC. Example: CHI 1234567891011123 02 25.11.2019 V2 VC NP HO WT4.5 MUAC5.4. Note! The child health report can only be filled if a birth has been recorded. 1. CHI
+This is the code that is used to identify a child health report
+2. Patient ID
+35This is the ID that is used to identify a child. The child uses the same ID as used by themother. The mother ID is a 16 digit code that is used to identify that particular mother. In this case, it isthe code assigned to a woman during a pregnancy registration. If the CHWwhose number wasused was replaced or the woman relocates to a different place, the woman should not begivenanew ID, her old ID should be used. 3. Child number
+The child number is a count on the number of children that are born to a mother. The childnumber
+is based on the placement of the child in the birth order. It is a required field thus cannot beleft
+blank. It is a number between 01 and 06, and cannot be 00. It must also not be repeatedwhenreporting a child's health within the same day. This is a count on the number of children that are born to a mother. A first born would have01, asecond born would have a 02 upto a maximum of 06. Child number errors in child health reporting
+● If the child number field is left empty, you will receive an SMS reading: Child Number ismissing. You will be required to input a correct birth number for the report to be complete. ● If the number indicated is not between 01 and 06, then you will receive an SMSnotification;
+Please check you have the correct child number. This number should be a 2 digit number,
+the first digit is always 0 and the second digit varies between 1-6. ● If same child number is been reported again on the same day then SMS reply will besent
+to you reading: Child number ## has already been reported as CHI on this date. 4. Date of birth
+This is the date the child was born. It must be captured when reporting child health andfollowsthe format of dd.mm.yyyy. For the child health report to be submitted successfully, the followingrules must be followed when submitting the information on DOB:
+● MUST be captured, the field cannot be left blank. ● Format must be correct: dd.mm.yyyy. ● Date must be equal or less than today’s date. ● DOB should be the same date given as the date of delivery given for the same childwhenreporting a birth should report has been given for the same child. The two (2) dates MUSTbe the same. Date of birth errors in child health reporting
+● If this field is left blank when submitting the birth report, then you will receiveanSMSreading: Date of birth is missing. ● If the date format is incorrect, the return message will read, Date of birth should beinthisformat dd.mm.yyyy. ● If the date of birth is not equal to or less than today’s date, the reply will be: Dateof birthshould be equal to or less than current date. ● If the date of birth and the date of delivery (in the birth report) is not the same, anSMSwill
+be sent to you saying: The date of birth (date) of this child is not matching thedateof
+delivery (date) in BIR report. 5. Vaccination series received
+36This details the vaccines that the child has received so far since they were born. To submit achild health report successfully, the vaccine series received should follow the following rules:
+The details must be filled; the field cannot be left blank. ● Vaccination Series can be V1, V2, V3, V4, V5 or V6 and allow only one VaccinationSeries Code at a time. ● The vaccine series received is sequential. For example, V2 cannot be recorded beforeV1 and V3 cannot be recorded before V2. Vaccination series received errors in child health reporting
+If the child vaccination series received is left blank, you will receive an error messagethat
+highlights: Vaccination series is missing.
+If the wrong vaccine series received code is reported, or more than one vaccine series codeisreported, you will receive an error message stating: Please be sure that you have enteredtheappropriate Vaccination Series Code. It should be V1, V2, V3, V4, V5 or V6.
+If the vaccine series received is not sequential, you will receive a message tellingyouthat;Vaccination code V# cannot be reported unless V# is reported. 6. Vaccination series completion status
+This is used to detail whether a child has completed their vaccinations or not. This is a requiredfield in a child health report and can be VC, VI or NV. Only one code is allowed at a time. TheVC code can only be recorded if the vaccination series received is complete (all vaccineseriesreceived has been reported - V1 to V6). Vaccination series received errors in child health reporting
+If the vaccine series completion status is blank, you will receive a return message indicatingthat:
+Vaccination series completion status is missing.
+If the wrong code is entered or more than one code is captured, you will receive an error askingyou to; Please be sure that you have entered the appropriate Vaccination Completion StatusCode.
+It should be VC, VI or NV.
+If the VC code is used without all the vaccination series being complete, the SMS reply will read:
+VC Code has already been reported for V#. 7. Current symptoms
+These are symptoms observed in a child during a home visit. It is a required field and cannot beleft blank. The following rules must be followed when submitting the current symptoms;
+● The field must not be blank. ● The symptoms can be RB, NP, AF, CI, CM and PM. ● You can record more than one symptom. If you record more than one symptom, thesymptoms MUST be separated by a space between them. ● If NP is recorded, no other symptom can be recorded. Current symptoms errors in child health reporting
+● If the current symptoms field is missing, you will receive an SMS reading: Current
+symptoms are missing. You will be required to input this information for thebirthregistration to be complete. ● If you record more than one symptom without a space between the symptoms, youwill
+37receive a message reading: Please check that you have the correct type of current
+symptom or symptoms in the appropriate place in your CHI Report. These can beRB, NP, AF, CI, CM and PM. If you have more than 1 they must be separated by a space. ● If you record NP with any other current symptom, you will receive an SMS: If NPis reportedthen other codes can't be reported as current symptoms. 8. Location
+This is the location where the child was born. The locations can be: the clinic facility, at home, at
+a hospital facility, en route to a health facility or at a health centre. To successfully submit achildhealth report, the following rules must be fulfilled for location details:
+● The location MUST be indicated. ● Only one location can be recorded at a time. Location errors in child health reporting
+● If the location is not filled, you will receive an SMS reading: Location is missing. Youwill
+be required to input this information for the birth registration to be complete. ● If more than one location is input, you will receive a notification reading: Pleasebesurethat you have entered the appropriate Child Health Report location. It should beHO, HP, OR and HC. 9. Child weight
+This is the weight of the child. It is captured to know the weight of the child as well as report if thechild is at risk based on weight (underweight, lost weight or gained weight). It is capturedinKilograms (Kgs). Child weight errors during birth registration
+● If the child weight is not filled, you will receive an SMS reading: Child weight is missing. You will be required to input this information for the child health report to be submitted. ● If the child weight is not recorded in the format of WT#. # or WT#.# and between 1and25,
+then you will receive a message reading: Please be sure you have entered the childweight
+without units of KG. It should include be in the format of WT##.# or WT##.# andbetween1 & 25 with having no comma. 10. MUAC
+Mid-upper arm circumference (MUAC) is the circumference of the upper left armand is usedtoaccess the nutritional status of a client. It is taken using a MUAC tape and is in cms. In thiscase,
+it is recorded in the format of MUAC## or MUAC##.# with no comma. Example: MUAC25or
+MUAC 25.3. MUAC recording errors during client pregnancy registration
+● If MUAC field is left blank, you will receive an SMS reading: MUAC is missing. ● If you record MUAC in the wrong format, you will receive an SMS indicating: Pleasebesure you have entered the MUAC without units of cm. It should include be in the format of
+MUAC## or MUAC##. # and between 01 & 15 with having no comma. Child health Form Confirmation
+When the correct information has been captured and the child health report submitted, youwill
+receive a confirmation message. However, if there are any errors in the message, youwill be
+38required to input the correct information and resubmit the record. Once the correct informationissubmitted, you will receive a confirmation message denoting successful submission of thereport.
+3911.0 Postnatal Care Report
+The postnatal care report is submitted when the CHW visits a mother after delivery. TheCHWisscheduled for standard PNC visit with a mother post delivery at 2, 8 and 28 days after birth. After
+every PNC, a PNC report is required. If any of the reports is not filled, you will receiveanSMSreminder corresponding to the visit that has not been reported. The PNC report capturesthePatient ID number if the standard PNC visit.
+1. PNC code
+2. Patient ID
+3. Number of standard PNC visit
+4. Date of delivery
+5. Current Symptoms
+6. Intervention code
+7. Current status of mother
+1. PNC Code
+This is the code that signals that this is a PNC report. Without this, the systemwill not recognizethe type of report being submitted. 2. Patient ID
+This is a 16 digit code that is used to identify a client. It is the same ID number that is usedtoregister a client to the system. In this case, it is the code assigned to a woman during a pregnancyregistration. If the CHW whose number was used was replaced or the woman relocatestoadifferent place, the woman should not be given a new ID, her old ID should be used. 3. Number of standard PNC Visit
+This is the code used to identify the number of standard PNC visits based on the visit. ● It is a required field and cannot be left empty. If it’s not provided then an SMSreplywill
+be sent to you stating that; Number of standard PNC visits is missing. ● PNC Code can be PNC2, PNC3, PNC4 or PNC5 and allow only one PNCCode at atime.
+If this rule is violated then an SMS reply will be: Please be sure that you have enteredtheappropriate PNC Code. It should be PNC2, PNC3, PNC4 or PNC5. ● The mentioned codes should only be allowed if (Current Date-DOB) is less thanor equal
+to 60 days. if this rule is violated then the SMS reply sent will read: PNCreport canonlybe reported if Current Date-Dob is less than or equal to 60 days. ● Do not allow PNC3,PNC4, PNC5 if not preceded by PNC2,PNC3, PNC4 or PNC5unlesspreceded by both a PNC2 and PNC3,PNC4, PNC5 reported on the same patient ID. If thisrule is violated then SMS reply should be sent to CHW: PNC report for PNC# cannot bereported unless PNC# is reported. 4. Date of delivery
+40This is the date a woman delivers a baby. It must be captured when reporting a PNCvisit andfollows the format of dd.mm.yyyy. For the PNC visit report to be submitted successfully, thefollowing rules must be followed when submitting the information on date of delivery:
+● MUST be captured, the field cannot be left blank. ● Format must be correct: dd.mm.yyyy. ● Date must be equal to or less than today’s date. ● If a date of birth has been reported for the came child, the date of delivery MUSTbesimilar
+to that date. Date of delivery errors in PNC visit report
+● If this field is left blank when submitting a PNC report, then you will receive an SMSreading:
+Delivery date is missing. ● If the date format is incorrect, the return message will read, Delivery date should beinthisformat dd.mm.yyyy. ● If the date is not equal to or less than today ( a date in the future), the reply will be: Deliverydate should be equal to or less than current date. ● If the date of birth reported for the same child is different from the delivery date, thereturnSMS will read: The delivery date (date) of this mother is already reported to another birthreport. 5. Current symptoms
+These are symptoms that the mother is suffering from after delivery. They can be observedor
+explained by the mother during a standard PNC visit. There are several rules when recordingthecurrent symptoms:
+● Field cannot be left blank. ● Current symptom (s) can be VO, PC, OE, NS, MA, JA, FP, FE, DS, DI, SA, RB, NP, HY, CH, and AF. ● More than 1 symptom can be filled. If more than one symptom is filled, each will beseparated by a space. ● No other code can be input when NP is used as code. Current symptoms errors in a PNC visit report
+● If this field is not provided, you will receive an SMS stating that; Current symptomsaremissing. ● If there is no risk record for a patient when reporting the results risk report, thenanSMSreply should be sent to CHW; This patient does not have any Risk report and Result report
+can only be submitted for a submitted Risk report. ● If the wrong current symptoms code is used or if you have more than 1 they must beseparated by a space,the SMS reply is: Please check that you have the correct typeof
+current symptom or symptoms in the appropriate place in your PNC message. Thesecanbe VO, PC, OE, NS, MA, JA, FP, FE, DS, DI, SA, RB, NP, HY, CH, and AF. If youhavemore than 1 they must be separated by a space. ● If another symptom is used together with NP, the return SMS will state that: if NPisreported then other codes can't be reported as Current Symptoms.
+416. Intervention code
+This is intervention given to the mother when a risk is reported. The intervention includestreatment, advice given or a referral to a health centre. For the results risk to be submitted, thefollowing must be fulfilled:
+● It must not be left blank. ● Only one intervention can be reported at a time.
+Intervention code errors in PNC visit reporting
+● If intervention code is not provided during risk reporting, you will receive an SMSstatingthat; Intervention code is missing. ● If the wrong intervention code is used, or more than code is used, you will receiveanSMSsaying: Please be sure that you have entered the appropriate NBC interventioncode. It
+should be AA or PR. 7. Current status of mother
+This is the status of the mother at the time of PNC standard visit reporting. The mother statusreports how the mother is doing: whether she is well or unwell. This is a required field andcannot
+be left. Mother status errors in a PNC report
+● If mother status is not provided during risk reporting, you will receive an SMSstatingthat;
+Mother status is missing. ● If the wrong mother status is used, or more than code is used, you will receiveanSMSsaying: Please be sure that you have entered the appropriate Mother Status Code. It
+should be MW or MS. PNC Standard Visit Form Confirmation
+When the correct information has been captured and the NBC report submitted, you will receivea confirmation message. However, if there are any errors in the message, you will be requiredtoinput the correct information and resubmit the record. Once the correct information is submitted, you will receive a confirmation message denoting successful submission of the report.
+12.0 Death Report
+This is the report submitted to report the death of a child or a mother. A woman’s pregnancymust
+have been registered for the CHW to be able to report a death. This report is denotedbyDTHcode and takes the format:
+42Format: DTH <Patient ID> <Child Number> <Date of Birth> <Location> <Death Code>Example: DTH 1234567891011213 01 23.11.2019 HO ND
+1. DTH
+This is the code that is used to report the death of a child. A death report can only be successful
+if this code is included in the reporting SMS in the right format.
+Fig. A death code
+2. Patient ID
+The mother’s ID is used to report a death. The mother’s code will be the one that was usedtoregister her pregnancy. When reporting a mother’s death, the mother must have been registeredfor pregnancy. If the mother’s pregnancy was not recorded, register the pregnancy first thenreport a death. Similarly, when reporting a newborn’s or a child’s death, the birth must havebeenreported. If a birth had not been recorded, register it and then report the death of a newbornor achild.3. Child Number
+The child number is a count on the number of children that are born to a mother. The childnumber
+is based on the placement of the child in the birth order. A first born child would have 01, asecondborn would have a 02 upto a maximum of 08. It is a required field and must fulfill the followingrules for a death report to be submitted successfully;
+● MUST NOT be left blank unless the death code is MD. ● It should be between 01 and 08 as the whole number and can't be 00. ● Must not be repeated for the same child. Child number errors during death reporting
+● If the child number field is left empty you will receive an SMS reading: Child number ismissing. You will be required to input a correct child number for the report to be complete.
+43● If the death code is MD and a child number is provided, then the SMS reply will besent toyou reading; Child number and date of birth are not required if the death code is MD. ● If the number indicated is not between 01 and 08, then you will receive an SMSnotification;
+Please check you have the correct child number. This number should be a 2 digit number,
+the first digit is always 0 and the second digit varies between 1-8. ● If same Child Number is been reported again then SMS reply will be sent to youreading:
+Child number ## has already been reported as DTH. 4. Date of birth
+This is the date the child was born. It must be captured when reporting a death of a newbornor achild and follows the format of dd.mm.yyyy. For the death report to be submitted successfully, thefollowing rules must be followed when submitting the information on DOB:
+● MUST be captured, the field cannot be left blank if reporting a newborn or a childdeath. ● Should not be provided when reporting a mother’s death (MD). ● Format must be correct: dd.mm.yyyy. ● Date must be equal to or less than today’s date. ● DOB should be the same date given as the date of delivery given for the same childwhenreporting a birth should report has been given for the same child. The two (2) dates MUSTbe the same. Date of birth errors death reporting
+● If this field is left blank when the death code is CD or ND, then you will receiveanSMSreading: Date of birth is missing. ● If date of birth is provided when recording a maternal death (MD), an SMS will besent toyou reading: Child number and date of birth are not required if the death code is MD. ● If the date format is incorrect, the return message will read, Date of birth should beinthisformat dd.mm.yyyy. ● If the date of birth is not equal to or less than today’s date, the reply will be: Dateof birthshould be equal to or less than current date. ● If the date of birth and the date of delivery (in the birth report) is not the same, anSMSwill
+be sent to you saying: The date of birth (date) of this child is not matching thedateof
+delivery (date) in BIR report. 5. Location
+Location when reporting a death highlights a place where the death occurred. It is denotedbyHO(at home), HP (at hospital facility), OR (en route), or HC (health centre). It is a requiredfieldandmust be filled, and only location can be filled in at a time. Location errors death reporting
+If this field is left empty, the return message will read: Location is missing.
+If more than one location is captured, the return message will read: Please be sure that youhaveentered the appropriate Death location. It should be HO, HP, HC and OR. 6. Death Code
+44The death codes are used to report the type of death that is being reported: maternal (MD), newborn (NBD), child (CD), miscourage (MCC) or a stillbirth (SBD). There are a fewrules ondeathcode that must be fulfilled for a report to be successfully submitted:
+● It is a required field so must not be left empty. ● Only one death code can be used at a time. ● Newborn death (ND) code must not be used if the Death death less DOB is less thanor
+equal to 42days. ● CD code should only be allowed if the death date less DOB is greater than 42 daysandless than 2 years. Death code errors death reporting
+● If a death code is not provided then a SMS will be sent to you reading: Deathcodeismissing. ● If more than one death code is input, an SMS response will read: Please be surethat youhave entered the appropriate Death Code. It should be MD, CD, or ND. ● If ND code is used for a child older than 42days (Death date-DOB is more than 42days)
+the SMS response will read; ND code can only be reported if Death Date-Dob is lessthanor equal to 42 days. ● If CD code is input for a child less than 42 days or over 2 years ((Death Date-DOB) isnot
+greater than 42 days and not less than 2years), the SMS response will be; CDcodecanonly be reported if Death Date-DoB is greater than 42 days and less than 2 years.
+Fig. Example of a message showing error received when the wrong death code is used
+Death Report submission confirmation
+When the correct information has been captured and the death report submitted, you will receivea confirmation message. However, if there are any errors in the message, you will be requiredtoinput the correct information and resubmit the record. Once the correct information is submitted, you will receive a confirmation message denoting successful submission of the report.
+45Fig. Correct death report submitted, and confirmation SMS
+4613.0 Refusal Form
+This report is submitted when a patient refuses to be followed by the CHW. It is denotedbythecode REF. For this report to be submitted, all you need is the patient ID. This is the IDthat wasused to register the patient. It may be possible that CHW gets replaced with someone elseor
+the pregnant woman goes somewhere else, she should not be given a new ID in the newplace;
+the old ID should be used. For the refusal report to be submitted, the following rules must befollowed:
+● There should not be another refusal report submitted for the same patient. ● The person MUST be in the system. Errors in refusal reporting
+● If the patient ID used in the refusal report has been used to register a refusal previously, you will get an SMS that reads: Refusal report for ID## has already been submitted. ● If you try to submit a refusal report for someone who is not in the system, you will receivean SMS that reads: This Patient ID Number ## does not exist in the system. Youcanonlysend a refusal report for registered women. Refusal Form Submission confirmation
+When the correct information has been captured and the refusal report submitted, you will receivea confirmation message. However, if there are any errors in the message, you will be requiredtoinput the correct information and resubmit the record. Once the correct information is submitted, you will receive a confirmation message denoting successful submission of the report.
+4714.0 Departure Report
+This report is used to report the departure of a child or a mother. A departure can only be recordedfor someone who already exists in the system. The departure report requires different setsof
+information depending on the person the departure is being recorded: a mother or a child. For
+example a child departure is captured through an SMS in the following format: DEP1234567891011123 02 12.09.2019. 1. DEP
+This is the code that identifies the report as a departure report. Without it the departure will not
+be recorded. 2. Patient ID
+This is the code used to identify the client who is departing from the system. This is thesameIDthat was used to register a pregnancy. It may be possible that CHW gets replaced with someoneelse or the pregnant woman goes somewhere else, she should not be given a newIDinthenewplace; the old ID should be used. There are several rules to be fulfilled for the departurereport
+tobe successful:
+● This is a required field and cannot be left blank. ● The patient ID must not have another departure report submitted. ● The patient MUST exist in the system. This could be counterchecked with the PREor
+the BIR reports. Patient ID errors in departure reporting
+● If the patient ID has another departure report submitted, you will get a return SMSsaying:
+Departure report for ID## has already been submitted. ● If the person whose departure report is being submitted does not exist in the system, you will get a return SMS reading: This Patient ID Number ## or Child Number ##doesnot exist in the system. You can only send a departure report for registered womenandchildren. 3. Child Number
+The child number is a count on the number of children that are born to a mother. The childnumber
+is based on the placement of the child in the birth order. A first born child would have 01, asecondborn would have a 02 upto a maximum of 08. The child number must always be between01and08 and cannot be 00. When reporting a departure, the child number is optional and canbeleft
+empty. However, if the date of birth is provided, then the child number becomes a requirement. The same child number cannot be used to report a departure more than once. Child number errors during departure reporting
+● If the date of birth is provided and the child number field is left empty you will receiveanSMS reading: Child number is missing. You will be required to input a correct childnumber
+for the report to be complete. ● If the child number is not between 01 and 08, or is 00, you will receive an SMSreading:
+● death code is MD and a child number is provided, then the SMS reply will be sent toyou
+48reading; Child number and date of birth are not required if the death code is MD. ● If the number indicated is not between 01 and 08, then you will receive an SMSnotification;
+Please check you have the correct child number. This number should be a 2 digit number,
+the first digit is always 0 and the second digit varies between 1-8. ● If same Child Number is been reported again then SMS reply will be sent to youreading:
+Child Number ## has already been report as DEP. 4. Date of Birth
+This is the date the child was born. While reporting a departure, this is an optional fieldandcanbe left blank. However, if the child number is provided, then the date of birth becomesarequirement. The following rules must be followed when the child number is providedwhencapturing the date of birth:
+● MUST be captured, the field cannot be left blank. ● Format must be correct: dd.mm.yyyy. ● Date must be equal to or less than today’s date. ● DOB should be the same date given as the date of delivery for the same childwhenreporting a birth; The two (2) dates MUST be the same. Date of birth errors in departure reporting
+● If this field is left blank when the child number has been provided, you will receiveanSMSreading: Date of birth is missing. ● If the date format is incorrect, the return message will read, Date of birth should beinthisformat dd.mm.yyyy. ● If the date of birth is not equal to or less than today’s date, the reply will be: Dateof birthshould be equal to or less than current date. ● If the date of birth and the date of delivery (in the birth report) is not the same, anSMSwill
+be sent to you saying: The date of birth (date) of this child is not matching thedateof
+delivery (date) in BIR report. Departure Form submission confirmation
+When the correct information has been captured and the departure report submitted, youwill
+receive a confirmation message. However, if there are any errors in the message, youwill berequired to input the correct information and resubmit the record. Once the correct informationissubmitted, you will receive a confirmation message denoting successful submission of thereport.
+49Appendix

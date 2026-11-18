@@ -1,0 +1,11 @@
+[Unit]
+Description=Check M-CARE outbound call queue every minute
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=1min
+Unit=mcare-outbound-scheduler.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target

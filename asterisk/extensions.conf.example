@@ -1,0 +1,11 @@
+; Include this context from the local Asterisk extensions.conf during development.
+; The only reachable extension is 700. There are intentionally no outbound routes.
+[mcare-ivr-test]
+exten => 700,1,NoOp(M-CARE LOCAL TEST IVR ONLY)
+ same => n,Answer()
+ same => n,Set(__MCARE_TEST_MODE=1)
+ same => n,AGI(mcare_ivr.php)
+ same => n,Hangup()
+
+[mcare-test-users]
+include => mcare-ivr-test
