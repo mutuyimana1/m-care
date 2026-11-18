@@ -1,12 +1,46 @@
 import { cloneElement, isValidElement, type ReactNode } from 'react';
 import {
+  StyleSheet,
   Text as NativeText,
   TextInput as NativeTextInput,
+  type StyleProp,
   type TextInputProps,
   type TextProps,
+  type TextStyle,
 } from 'react-native';
 
 import { useLanguage } from '@/contexts/language-context';
+
+export function getJakartaFont(weight?: TextStyle['fontWeight']): string {
+  switch (weight) {
+    case '800':
+    case '900':
+      return 'PlusJakartaSans_800ExtraBold';
+    case '700':
+    case 'bold':
+      return 'PlusJakartaSans_700Bold';
+    case '600':
+      return 'PlusJakartaSans_600SemiBold';
+    case '500':
+      return 'PlusJakartaSans_500Medium';
+    case '400':
+    case 'normal':
+    default:
+      return 'PlusJakartaSans_400Regular';
+  }
+}
+
+export function resolveJakartaStyle<T extends TextStyle>(style?: StyleProp<T>): StyleProp<T> {
+  const flattened = StyleSheet.flatten(style);
+  if (!flattened) {
+    return { fontFamily: 'PlusJakartaSans_400Regular' } as unknown as StyleProp<T>;
+  }
+  if (flattened.fontFamily) {
+    return style;
+  }
+  const fontFamily = getJakartaFont(flattened.fontWeight);
+  return [style, { fontFamily, fontWeight: undefined }] as unknown as StyleProp<T>;
+}
 
 function localizeNode(node: ReactNode, translate: (text: string) => string): ReactNode {
   if (typeof node === 'string') return translate(node);
@@ -17,26 +51,29 @@ function localizeNode(node: ReactNode, translate: (text: string) => string): Rea
   return node;
 }
 
-export function LocalizedText({ children, accessibilityLabel, ...props }: TextProps) {
+export function LocalizedText({ children, accessibilityLabel, style, ...props }: TextProps) {
   const { t } = useLanguage();
 
   return (
     <NativeText
       {...props}
+      style={resolveJakartaStyle(style)}
       accessibilityLabel={accessibilityLabel ? t(accessibilityLabel) : undefined}>
       {localizeNode(children, t)}
     </NativeText>
   );
 }
 
-export function LocalizedTextInput({ placeholder, accessibilityLabel, ...props }: TextInputProps) {
+export function LocalizedTextInput({ placeholder, accessibilityLabel, style, ...props }: TextInputProps) {
   const { t } = useLanguage();
 
   return (
     <NativeTextInput
       {...props}
+      style={resolveJakartaStyle(style)}
       accessibilityLabel={accessibilityLabel ? t(accessibilityLabel) : undefined}
       placeholder={placeholder ? t(placeholder) : undefined}
     />
   );
 }
+

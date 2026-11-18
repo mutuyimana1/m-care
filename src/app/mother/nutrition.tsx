@@ -4,7 +4,15 @@ import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { useState } from 'react';
 
 import { LocalizedText as Text } from '@/components/localized-text';
-import { Card, Field, Page, PageHeader, PrimaryButton, SectionHeading, UI } from '@/components/mcare-ui';
+import {
+  Card,
+  Field,
+  Page,
+  PageHeader,
+  PrimaryButton,
+  SectionHeading,
+  UI,
+} from '@/components/mcare-ui';
 import { useAuth } from '@/contexts/auth-context';
 import { useClinic, type NutritionCheckIn } from '@/contexts/clinic-context';
 
@@ -177,11 +185,13 @@ export default function MotherNutritionScreen() {
       {plan ? (
         <>
           <Card style={styles.focusCard}>
-            <View style={styles.focusHeading}>
-              <View style={styles.focusIcon}>
-                <Ionicons name="sparkles-outline" size={19} color={UI.accentDark} />
+            <View style={[styles.focusHeading, { justifyContent: 'space-between' }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9, flex: 1 }}>
+                <View style={styles.focusIcon}>
+                  <Ionicons name="sparkles-outline" size={19} color={UI.accentDark} />
+                </View>
+                <Text style={styles.focusTitle}>Nutrition focus</Text>
               </View>
-              <Text style={styles.focusTitle}>Nutrition focus</Text>
             </View>
             <Text style={styles.copy}>{plan.focus}</Text>
           </Card>
@@ -316,7 +326,7 @@ function FoodRow({ food }: { food: FoodItem }) {
   return (
     <Card style={styles.foodCard}>
       <View style={styles.foodIcon}>
-        <Ionicons name={food.icon} size={20} color={UI.accentDark} />
+        <Ionicons name={food.icon} size={22} color={UI.accentDark} />
       </View>
       <View style={styles.foodCopy}>
         <Text style={styles.foodTitle}>{food.title}</Text>
