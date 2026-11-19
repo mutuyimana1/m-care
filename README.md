@@ -1,40 +1,63 @@
 # M-CARE
 
-M-CARE is an Expo / React Native maternal-care app prototype.
+Expo / React Native client with a PHP and MySQL backend. Sign-in, maternal profiles,
+symptom reports, follow-up requests, nutrition check-ins, care activity, and voice-note
+references are read from and written to MySQL. The app does not include demo credentials
+or a seeded patient.
 
-## Run locally
+## Start the backend locally
+
+1. Start the XAMPP database service (`sudo /opt/lampp/lampp startmysql` on the local XAMPP installation).
+2. Add the API session and app-record tables to the existing `mcare` database:
+
+   ```bash
+   /opt/lampp/bin/mysql -u root < backend/schema.sql
+   ```
+
+3. Start the API from the project root. Set the database password if the local MySQL root account has one:
+
+   ```bash
+   MCARE_DB_DSN='mysql:host=127.0.0.1;dbname=mcare;charset=utf8mb4' \
+   MCARE_DB_USER=root MCARE_DB_PASSWORD='' \
+   php -S 0.0.0.0:8000 -t backend/public
+   ```
+
+   The health endpoint is `http://localhost:8000/api.php?action=health`.
+
+## Start the app
+
+Copy `.env.example` to `.env` and set `EXPO_PUBLIC_API_URL` for the device running the app.
+For web use `http://localhost:8000/api.php`; Android emulator use `http://10.0.2.2:8000/api.php`;
+physical devices need the development computer's LAN IP. Restart Expo after changing the URL.
 
 ```bash
 npm install
-npx expo start
+npm run web
 ```
 
-## Demo sign-in accounts
+Mothers can create an account from the sign-in screen. Clinician and CHW accounts are not
+publicly self-registered; provision them directly in the database with a PHP `password_hash()`
+hash using the helper (it prompts for the password):
 
-Use the following prototype-only credentials on the login screen:
+```bash
+MCARE_DB_DSN='mysql:host=127.0.0.1;dbname=mcare;charset=utf8mb4' \
+MCARE_DB_USER=root MCARE_DB_PASSWORD='' \
+php backend/create-care-user.php doctor 'Clinician Name' clinician@example.org
+```
 
-| Role | Email | Password |
-| --- | --- | --- |
-| Mother | `mother@mcare.demo` | `Mother123!` |
-| Clinician | `doctor@mcare.demo` | `Doctor123!` |
+Do not expose the database to the public internet.
 
-The credential examples are in `src/data/demo-users.json`. Authentication is local demo
-authentication, not a production identity provider. The session and sample patient records are
-held in memory and reset when the app restarts. Do not enter real patient information.
+## Important deployment work
 
-## Implemented prototype flows
-
-- Mother: pregnancy overview, reminders, profile, and educational guidance.
-- Clinician: patient lookup, duplicate checks, maternal registration, patient records, and follow-up.
-- Registration: personal information and consent, pregnancy confirmation, obstetric and medical
-  history, measurements, laboratory results, completeness summary, and clinician approval.
-
-Secure storage, facility-to-facility sharing, EMR import, offline synchronization, and production
-clinical workflows require a backend and are not implemented in this prototype.
+The API uses the existing `users`, `maternal_profiles`, `pregnancies`, `symptom_reports`, and consent
+tables; the SQL script only adds `mcare_api_sessions` and `mcare_app_records`. The API is a local
+development foundation. Before using real clinical data in production, deploy it behind HTTPS, use
+a restricted database account and managed secrets, configure a specific CORS
+origin, add facility and consent rules, audit access, and complete a security review. Audio files
+are not uploaded by this API; only their local URI reference is stored, so use a protected file
+service before relying on voice notes across devices.
 
 ## Development
-
-Run lint and type-check:
 
 ```bash
 npx expo lint

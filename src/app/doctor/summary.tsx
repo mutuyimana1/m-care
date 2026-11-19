@@ -84,7 +84,7 @@ export default function DoctorSummaryScreen() {
             </View>
           ))
         ) : (
-          <Text style={styles.copy}>No additional risk flags or follow-up notes were recorded in this demo record.</Text>
+          <Text style={styles.copy}>No additional risk flags or follow-up notes are recorded.</Text>
         )}
       </Card>
 

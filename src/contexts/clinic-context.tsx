@@ -1,4 +1,7 @@
-import { createContext, useContext, useMemo, useState, type PropsWithChildren } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
+
+import { api } from '@/services/api';
+import { useAuth } from '@/contexts/auth-context';
 
 export type PatientRecord = {
   id: string;
@@ -168,6 +171,7 @@ export type MaternalActivity = {
 export type ReferralStatus = 'not-started' | 'sent' | 'received' | 'completed';
 
 type ClinicContextValue = {
+  syncError: string | null;
   patients: PatientRecord[];
   symptomReports: MaternalSymptomReport[];
   voiceNotes: Record<string, string>;
@@ -195,95 +199,6 @@ type ClinicContextValue = {
   updatePatient: (patientId: string, updates: Partial<PatientRecord>) => void;
 };
 
-const demoPatient: PatientRecord = {
-  id: 'MC-24018',
-  name: 'Beata Mukamana',
-  phone: '0784988435',
-  motherAccountEmail: 'mother@mcare.demo',
-  dateOfBirth: '1997-04-12',
-  nationalId: 'DEMO-MC-24018',
-  preferredLanguage: 'Kinyarwanda',
-  district: 'Kigali',
-  sector: 'Kacyiru',
-  cell: 'Kamatamu',
-  village: 'Village',
-  facility: 'Kigali Health Centre',
-  facilityContactPhone: '0784988435',
-  emergencyContactName: '114',
-  emergencyContactPhone: '0784988435',
-  communityHealthWorker: 'Aliane merci',
-  consent: true,
-  consentRecordedAt: '2026-09-10',
-  confirmationMethod: 'Ultrasound',
-  pregnancyResult: 'Positive',
-  confirmationDate: '2026-09-10',
-  pregnancyTestDate: '2026-08-25',
-  clinicianName: 'Dr. Eric Niyonzima',
-  lastMenstrualPeriod: '2026-06-18',
-  estimatedDueDate: '2027-03-25',
-  datingMethod: 'Ultrasound',
-  datingSource: 'within the clinic',
-  gestationalAgeWeeks: '21',
-  gestationalAgeDays: '0',
-  gravida: '2',
-  para: '1',
-  previousPregnancies: 'One previous pregnancy ',
-  livingChildren: '1',
-  pregnancyOutcomes: 'One previous live birth ',
-  previousDeliveryMode: 'Vaginal delivery ',
-  lastBirthDate: '2023-02-14',
-  birthSpacing: 'Approximately 3 years 4 months ',
-  currentSymptoms: 'No concerns reported.',
-  complications: 'None reported ',
-  conditions: 'None reported ',
-  surgicalHistory: 'None reported ',
-  familyHistory: 'No relevant family history reported .',
-  mentalHealthHistory: 'No psychosocial concerns reported .',
-  medications: 'Prenatal supplement',
-  allergies: 'None reported ',
-  systolic: '112',
-  diastolic: '72',
-  weightKg: '64',
-  heightCm: '162',
-  temperatureC: '36.7',
-  pulse: '78',
-  respiratoryRate: '18',
-  oxygenSaturation: '98',
-  fundalHeightCm: '21',
-  fetalHeartRate: '145',
-  estimatedBabyWeightGrams: '399',
-  hemoglobin: '11.8',
-  bloodGroup: 'O+',
-  rhesusFactor: 'Positive',
-  hiv: 'Negative ',
-  syphilis: 'Pending',
-  urineProtein: 'Negative ',
-  urineGlucose: 'Negative ',
-  hepatitisB: 'Negative ',
-  malaria: 'Negative ',
-  sickleCell: 'Screen negative ',
-  ultrasoundSummary: 'Dating ultrasound recorded ',
-  investigationSource: 'Clinician-entered results',
-  otherTests: 'Routine antenatal panel ',
-  nextAppointmentDate: '2026-11-20',
-  riskFactors: 'No risk factors identified in this sample assessment.',
-  priorityFindings: 'Routine antenatal follow-up; no urgent concerns reported .',
-  missingAssessments: 'Syphilis result',
-  followUp: 'Review pending result at next antenatal visit.',
-  carePlan: 'Continue scheduled antenatal follow-up and review pending tests.',
-  referralFacility: 'Kigali Referral Hospital ',
-  referralReason: 'Sample facility referral for report SYM-DEMO-002 .',
-  referralStatus: 'sent',
-  referralOutcome: '',
-  postpartumStatus: 'pregnant',
-  deliveryDate: '',
-  postpartumFollowUpDate: '',
-  careTeamMessage: 'Bring your maternal passport to the next visit .',
-  clinicianApproved: true,
-  reviewedBy: 'Dr. Eric Niyonzima',
-  reviewedAt: '2026-09-10',
-  createdAt: '2026-09-10',
-};
 
 function humanizeFieldName(field: string) {
   return field.replace(/([A-Z])/g, ' $1').replace(/^./, (character) => character.toUpperCase());
@@ -292,83 +207,41 @@ function humanizeFieldName(field: string) {
 const ClinicContext = createContext<ClinicContextValue | null>(null);
 
 export function ClinicProvider({ children }: PropsWithChildren) {
-  const [patients, setPatients] = useState([demoPatient]);
-  const [symptomReports, setSymptomReports] = useState<MaternalSymptomReport[]>([
-    {
-      id: 'SYM-DEMO-001',
-      patientId: demoPatient.id,
-      symptoms: ['Vaginal or heavy bleeding', 'Severe abdominal pain'],
-      notes: 'Sample report for CHW dashboard testing; not a real patient report.',
-      onset: 'Today',
-      severity: 'Severe',
-      pattern: 'Constant',
-      worsening: 'Yes',
-      contactedChw: false,
-      visitedFacility: false,
-      temperatureReading: '36.8',
-      bloodPressureReading: '112/72',
-      voiceTranscript: 'Sample voice transcription: I noticed bleeding and abdominal pain this morning.',
-      voiceTranscriptAuthorized: true,
-      reportedAt: '2026-11-12T08:30:00.000Z',
-      status: 'new',
-      actions: [],
-      reviewed: false,
-    },
-    {
-      id: 'SYM-DEMO-002',
-      patientId: demoPatient.id,
-      symptoms: ['Severe headache or vision changes'],
-      notes: 'Sample follow-up report for dashboard testing; not a real patient report.',
-      onset: 'Yesterday',
-      severity: 'Moderate',
-      pattern: 'Comes and goes',
-      worsening: 'No',
-      contactedChw: true,
-      visitedFacility: false,
-      temperatureReading: '37.2',
-      bloodPressureReading: '118/76',
-      reportedAt: '2026-11-11T13:15:00.000Z',
-      status: 'referred',
-      actions: [
-        {
-          status: 'acknowledged',
-          actor: 'community health worker',
-          note: 'Sample alert acknowledged for dashboard testing.',
-          occurredAt: '2026-11-11T13:20:00.000Z',
-        },
-        {
-          status: 'contacted',
-          actor: 'community health worker',
-          note: 'Sample call attempt documented for dashboard testing.',
-          occurredAt: '2026-11-11T13:35:00.000Z',
-        },
-        {
-          status: 'referred',
-          actor: 'community health worker',
-          note: 'Sample referral sent to Kigali Referral Hospital.',
-          occurredAt: '2026-11-11T14:00:00.000Z',
-        },
-      ],
-      reviewed: true,
-      reviewedBy: 'community health worker',
-      reviewedAt: '2026-11-11T14:00:00.000Z',
-    },
-  ]);
+  const { token } = useAuth();
+  const [patients, setPatients] = useState<PatientRecord[]>([]);
+  const [symptomReports, setSymptomReports] = useState<MaternalSymptomReport[]>([]);
   const [voiceNotes, setVoiceNotes] = useState<Record<string, string>>({});
   const [followUpRequests, setFollowUpRequests] = useState<FollowUpRequest[]>([]);
   const [nutritionCheckIns, setNutritionCheckIns] = useState<NutritionCheckIn[]>([]);
-  const [maternalActivities, setMaternalActivities] = useState<MaternalActivity[]>([
-    {
-      id: 'ACT-MC-24018-REVIEW',
-      patientId: demoPatient.id,
-      title: 'Maternal record reviewed',
-      details: 'Initial pregnancy profile and care plan were approved.',
-      result: 'Approved by Dr. Eric Niyonzima',
-      occurredAt: `${demoPatient.reviewedAt}T09:00:00.000Z`,
-    },
-  ]);
+  const [maternalActivities, setMaternalActivities] = useState<MaternalActivity[]>([]);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  useEffect(() => {
+    if (!token) return;
+    let active = true;
+    Promise.all([
+      api.listRecords<PatientRecord>('patient'), api.listRecords<MaternalSymptomReport>('symptom'),
+      api.listRecords<FollowUpRequest>('followup'), api.listRecords<NutritionCheckIn>('nutrition'),
+      api.listRecords<MaternalActivity>('activity'), api.listRecords<{ id: string; patientId: string; uri: string }>('voice'),
+    ]).then(([p, symptoms, followUps, nutrition, activities, voices]) => {
+      if (!active) return;
+      setPatients(p); setSymptomReports(symptoms); setFollowUpRequests(followUps);
+      setNutritionCheckIns(nutrition); setMaternalActivities(activities);
+      setVoiceNotes(Object.fromEntries(voices.map((voice) => [voice.patientId, voice.uri])));
+      setSyncError(null);
+    }).catch((error) => setSyncError(error instanceof Error ? error.message : 'Unable to load clinic data.'));
+    return () => { active = false; };
+  }, [token]);
+
+  const persist = useCallback(<T extends { id: string },>(type: string, record: T, isNew = false) => {
+    const operation = isNew ? api.createRecord(type, record) : api.updateRecord(type, record);
+    void operation.then(() => setSyncError(null)).catch((error) =>
+      setSyncError(error instanceof Error ? error.message : `Unable to save ${type} record.`),
+    );
+  }, []);
+
   const value = useMemo<ClinicContextValue>(
     () => ({
+      syncError,
       patients,
       symptomReports,
       voiceNotes,
@@ -382,17 +255,17 @@ export function ClinicProvider({ children }: PropsWithChildren) {
           createdAt: new Date().toISOString().slice(0, 10),
         };
         setPatients((current) => [record, ...current]);
-        setMaternalActivities((current) => [
-          {
+        persist('patient', record, true);
+        const activity = {
             id: `ACT-${Date.now()}`,
             patientId: record.id,
             title: 'Maternal passport created',
             details: 'A new maternal profile was added to the care record.',
             result: `Approved by ${record.reviewedBy}`,
             occurredAt: new Date().toISOString(),
-          },
-          ...current,
-        ]);
+          };
+        setMaternalActivities((current) => [activity, ...current]);
+        persist('activity', activity, true);
         return record;
       },
       submitSymptomReport: (patientId, report) => {
@@ -411,26 +284,36 @@ export function ClinicProvider({ children }: PropsWithChildren) {
           newReport,
           ...current,
         ]);
-        setMaternalActivities((current) => [
-          {
+        persist('symptom', newReport, true);
+        const activity = {
             id: `ACT-${Date.now()}`,
             patientId,
             title: 'Symptom check-in submitted',
             details: [report.symptoms.join(', '), report.notes].filter(Boolean).join(' · '),
             result: `New report ${id} is waiting for care-team review`,
             occurredAt: reportedAt,
-          },
-          ...current,
-        ]);
+          };
+        setMaternalActivities((current) => [activity, ...current]);
+        persist('activity', activity, true);
         return id;
       },
       saveVoiceNote: (patientId, uri) => {
         setVoiceNotes((current) => ({ ...current, [patientId]: uri }));
+        persist('voice', { id: patientId, patientId, uri }, true);
       },
       updateSymptomReportStatus: (reportId, status, actor, note) => {
         const report = symptomReports.find((item) => item.id === reportId);
         if (!report) return;
         const occurredAt = new Date().toISOString();
+        const updatedReport = {
+          ...report,
+          status,
+          actions: [...report.actions, { status, actor, note, occurredAt }],
+          reviewed: status !== 'new',
+          reviewedBy: status !== 'new' ? actor : report.reviewedBy,
+          reviewedAt: status !== 'new' ? occurredAt : report.reviewedAt,
+        };
+        persist('symptom', updatedReport);
         setSymptomReports((current) =>
           current.map((item) =>
             item.id === reportId
@@ -445,47 +328,52 @@ export function ClinicProvider({ children }: PropsWithChildren) {
               : item,
           ),
         );
-        setMaternalActivities((current) => [
-          {
+        const activity = {
             id: `ACT-${Date.now()}`,
             patientId: report.patientId,
             title: `Symptom report ${status}`,
             details: note || report.symptoms.join(', '),
             result: `Updated by ${actor}`,
             occurredAt,
-          },
-          ...current,
-        ]);
+          };
+        setMaternalActivities((current) => [activity, ...current]);
+        persist('activity', activity, true);
       },
       requestFollowUp: (patientId, message) => {
         const requestedAt = new Date().toISOString();
-        setFollowUpRequests((current) => [
-          {
+        const request = {
             id: `REQ-${Date.now()}`,
             patientId,
             message,
             requestedAt,
             responses: [],
             reviewed: false,
-          },
-          ...current,
-        ]);
-        setMaternalActivities((current) => [
-          {
+          };
+        setFollowUpRequests((current) => [request, ...current]);
+        persist('followup', request, true);
+        const activity = {
             id: `ACT-${Date.now()}`,
             patientId,
             title: 'Follow-up requested',
             details: message,
             result: 'Sent to the care-team queue',
             occurredAt: requestedAt,
-          },
-          ...current,
-        ]);
+          };
+        setMaternalActivities((current) => [activity, ...current]);
+        persist('activity', activity, true);
       },
       respondToFollowUpRequest: (requestId, responder, response) => {
         const request = followUpRequests.find((item) => item.id === requestId);
         if (!request || !response.trim()) return;
         const respondedAt = new Date().toISOString();
+        const updatedRequest = {
+          ...request,
+          responses: [...request.responses, { message: response.trim(), responder, respondedAt }],
+          reviewed: true,
+          reviewedBy: responder,
+          reviewedAt: respondedAt,
+        };
+        persist('followup', updatedRequest);
         setFollowUpRequests((current) =>
           current.map((item) =>
             item.id === requestId
@@ -499,17 +387,16 @@ export function ClinicProvider({ children }: PropsWithChildren) {
               : item,
           ),
         );
-        setMaternalActivities((current) => [
-          {
+        const activity = {
             id: `ACT-${Date.now()}`,
             patientId: request.patientId,
             title: 'Professional replied to a message',
             details: response.trim(),
             result: `Responded by ${responder}`,
             occurredAt: respondedAt,
-          },
-          ...current,
-        ]);
+          };
+        setMaternalActivities((current) => [activity, ...current]);
+        persist('activity', activity, true);
       },
       submitNutritionCheckIn: (patientId, checkIn) => {
         const recordedAt = new Date().toISOString();
@@ -520,45 +407,44 @@ export function ClinicProvider({ children }: PropsWithChildren) {
           recordedAt,
         };
         setNutritionCheckIns((current) => [entry, ...current]);
-        setMaternalActivities((current) => [
-          {
+        persist('nutrition', entry, true);
+        const activity = {
             id: `ACT-${Date.now()}`,
             patientId,
             title: 'Nutrition check-in submitted',
             details: checkIn.notes || 'Daily food and access check-in completed.',
             result: checkIn.foodAccessDifficulty === 'Yes' ? 'Food access concern noted for care-team review' : 'Saved to the session care record',
             occurredAt: recordedAt,
-          },
-          ...current,
-        ]);
+          };
+        setMaternalActivities((current) => [activity, ...current]);
+        persist('activity', activity, true);
       },
       recordMaternalActivity: (patientId, title, details, result) => {
-        setMaternalActivities((current) => [
-          {
+        const activity = {
             id: `ACT-${Date.now()}`,
             patientId,
             title,
             details,
             result,
             occurredAt: new Date().toISOString(),
-          },
-          ...current,
-        ]);
+          };
+        setMaternalActivities((current) => [activity, ...current]);
+        persist('activity', activity, true);
       },
       reviewSymptomReport: (reportId, reviewer) => {
         const report = symptomReports.find((item) => item.id === reportId);
         if (report) {
-          setMaternalActivities((current) => [
-            {
+          const activity = {
               id: `ACT-${Date.now()}`,
               patientId: report.patientId,
               title: 'Symptom report reviewed',
               details: report.symptoms.join(', '),
               result: `Reviewed by ${reviewer}`,
               occurredAt: new Date().toISOString(),
-            },
-            ...current,
-          ]);
+            };
+          setMaternalActivities((current) => [activity, ...current]);
+          persist('activity', activity, true);
+          persist('symptom', { ...report, reviewed: true, reviewedBy: reviewer, reviewedAt: new Date().toISOString() });
         }
         setSymptomReports((current) =>
           current.map((report) =>
@@ -571,17 +457,17 @@ export function ClinicProvider({ children }: PropsWithChildren) {
       reviewFollowUpRequest: (requestId, reviewer) => {
         const request = followUpRequests.find((item) => item.id === requestId);
         if (request) {
-          setMaternalActivities((current) => [
-            {
+          const activity = {
               id: `ACT-${Date.now()}`,
               patientId: request.patientId,
               title: 'Follow-up request reviewed',
               details: request.message,
               result: `Reviewed by ${reviewer}`,
               occurredAt: new Date().toISOString(),
-            },
-            ...current,
-          ]);
+            };
+          setMaternalActivities((current) => [activity, ...current]);
+          persist('activity', activity, true);
+          persist('followup', { ...request, reviewed: true, reviewedBy: reviewer, reviewedAt: new Date().toISOString() });
         }
         setFollowUpRequests((current) =>
           current.map((request) =>
@@ -594,26 +480,27 @@ export function ClinicProvider({ children }: PropsWithChildren) {
       updatePatient: (patientId, updates) => {
         const updatedFields = Object.keys(updates).map(humanizeFieldName);
         if (updatedFields.length) {
-          setMaternalActivities((current) => [
-            {
+          const activity = {
               id: `ACT-${Date.now()}`,
               patientId,
               title: 'Maternal record updated',
               details: `Updated: ${updatedFields.join(', ')}`,
               result: 'Saved to the session care record',
               occurredAt: new Date().toISOString(),
-            },
-            ...current,
-          ]);
+            };
+          setMaternalActivities((current) => [activity, ...current]);
+          persist('activity', activity, true);
         }
         setPatients((current) =>
           current.map((patient) =>
             patient.id === patientId ? { ...patient, ...updates } : patient,
           ),
         );
+        const existing = patients.find((patient) => patient.id === patientId);
+        if (existing) persist('patient', { ...existing, ...updates });
       },
     }),
-    [followUpRequests, maternalActivities, nutritionCheckIns, patients, symptomReports, voiceNotes],
+    [followUpRequests, maternalActivities, nutritionCheckIns, patients, persist, symptomReports, syncError, voiceNotes],
   );
 
   return <ClinicContext.Provider value={value}>{children}</ClinicContext.Provider>;

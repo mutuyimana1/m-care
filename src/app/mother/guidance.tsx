@@ -59,7 +59,7 @@ export default function MotherGuidanceScreen() {
       <View style={styles.languageBanner}>
         <Ionicons name="language-outline" size={19} color={UI.accentDark} />
         <Text style={styles.languageText}>
-          Your preferred language is recorded on your profile. This demo guidance is in English and requires review and translation by your local care team before clinical use.
+          Your preferred language is recorded on your profile. This general information is in English; follow your care team’s local advice.
         </Text>
       </View>
 

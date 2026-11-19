@@ -60,7 +60,7 @@ export default function MotherRemindersScreen() {
             </View>
           ))
         ) : (
-          <Text style={styles.copy}>No pending investigations are recorded for this demo profile.</Text>
+          <Text style={styles.copy}>No pending investigations are recorded for your profile.</Text>
         )}
       </Card>
 

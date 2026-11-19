@@ -331,7 +331,7 @@ export default function RegistrationScreen() {
           ))}
           {search.trim() && duplicates.length === 0 ? (
             <Text style={styles.fieldHint}>
-              No matching local demo record. Confirm with the facility before creating a new profile.
+              No matching patient record. Confirm with the facility before creating a new profile.
             </Text>
           ) : null}
           <View style={styles.divider} />

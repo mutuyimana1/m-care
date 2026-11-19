@@ -1,18 +1,15 @@
 import { createContext, useContext, useMemo, useState, type PropsWithChildren } from 'react';
 
-import demoUsers from '@/data/demo-users.json';
+import { api, setAccessToken, type ApiUser } from '@/services/api';
 
-export type UserRole = 'mother' | 'doctor' | 'chw';
-
-export type AppUser = {
-  email: string;
-  name: string;
-  role: UserRole;
-};
+export type UserRole = ApiUser['role'];
+export type AppUser = ApiUser;
 
 type AuthContextValue = {
   user: AppUser | null;
-  signIn: (email: string, password: string) => AppUser | null;
+  token: string | null;
+  signIn: (email: string, password: string) => Promise<AppUser>;
+  signUp: (name: string, email: string, password: string) => Promise<AppUser>;
   signOut: () => void;
 };
 
@@ -20,31 +17,32 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<AppUser | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
-  const value = useMemo<AuthContextValue>(
-    () => ({
-      user,
-      signIn: (email, password) => {
-        const account = demoUsers.find(
-          (entry) =>
-            entry.email.toLowerCase() === email.trim().toLowerCase() &&
-            entry.password === password,
-        );
-        if (!account) return null;
-
-        if (account.role !== 'mother' && account.role !== 'doctor' && account.role !== 'chw') return null;
-        const signedInUser: AppUser = {
-          email: account.email,
-          name: account.name,
-          role: account.role,
-        };
-        setUser(signedInUser);
-        return signedInUser;
-      },
-      signOut: () => setUser(null),
-    }),
-    [user],
-  );
+  const value = useMemo<AuthContextValue>(() => ({
+    user,
+    token,
+    signIn: async (email, password) => {
+      const result = await api.signIn(email.trim(), password);
+      setAccessToken(result.token);
+      setToken(result.token);
+      setUser(result.user);
+      return result.user;
+    },
+    signUp: async (name, email, password) => {
+      const result = await api.signUp(name.trim(), email.trim(), password);
+      setAccessToken(result.token);
+      setToken(result.token);
+      setUser(result.user);
+      return result.user;
+    },
+    signOut: () => {
+      void api.signOut().catch(() => undefined);
+      setAccessToken(null);
+      setToken(null);
+      setUser(null);
+    },
+  }), [user, token]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

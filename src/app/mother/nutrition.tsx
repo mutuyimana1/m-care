@@ -150,7 +150,7 @@ export default function MotherNutritionScreen() {
       <Card style={styles.hero}>
         <Image source={require('@/assets/images/baby2.jpg')} style={styles.heroImage} />
         <View style={styles.heroCopy}>
-          <Text style={styles.demoLabel}>DEMO GUIDANCE</Text>
+          <Text style={styles.demoLabel}>GENERAL GUIDANCE</Text>
           <Text style={styles.heroTitle}>{plan?.label || 'Pregnancy nutrition'}</Text>
           <Text style={styles.heroDetail}>
             {isPostpartum
@@ -265,7 +265,7 @@ export default function MotherNutritionScreen() {
           Wash produce, cook eggs, meat and fish thoroughly, choose pasteurized dairy and low-mercury fish. Avoid raw or undercooked animal foods. Take supplements only as advised by your care team.
         </Text>
         <Text style={styles.disclaimer}>
-          General demo education only. Follow local clinical advice, especially for allergies, dietary restrictions or medical conditions.
+          General education only. Follow local clinical advice, especially for allergies, dietary restrictions or medical conditions.
         </Text>
       </Card>
 

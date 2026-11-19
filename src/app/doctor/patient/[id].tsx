@@ -52,7 +52,7 @@ export default function PatientDetailsScreen() {
           backLabel="Back to patient list"
         />
         <Card>
-          <Text style={styles.copy}>This profile is not available in the current demo session.</Text>
+          <Text style={styles.copy}>This profile is not available to your account.</Text>
         </Card>
       </Page>
     );
@@ -424,8 +424,8 @@ export default function PatientDetailsScreen() {
       )}
 
       <Text style={styles.footer}>
-        Demo patient information only. Clinical decisions must be made by an authorized
-        professional using verified records and local protocols.
+        Clinical decisions must be made by an authorized professional using verified records
+        and local protocols.
       </Text>
     </Page>
   );

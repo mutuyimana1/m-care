@@ -32,8 +32,8 @@ export default function MotherProfileScreen() {
             <Ionicons name="person-outline" size={28} color={UI.accentDark} />
           </View>
           <View style={styles.profileCopy}>
-            <Text style={styles.name}>{user?.name ?? 'Aline Uwase'}</Text>
-            <Text style={styles.muted}>Maternal member · M-CARE demo</Text>
+            <Text style={styles.name}>{user?.name ?? 'Your account'}</Text>
+            <Text style={styles.muted}>Maternal member · M-CARE</Text>
           </View>
           <StatusPill label={patient ? 'Reviewed' : 'Not linked'} tone={patient ? 'green' : 'amber'} />
         </View>

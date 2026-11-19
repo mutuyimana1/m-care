@@ -215,9 +215,9 @@ export default function MotherCareScreen() {
               maxLength={500}
             />
             <PrimaryButton label="Send message" onPress={sendRequest} disabled={!message.trim()} />
-            {sent ? <Text style={styles.success}>Your request was added to the demo care-team queue.</Text> : null}
+            {sent ? <Text style={styles.success}>Your request was sent to the care team.</Text> : null}
             <Text style={styles.note}>
-              This demo inbox is not monitored in real time and has no guaranteed response time. For emergency symptoms, call 114 or seek care now; do not wait for a message.
+              Messages may not be reviewed immediately. For emergency symptoms, call 114 or seek care now; do not wait for a message.
             </Text>
           </>
         ) : (

@@ -66,7 +66,7 @@ export default function CommunityHealthWorkerScreen() {
 
   const callMother = async (patient: PatientRecord) => {
     const phone = patient.phone.trim();
-    if (!phone || phone.toLowerCase().includes('demo')) return;
+    if (!phone) return;
 
     const phoneUrl = `tel:${phone.replace(/[^\d+]/g, '')}`;
     try {
@@ -132,17 +132,17 @@ export default function CommunityHealthWorkerScreen() {
           </Text>
           <Pressable
             accessibilityRole="button"
-            accessibilityState={{ disabled: patient.phone.toLowerCase().includes('demo') }}
-            disabled={patient.phone.toLowerCase().includes('demo')}
+            accessibilityState={{ disabled: !patient.phone.trim() }}
+            disabled={!patient.phone.trim()}
             onPress={() => void callMother(patient)}
             style={({ pressed }) => [
               styles.callButton,
-              patient.phone.toLowerCase().includes('demo') && styles.disabledAction,
+              !patient.phone.trim() && styles.disabledAction,
               pressed && styles.pressed,
             ]}>
             <Ionicons name="call-outline" size={17} color={UI.accentDark} />
             <Text style={styles.callButtonText}>
-              {patient.phone.toLowerCase().includes('demo') ? 'Call unavailable for demo number' : 'Call mother'}
+              {patient.phone.trim() ? 'Call mother' : 'Phone number unavailable'}
             </Text>
           </Pressable>
         </Card>
