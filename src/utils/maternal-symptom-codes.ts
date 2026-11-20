@@ -17,3 +17,25 @@ const symptomCodes: Record<string, MaternalSymptomCode> = {
 export function getMaternalSymptomCode(symptom: string): MaternalSymptomCode {
   return symptomCodes[symptom] ?? { code: 'SC', source: 'RapidSMS' };
 }
+
+const emergencySymptomCodes = new Set(['HE', 'AP', 'BR', 'SH', 'CO', 'FM']);
+
+export function isEmergencyMaternalSymptom(symptom: string): boolean {
+  return emergencySymptomCodes.has(getMaternalSymptomCode(symptom).code);
+}
+
+export function isEmergencyMaternalReport(report: {
+  id: string;
+  severity: string;
+  symptoms: string[];
+}): boolean {
+  return (
+    report.severity === 'Severe' ||
+    report.id.startsWith('IVR') ||
+    report.symptoms.some(
+      (symptom) =>
+        symptom.toLowerCase().includes('ivr') ||
+        isEmergencyMaternalSymptom(symptom),
+    )
+  );
+}
