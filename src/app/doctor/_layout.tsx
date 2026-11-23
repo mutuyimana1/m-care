@@ -18,29 +18,29 @@ export default function DoctorTabsLayout() {
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>{t('Overview')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
+          sf={{ default: 'chart.bar', selected: 'chart.bar.fill' }}
+          md="dashboard"
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="patients">
         <NativeTabs.Trigger.Label>{t('Patients')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
+          sf={{ default: 'person.2', selected: 'person.2.fill' }}
+          md="group"
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="registration">
         <NativeTabs.Trigger.Label>{t('Register')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
+          sf={{ default: 'person.badge.plus', selected: 'person.badge.plus' }}
+          md="person_add"
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="review">
         <NativeTabs.Trigger.Label>{t('Follow-up')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
+          sf={{ default: 'stethoscope', selected: 'stethoscope' }}
+          md="clinical_notes"
         />
       </NativeTabs.Trigger>
     </NativeTabs>

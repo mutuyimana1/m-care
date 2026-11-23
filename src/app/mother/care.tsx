@@ -1,27 +1,29 @@
 import { Ionicons } from '@expo/vector-icons';
-import {
-  AudioModule,
-  RecordingPresets,
-  setAudioModeAsync,
-  useAudioRecorder,
-  useAudioRecorderState,
-} from 'expo-audio';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Alert, Linking, Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { LocalizedText as Text } from '@/components/localized-text';
-import { Card, Field, Page, PageHeader, PrimaryButton, SectionHeading, StatusPill, UI } from '@/components/mcare-ui';
+import {
+  Card,
+  EmergencySOSBanner,
+  Field,
+  Page,
+  PageHeader,
+  PrimaryButton,
+  SectionHeading,
+  StatusPill,
+  UI,
+  VisualActionCard,
+} from '@/components/mcare-ui';
 import { useAuth } from '@/contexts/auth-context';
 import { useClinic } from '@/contexts/clinic-context';
 
 export default function MotherCareScreen() {
   const { user } = useAuth();
-  const { patients, voiceNotes, followUpRequests, requestFollowUp, recordMaternalActivity, saveVoiceNote } = useClinic();
+  const { patients, followUpRequests, requestFollowUp } = useClinic();
   const [message, setMessage] = useState('');
   const [sent, setSent] = useState(false);
-  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
-  const recorderState = useAudioRecorderState(recorder);
   const patient = patients.find(
     (record) =>
       user?.email &&
@@ -29,7 +31,6 @@ export default function MotherCareScreen() {
       record.consent &&
       record.clinicianApproved,
   );
-  const voiceUri = patient ? voiceNotes[patient.id] ?? null : null;
   const patientRequests = useMemo(
     () => followUpRequests
       .filter((request) => request.patientId === patient?.id)
@@ -45,59 +46,6 @@ export default function MotherCareScreen() {
     setSent(true);
   };
 
-  const callEmergency = async () => {
-    try {
-      const phoneUrl = 'tel:114';
-      if (!(await Linking.canOpenURL(phoneUrl))) {
-        Alert.alert('Call unavailable', 'Please contact your nearest health facility directly.');
-        return;
-      }
-      await Linking.openURL(phoneUrl);
-    } catch (error) {
-      Alert.alert(
-        'Could not open phone',
-        error instanceof Error ? error.message : 'Please contact your nearest health facility directly.',
-      );
-    }
-  };
-
-  const toggleVoiceRecording = async () => {
-    if (!patient) return;
-
-    try {
-      if (recorderState.isRecording) {
-        await recorder.stop();
-        const recordingUri = recorder.uri;
-        if (!recordingUri) {
-          Alert.alert('Recording not saved', 'Please try recording your voice note again.');
-          return;
-        }
-        saveVoiceNote(patient.id, recordingUri);
-        recordMaternalActivity(
-          patient.id,
-          'Voice note recorded',
-          'Recorded on this device. It has not been sent to your care team.',
-          'Saved locally',
-        );
-        return;
-      }
-
-      const permission = await AudioModule.requestRecordingPermissionsAsync();
-      if (!permission.granted) {
-        Alert.alert('Microphone access needed', 'Allow microphone access to record a voice note.');
-        return;
-      }
-      await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
-      await recorder.prepareToRecordAsync();
-      recorder.record();
-    } catch (error) {
-      Alert.alert(
-        recorderState.isRecording ? 'Could not save recording' : 'Could not start recording',
-        error instanceof Error ? error.message : 'Please try again.',
-      );
-    }
-  };
-
   return (
     <Page>
       <PageHeader
@@ -106,25 +54,11 @@ export default function MotherCareScreen() {
         subtitle="Reach urgent help or leave a message for your care team."
       />
 
-      <Card style={styles.emergencyCard}>
-        <View style={styles.emergencyHeading}>
-          <View style={styles.emergencyIcon}>
-            <Ionicons name="call-outline" size={21} color={UI.red} />
-          </View>
-          <View style={styles.flex}>
-            <Text style={styles.title}>Need urgent help?</Text>
-            <Text style={styles.copy}>Call 114 for emergency assistance. Do not wait for an app reply.</Text>
-          </View>
-        </View>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Call emergency number 114"
-          onPress={callEmergency}
-          style={({ pressed }) => [styles.callButton, pressed && styles.pressed]}>
-          <Ionicons name="call" size={18} color={UI.white} />
-          <Text style={styles.callButtonText}>Call 114</Text>
-        </Pressable>
-      </Card>
+      {/* Low-Literacy Emergency SOS Banner */}
+      <EmergencySOSBanner
+        phoneNumber="114"
+        chwPhone={patient?.phone || undefined}
+      />
 
       <Card style={styles.appointmentCard}>
         <View style={styles.heading}>
@@ -143,37 +77,15 @@ export default function MotherCareScreen() {
         </View>
       </Card>
 
-      <SectionHeading title="Quick support" />
-      <PrimaryButton
-        label="Share a symptom or concern"
-        icon="chatbubble-ellipses-outline"
+      <VisualActionCard
+        icon="medkit"
+        iconBg="#FFEBEE"
+        iconColor="#D32F2F"
+        title="Share a symptom or concern"
+        subtitle="Report pain, fever, or bleeding directly to your care worker"
         onPress={() => router.push('/mother-symptoms')}
       />
 
-      <Card>
-        <View style={styles.heading}>
-          <View style={styles.icon}>
-            <Ionicons name="mic-outline" size={21} color={UI.accentDark} />
-          </View>
-          <View style={styles.flex}>
-            <Text style={styles.title}>Record a voice note</Text>
-            <Text style={styles.copy}>
-              {recorderState.isRecording
-                ? 'Recording now. Tap stop when you are finished.'
-                : voiceUri
-                  ? 'Voice note saved on this device; it has not been shared.'
-                  : 'Record a short note for your own reference.'}
-            </Text>
-          </View>
-        </View>
-        <PrimaryButton
-          label={recorderState.isRecording ? 'Stop recording' : 'Start recording'}
-          icon={recorderState.isRecording ? 'stop-circle-outline' : 'mic-outline'}
-          onPress={toggleVoiceRecording}
-          disabled={!patient}
-        />
-        {!patient ? <Text style={styles.copy}>Link an approved maternal record to record a voice note.</Text> : null}
-      </Card>
 
       <Card>
         <SectionHeading title="Talk to a health professional" />
@@ -215,9 +127,9 @@ export default function MotherCareScreen() {
               maxLength={500}
             />
             <PrimaryButton label="Send message" onPress={sendRequest} disabled={!message.trim()} />
-            {sent ? <Text style={styles.success}>Your request was sent to the care team.</Text> : null}
+            {sent ? <Text style={styles.success}>Your request was added to the demo care-team queue.</Text> : null}
             <Text style={styles.note}>
-              Messages may not be reviewed immediately. For emergency symptoms, call 114 or seek care now; do not wait for a message.
+              This demo inbox is not monitored in real time and has no guaranteed response time. For emergency symptoms, call 114 or seek care now; do not wait for a message.
             </Text>
           </>
         ) : (

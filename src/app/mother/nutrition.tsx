@@ -4,16 +4,26 @@ import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { useState } from 'react';
 
 import { LocalizedText as Text } from '@/components/localized-text';
-import { Card, Field, Page, PageHeader, PrimaryButton, SectionHeading, UI } from '@/components/mcare-ui';
+import {
+  Card,
+  Field,
+  Page,
+  PageHeader,
+  PrimaryButton,
+  SectionHeading,
+  UI,
+} from '@/components/mcare-ui';
 import { useAuth } from '@/contexts/auth-context';
 import { useClinic, type NutritionCheckIn } from '@/contexts/clinic-context';
 
 type Trimester = 1 | 2 | 3;
 
+type FoodPhoto = 'beans' | 'eggs' | 'greens' | 'mango' | 'milk' | 'sweetPotatoes';
+
 type FoodItem = {
-  icon: React.ComponentProps<typeof Ionicons>['name'];
   title: string;
   detail: string;
+  photo: FoodPhoto;
 };
 
 type FoodPlan = {
@@ -23,38 +33,51 @@ type FoodPlan = {
   foods: FoodItem[];
 };
 
+const foodPhotos: Record<FoodPhoto, number> = {
+  beans: require('@/assets/images/nutrition/beans.jpg'),
+  eggs: require('@/assets/images/nutrition/eggs.jpg'),
+  greens: require('@/assets/images/nutrition/greens.jpg'),
+  mango: require('@/assets/images/nutrition/mango.jpg'),
+  milk: require('@/assets/images/nutrition/milk.jpg'),
+  sweetPotatoes: require('@/assets/images/nutrition/sweet-potatoes.jpg'),
+};
+
 const trimesterPlans: Record<Trimester, FoodPlan> = {
   1: {
     label: 'First trimester',
     range: 'Weeks 1–13',
-    focus: 'Choose a variety of folate- and iron-containing foods, with small meals if that feels more comfortable.',
+    focus: 'Try beans or peas with maize, leafy greens, mangoes and eggs. If you feel nauseated, try small meals or snacks.',
     foods: [
-      { icon: 'leaf-outline', title: 'Beans, peas and lentils', detail: 'Plant-based protein, iron and folate.' },
-      { icon: 'nutrition-outline', title: 'Dark leafy greens and citrus fruit', detail: 'Folate-rich vegetables with fruit as part of a varied diet.' },
-      { icon: 'restaurant-outline', title: 'Fortified grains and well-cooked eggs', detail: 'Familiar staples with energy and protein.' },
-      { icon: 'water-outline', title: 'Safe water and gentle snacks', detail: 'Try regular sips and small meals if nausea affects appetite.' },
+      { title: 'Beans, peas or lentils', detail: 'Add to a stew or serve with maize or sweet potato.', photo: 'beans' },
+      { title: 'Amaranth, dodo or leafy greens', detail: 'Cook well and add to beans, rice or another family meal.', photo: 'greens' },
+      { title: 'Mangoes or other seasonal fruit', detail: 'Choose ripe fruit as a snack or with a meal.', photo: 'mango' },
+      { title: 'Eggs', detail: 'Cook eggs fully and serve with a familiar staple.', photo: 'eggs' },
+      { title: 'Sweet potatoes', detail: 'Boil, roast or mash and serve with your usual meal.', photo: 'sweetPotatoes' },
     ],
   },
   2: {
     label: 'Second trimester',
     range: 'Weeks 14–27',
-    focus: 'Include protein, iron, calcium-rich foods, fruit and vegetables across the day.',
+    focus: 'Build meals from beans, eggs, sweet potatoes, leafy greens, mangoes and pasteurized milk or yogurt.',
     foods: [
-      { icon: 'restaurant-outline', title: 'Beans, lentils, eggs and well-cooked meat', detail: 'Include a protein food with meals when available.' },
-      { icon: 'leaf-outline', title: 'Leafy greens with fruit', detail: 'Try amaranth or other local greens with oranges or another fruit.' },
-      { icon: 'nutrition-outline', title: 'Pasteurized milk or yogurt', detail: 'Or choose a calcium-fortified alternative.' },
-      { icon: 'water-outline', title: 'Whole grains, vegetables and safe water', detail: 'Build meals around familiar staples such as maize, beans or sweet potato.' },
+      { title: 'Beans and lentils', detail: 'Serve with maize, rice or sweet potatoes.', photo: 'beans' },
+      { title: 'Amaranth or other leafy greens', detail: 'Cook and add to beans, rice or another family meal.', photo: 'greens' },
+      { title: 'Mangoes or other seasonal fruit', detail: 'Choose ripe fruit to enjoy with meals or as a snack.', photo: 'mango' },
+      { title: 'Pasteurized milk or yogurt', detail: 'Choose pasteurized dairy or a suitable fortified alternative.', photo: 'milk' },
+      { title: 'Eggs', detail: 'Cook eggs through and serve with a familiar staple.', photo: 'eggs' },
     ],
   },
   3: {
     label: 'Third trimester',
     range: 'Weeks 28–birth',
-    focus: 'Keep meals varied and include protein, iron-rich foods, fiber and fluids.',
+    focus: 'Add beans, eggs, leafy greens, mangoes and sweet potatoes to familiar meals.',
     foods: [
-      { icon: 'restaurant-outline', title: 'Beans, lentils, eggs and well-cooked meat or fish', detail: 'Choose a protein food that is safe and available to you.' },
-      { icon: 'leaf-outline', title: 'Leafy vegetables and fruit', detail: 'Add vegetables and fruit to meals and snacks.' },
-      { icon: 'nutrition-outline', title: 'Whole grains and starchy vegetables', detail: 'Try whole grains, maize, potatoes or sweet potatoes.' },
-      { icon: 'water-outline', title: 'Fiber-rich foods and safe water', detail: 'Beans, vegetables, fruit and water can support regular meals.' },
+      { title: 'Beans and lentils', detail: 'Serve with maize, rice or sweet potatoes.', photo: 'beans' },
+      { title: 'Leafy greens', detail: 'Cook local greens and add to your usual meals.', photo: 'greens' },
+      { title: 'Mangoes or other seasonal fruit', detail: 'Enjoy ripe fruit with meals or as a snack.', photo: 'mango' },
+      { title: 'Eggs', detail: 'Cook eggs through and serve with a familiar staple.', photo: 'eggs' },
+      { title: 'Sweet potatoes', detail: 'Boil, roast or mash and serve with your usual meal.', photo: 'sweetPotatoes' },
+      { title: 'Pasteurized milk or yogurt', detail: 'Choose pasteurized dairy or a suitable fortified alternative.', photo: 'milk' },
     ],
   },
 };
@@ -62,12 +85,14 @@ const trimesterPlans: Record<Trimester, FoodPlan> = {
 const postpartumPlan: FoodPlan = {
   label: 'Postpartum nutrition',
   range: 'After delivery',
-  focus: 'Choose varied meals and drinks that fit your needs, recovery and local food options.',
+  focus: 'For recovery, choose familiar meals with beans, eggs, leafy vegetables, seasonal fruit and sweet potatoes. Drink safe water regularly.',
   foods: [
-    { icon: 'restaurant-outline', title: 'Beans, eggs and well-cooked meat or fish', detail: 'Include protein foods as available.' },
-    { icon: 'leaf-outline', title: 'Vegetables and fruit', detail: 'Choose a variety of seasonal produce.' },
-    { icon: 'nutrition-outline', title: 'Whole grains and calcium-rich foods', detail: 'Try familiar staples and pasteurized dairy or fortified alternatives.' },
-    { icon: 'water-outline', title: 'Safe water', detail: 'Drink regularly and follow advice from your care team.' },
+    { title: 'Beans and lentils', detail: 'Cook until soft and add to a familiar meal.', photo: 'beans' },
+    { title: 'Leafy vegetables', detail: 'Choose seasonal greens and cook them well.', photo: 'greens' },
+    { title: 'Mangoes or other seasonal fruit', detail: 'Enjoy ripe fruit when available.', photo: 'mango' },
+    { title: 'Eggs', detail: 'Cook eggs fully and add them to your usual meal.', photo: 'eggs' },
+    { title: 'Sweet potatoes', detail: 'Boil, roast or mash and serve with your usual meal.', photo: 'sweetPotatoes' },
+    { title: 'Pasteurized milk or yogurt', detail: 'Choose pasteurized dairy or a suitable fortified alternative.', photo: 'milk' },
   ],
 };
 
@@ -150,7 +175,7 @@ export default function MotherNutritionScreen() {
       <Card style={styles.hero}>
         <Image source={require('@/assets/images/baby2.jpg')} style={styles.heroImage} />
         <View style={styles.heroCopy}>
-          <Text style={styles.demoLabel}>GENERAL GUIDANCE</Text>
+          <Text style={styles.demoLabel}>DEMO GUIDANCE</Text>
           <Text style={styles.heroTitle}>{plan?.label || 'Pregnancy nutrition'}</Text>
           <Text style={styles.heroDetail}>
             {isPostpartum
@@ -177,11 +202,13 @@ export default function MotherNutritionScreen() {
       {plan ? (
         <>
           <Card style={styles.focusCard}>
-            <View style={styles.focusHeading}>
-              <View style={styles.focusIcon}>
-                <Ionicons name="sparkles-outline" size={19} color={UI.accentDark} />
+            <View style={[styles.focusHeading, { justifyContent: 'space-between' }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9, flex: 1 }}>
+                <View style={styles.focusIcon}>
+                  <Ionicons name="sparkles-outline" size={19} color={UI.accentDark} />
+                </View>
+                <Text style={styles.focusTitle}>Nutrition focus</Text>
               </View>
-              <Text style={styles.focusTitle}>Nutrition focus</Text>
             </View>
             <Text style={styles.copy}>{plan.focus}</Text>
           </Card>
@@ -265,7 +292,7 @@ export default function MotherNutritionScreen() {
           Wash produce, cook eggs, meat and fish thoroughly, choose pasteurized dairy and low-mercury fish. Avoid raw or undercooked animal foods. Take supplements only as advised by your care team.
         </Text>
         <Text style={styles.disclaimer}>
-          General education only. Follow local clinical advice, especially for allergies, dietary restrictions or medical conditions.
+          General demo education only. Follow local clinical advice, especially for allergies, dietary restrictions or medical conditions.
         </Text>
       </Card>
 
@@ -315,9 +342,12 @@ function CheckInQuestion<T extends 'Yes' | 'No' | 'Not sure'>({
 function FoodRow({ food }: { food: FoodItem }) {
   return (
     <Card style={styles.foodCard}>
-      <View style={styles.foodIcon}>
-        <Ionicons name={food.icon} size={20} color={UI.accentDark} />
-      </View>
+      <Image
+        source={foodPhotos[food.photo]}
+        style={styles.foodImage}
+        resizeMode="cover"
+        accessibilityLabel={food.title}
+      />
       <View style={styles.foodCopy}>
         <Text style={styles.foodTitle}>{food.title}</Text>
         <Text style={styles.copy}>{food.detail}</Text>
@@ -343,11 +373,11 @@ const styles = StyleSheet.create({
   focusIcon: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: UI.lavender },
   focusTitle: { color: UI.ink, fontSize: 14, fontWeight: '800' },
   copy: { color: UI.muted, fontSize: 12, lineHeight: 18 },
-  foodList: { gap: 9 },
-  foodCard: { flexDirection: 'row', alignItems: 'center', gap: 11, padding: 14 },
-  foodIcon: { width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: UI.lavender },
+  foodList: { flexDirection: 'row', flexWrap: 'wrap', gap: 9 },
+  foodCard: { width: '48%', gap: 8, padding: 10 },
+  foodImage: { width: '100%', height: 96, borderRadius: 12, backgroundColor: UI.lavender },
   foodCopy: { flex: 1, gap: 3 },
-  foodTitle: { color: UI.ink, fontSize: 13, fontWeight: '800' },
+  foodTitle: { color: UI.ink, fontSize: 12, lineHeight: 16, fontWeight: '800' },
   safetyCard: { backgroundColor: UI.greenLight, borderColor: '#DDEDE4' },
   checkInCard: { backgroundColor: '#F8F3FB' },
   checkInQuestion: { gap: 7 },

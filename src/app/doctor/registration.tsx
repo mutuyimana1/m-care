@@ -117,6 +117,8 @@ const initialDraft: PatientDraft = {
   deliveryDate: '',
   postpartumFollowUpDate: '',
   careTeamMessage: '',
+  lastIvrCallDate: '',
+  lastIvrOutcome: '',
 };
 
 const fieldsByStep: Record<number, { key: DraftTextKey; label: string; multiline?: boolean; numeric?: boolean }[]> = {
@@ -331,7 +333,7 @@ export default function RegistrationScreen() {
           ))}
           {search.trim() && duplicates.length === 0 ? (
             <Text style={styles.fieldHint}>
-              No matching patient record. Confirm with the facility before creating a new profile.
+              No matching local demo record. Confirm with the facility before creating a new profile.
             </Text>
           ) : null}
           <View style={styles.divider} />

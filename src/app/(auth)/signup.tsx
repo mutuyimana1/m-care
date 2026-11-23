@@ -1,32 +1,14 @@
 import { Link } from 'expo-router';
-import { useState } from 'react';
-import { Alert, Pressable, SafeAreaView, StyleSheet, View } from 'react-native';
+import { SafeAreaView, StyleSheet, View } from 'react-native';
 
 import { LocalizedTextInput as TextInput } from '@/components/localized-text';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { useAuth } from '@/contexts/auth-context';
 
 export default function SignupScreen() {
   const theme = useTheme();
-  const { signUp } = useAuth();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  const createAccount = async () => {
-    setSubmitting(true);
-    try {
-      await signUp(name, email, password);
-    } catch (error) {
-      Alert.alert('Unable to create account', error instanceof Error ? error.message : 'Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   return (
     <ThemedView style={styles.container}>
@@ -34,13 +16,11 @@ export default function SignupScreen() {
         <View style={styles.content}>
           <ThemedText type="subtitle">Create account</ThemedText>
           <ThemedText themeColor="textSecondary">
-            Create a maternal account. Care-team accounts are provided by your facility.
+            Create an m-care account to get started.
           </ThemedText>
 
           <TextInput
             accessibilityLabel="Full name"
-            value={name}
-            onChangeText={setName}
             autoComplete="name"
             placeholder="Full name"
             placeholderTextColor={theme.textSecondary}
@@ -48,8 +28,6 @@ export default function SignupScreen() {
           />
           <TextInput
             accessibilityLabel="Email address"
-            value={email}
-            onChangeText={setEmail}
             autoCapitalize="none"
             autoComplete="email"
             keyboardType="email-address"
@@ -59,18 +37,12 @@ export default function SignupScreen() {
           />
           <TextInput
             accessibilityLabel="Password"
-            value={password}
-            onChangeText={setPassword}
             autoComplete="new-password"
             placeholder="Password"
             placeholderTextColor={theme.textSecondary}
             secureTextEntry
             style={[styles.input, { backgroundColor: theme.backgroundElement, color: theme.text }]}
           />
-
-          <Pressable disabled={submitting} onPress={createAccount} style={styles.submit}>
-            <ThemedText style={styles.submitText}>{submitting ? 'Creating account…' : 'Create account'}</ThemedText>
-          </Pressable>
 
           <Link href="/(auth)/login" style={styles.link}>
             Already have an account? Log in
@@ -109,6 +81,4 @@ const styles = StyleSheet.create({
     color: Colors.light.accent,
     padding: Spacing.two,
   },
-  submit: { minHeight: 50, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.light.accent },
-  submitText: { color: '#FFFFFF', fontWeight: '700' },
 });

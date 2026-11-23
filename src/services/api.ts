@@ -38,7 +38,7 @@ async function request<T>(action: string, options: RequestInit = {}): Promise<T>
         ...options.headers,
       },
     });
-  } catch (error) {
+  } catch {
     throw new Error(
       `Could not connect to server at ${API_URL}. Ensure the backend is running and your device is on the same network.`,
     );

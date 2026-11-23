@@ -18,36 +18,36 @@ export default function MotherTabsLayout() {
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>{t('Home')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
+          sf={{ default: 'house', selected: 'house.fill' }}
+          md="home"
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="nutrition">
         <NativeTabs.Trigger.Label>{t('Nutrition')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
+          sf={{ default: 'leaf', selected: 'leaf.fill' }}
+          md="nutrition"
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="care">
         <NativeTabs.Trigger.Label>{t('Care')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
+          sf={{ default: 'cross.case', selected: 'cross.case.fill' }}
+          md="medical_services"
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="records">
         <NativeTabs.Trigger.Label>{t('Records')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
+          sf={{ default: 'doc.text', selected: 'doc.text.fill' }}
+          md="description"
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <NativeTabs.Trigger.Label>{t('My profile')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
+          sf={{ default: 'person', selected: 'person.fill' }}
+          md="person"
         />
       </NativeTabs.Trigger>
     </NativeTabs>

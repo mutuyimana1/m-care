@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import {
@@ -30,20 +29,13 @@ const COLORS = {
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [submitting, setSubmitting] = useState(false);
   const { signIn } = useAuth();
 
   const { width } = useWindowDimensions();
 
-  const handleLogin = async () => {
-    if (submitting) return;
-    setSubmitting(true);
-    try {
-      await signIn(email, password);
-    } catch (error) {
-      Alert.alert('Unable to sign in', error instanceof Error ? error.message : 'Please try again.');
-    } finally {
-      setSubmitting(false);
+  const handleLogin = () => {
+    if (!signIn(email, password)) {
+      Alert.alert('Unable to sign in', 'Check the email and password.');
     }
   };
 
@@ -137,7 +129,7 @@ export default function LoginScreen() {
                   onPress={() =>
                     Alert.alert(
                       'Forgot password?',
-                    'Contact your M-CARE care team to reset your password.',
+                      'Password recovery will be available once authentication is connected.',
                     )
                   }
                   hitSlop={10}
@@ -151,13 +143,12 @@ export default function LoginScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Login and continue to home"
                 onPress={handleLogin}
-                disabled={submitting}
                 style={({ pressed }) => [
                   styles.loginButton,
                   pressed && styles.pressed,
                 ]}
               >
-                <Text style={styles.loginButtonText}>{submitting ? 'Signing in…' : 'Login'}</Text>
+                <Text style={styles.loginButtonText}>Login</Text>
 
                 <Ionicons
                   name="log-in-outline"
@@ -167,10 +158,14 @@ export default function LoginScreen() {
               </Pressable>
             </View>
 
-            <Link href="/(auth)/signup" style={styles.createAccountLink}>
-              Create a maternal account
-            </Link>
-
+            {/* <View style={styles.demoAccounts}>
+              <Text style={styles.demoTitle}>Try a demo account</Text>
+              <Text style={styles.demoAccount}>Mother · mother@mcare.demo · Mother123!</Text>
+              <Text style={styles.demoAccount}>Clinician · doctor@mcare.demo · Doctor123!</Text>
+              <Text style={styles.demoNote}>
+                Demo access only. Do not enter real patient information.
+              </Text>
+            </View> */}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -251,7 +246,6 @@ const styles = StyleSheet.create({
   form: {
     gap: 12,
   },
-  createAccountLink: { alignSelf: 'center', marginTop: 16, color: COLORS.purple, fontSize: 13, fontWeight: '700' },
 
   inputRow: {
     height: 44,
@@ -292,6 +286,33 @@ const styles = StyleSheet.create({
     fontSize: 14,
     paddingVertical: 0,
   },
+  demoAccounts: {
+    marginTop: 'auto',
+    padding: 14,
+    gap: 7,
+    borderRadius: 16,
+    backgroundColor: '#FAF5FE',
+    borderWidth: 1,
+    borderColor: '#EEE2F6',
+  },
+  demoTitle: {
+    color: COLORS.text,
+    fontSize: 12,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  demoAccount: {
+    color: '#51485A',
+    fontSize: 11,
+    lineHeight: 16,
+  },
+  demoNote: {
+    color: COLORS.muted,
+    fontSize: 10,
+    lineHeight: 14,
+    marginTop: 2,
+  },
+
   passwordRow: {
     height: 44,
     flexDirection: 'row',

@@ -1,5 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import {
+  Alert,
+  Linking,
   Modal,
   Pressable,
   ScrollView,
@@ -282,6 +284,156 @@ export function InfoLine({ label, value }: { label: string; value: string }) {
   );
 }
 
+export function VisualActionCard({
+  icon,
+  iconBg = UI.lavender,
+  iconColor = UI.accentDark,
+  title,
+  subtitle,
+  onPress,
+  badgeText,
+  badgeTone = 'green',
+}: {
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+  iconBg?: string;
+  iconColor?: string;
+  title: string;
+  subtitle?: string;
+  onPress: () => void;
+  badgeText?: string;
+  badgeTone?: 'green' | 'amber' | 'red';
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [styles.actionCard, pressed && styles.pressed]}>
+      <View style={[styles.actionCardIcon, { backgroundColor: iconBg }]}>
+        <Ionicons name={icon} size={28} color={iconColor} />
+      </View>
+      <View style={styles.actionCardContent}>
+        <View style={styles.actionCardHeaderRow}>
+          <Text style={styles.actionCardTitle}>{title}</Text>
+          {badgeText ? (
+            <StatusPill label={badgeText} tone={badgeTone === 'red' ? 'amber' : badgeTone} />
+          ) : null}
+        </View>
+        {subtitle ? <Text style={styles.actionCardSubtitle}>{subtitle}</Text> : null}
+      </View>
+      <Ionicons name="chevron-forward" size={22} color={UI.muted} />
+    </Pressable>
+  );
+}
+
+export function PictorialSymptomTile({
+  icon,
+  label,
+  selected,
+  onToggle,
+  urgent = false,
+}: {
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+  label: string;
+  selected: boolean;
+  onToggle: () => void;
+  urgent?: boolean;
+}) {
+  const activeColor = urgent ? '#D32F2F' : UI.accentDark;
+  const activeBg = urgent ? '#FFEBEE' : UI.lavender;
+
+  return (
+    <Pressable
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: selected }}
+      onPress={onToggle}
+      style={({ pressed }) => [
+        styles.symptomTile,
+        selected && { borderColor: activeColor, backgroundColor: activeBg, borderWidth: 2 },
+        pressed && styles.pressed,
+      ]}>
+      <View style={styles.symptomTileTop}>
+        <View
+          style={[
+            styles.symptomTileIconWrap,
+            { backgroundColor: selected ? activeColor : urgent ? '#FFEBEE' : UI.lavender },
+          ]}>
+          <Ionicons
+            name={icon}
+            size={26}
+            color={selected ? UI.white : urgent ? '#D32F2F' : UI.accentDark}
+          />
+        </View>
+      </View>
+      <Text style={[styles.symptomTileLabel, selected && { color: UI.ink, fontWeight: '700' }]}>
+        {label}
+      </Text>
+      {selected ? (
+        <View style={[styles.symptomTileCheck, { backgroundColor: activeColor }]}>
+          <Ionicons name="checkmark" size={13} color={UI.white} />
+        </View>
+      ) : null}
+    </Pressable>
+  );
+}
+
+export function EmergencySOSBanner({
+  phoneNumber = '114',
+  chwPhone,
+  onCall,
+}: {
+  phoneNumber?: string;
+  chwPhone?: string;
+  onCall?: () => void;
+}) {
+  const { t } = useLanguage();
+
+  const handleCall = async (phone: string) => {
+    try {
+      const url = `tel:${phone}`;
+      if (await Linking.canOpenURL(url)) {
+        await Linking.openURL(url);
+        onCall?.();
+      } else {
+        Alert.alert(t('Call unavailable'), t('Please contact your nearest health facility directly.'));
+      }
+    } catch {
+      Alert.alert(t('Call unavailable'), t('Please contact your nearest health facility directly.'));
+    }
+  };
+
+  return (
+    <View style={styles.sosCard}>
+      <View style={styles.sosContent}>
+        <View style={styles.sosIconCircle}>
+          <Ionicons name="alert-circle" size={26} color="#D32F2F" />
+        </View>
+        <View style={styles.sosCopy}>
+          <Text style={styles.sosTitle}>{t('Need urgent help?')}</Text>
+          <Text style={styles.sosSubtitle}>{t('Call 114 for emergency assistance.')}</Text>
+        </View>
+      </View>
+      <View style={styles.sosActions}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => handleCall(phoneNumber)}
+          style={({ pressed }) => [styles.sosButton, pressed && styles.pressed]}>
+          <Ionicons name="call" size={18} color={UI.white} />
+          <Text style={styles.sosButtonText}>{t('Call 114')}</Text>
+        </Pressable>
+        {chwPhone ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => handleCall(chwPhone)}
+            style={({ pressed }) => [styles.sosSecondaryButton, pressed && styles.pressed]}>
+            <Ionicons name="person" size={18} color="#D32F2F" />
+            <Text style={styles.sosSecondaryButtonText}>{t('Call Health Worker')}</Text>
+          </Pressable>
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: UI.background },
   scroll: { flex: 1, backgroundColor: UI.background },
@@ -400,4 +552,118 @@ const styles = StyleSheet.create({
   infoLine: { flexDirection: 'row', justifyContent: 'space-between', gap: 16, paddingVertical: 8 },
   infoLabel: { color: UI.muted, fontSize: 13, flex: 1 },
   infoValue: { color: UI.ink, fontSize: 13, fontWeight: '700', flex: 1, textAlign: 'right' },
+  audioButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: UI.lavender,
+    borderWidth: 1,
+    borderColor: '#E8D5F5',
+  },
+  audioButtonSpeaking: {
+    backgroundColor: UI.accentDark,
+    borderColor: UI.accentDark,
+  },
+  actionCard: {
+    minHeight: 88,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 14,
+    borderRadius: 20,
+    backgroundColor: UI.white,
+    borderWidth: 1,
+    borderColor: UI.border,
+    shadowColor: '#31173B',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  actionCardIcon: {
+    width: 54,
+    height: 54,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionCardContent: { flex: 1, gap: 4 },
+  actionCardHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  actionCardTitle: { color: UI.ink, fontSize: 17, fontWeight: '700' },
+  actionCardSubtitle: { color: UI.muted, fontSize: 13, lineHeight: 18 },
+  symptomTile: {
+    width: '48%',
+    minHeight: 125,
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: UI.white,
+    borderWidth: 1,
+    borderColor: UI.border,
+    justifyContent: 'space-between',
+    position: 'relative',
+  },
+  symptomTileTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  symptomTileIconWrap: {
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  symptomTileLabel: { color: UI.ink, fontSize: 14, fontWeight: '600', marginTop: 10, lineHeight: 18 },
+  symptomTileCheck: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sosCard: {
+    width: '100%',
+    padding: 16,
+    borderRadius: 20,
+    backgroundColor: '#FFF0F0',
+    borderWidth: 1.5,
+    borderColor: '#FFCDD2',
+    gap: 14,
+  },
+  sosContent: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  sosIconCircle: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: '#FFEBEE',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sosCopy: { flex: 1, gap: 2 },
+  sosTitle: { color: '#B71C1C', fontSize: 16, fontWeight: '800' },
+  sosSubtitle: { color: '#C62828', fontSize: 12, lineHeight: 16 },
+  sosActions: { flexDirection: 'row', gap: 10 },
+  sosButton: {
+    flex: 1,
+    minHeight: 48,
+    borderRadius: 14,
+    backgroundColor: '#D32F2F',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  sosButtonText: { color: UI.white, fontSize: 14, fontWeight: '800' },
+  sosSecondaryButton: {
+    flex: 1,
+    minHeight: 48,
+    borderRadius: 14,
+    backgroundColor: UI.white,
+    borderWidth: 1.5,
+    borderColor: '#D32F2F',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  sosSecondaryButtonText: { color: '#D32F2F', fontSize: 13, fontWeight: '700' },
 });
