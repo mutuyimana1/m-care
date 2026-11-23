@@ -1,7 +1,25 @@
+import Constants from 'expo-constants';
+import { Platform } from 'react-native';
+
 export type ApiUser = { email: string; name: string; role: 'mother' | 'doctor' | 'chw' };
 export type AuthResponse = { user: ApiUser; token: string };
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api.php';
+function getApiUrl(): string {
+  const configured = process.env.EXPO_PUBLIC_API_URL;
+  if (configured) {
+    if (Platform.OS !== 'web' && (configured.includes('localhost') || configured.includes('127.0.0.1'))) {
+      const host = Constants.expoConfig?.hostUri?.split(':')[0];
+      if (host) {
+        return configured.replace('localhost', host).replace('127.0.0.1', host);
+      }
+    }
+    return configured;
+  }
+  const host = (Platform.OS !== 'web' && Constants.expoConfig?.hostUri?.split(':')[0]) || 'localhost';
+  return `http://${host}:8000/api.php`;
+}
+
+const API_URL = getApiUrl();
 let accessToken: string | null = null;
 
 export function setAccessToken(token: string | null) {
@@ -9,15 +27,23 @@ export function setAccessToken(token: string | null) {
 }
 
 async function request<T>(action: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${API_URL}?action=${action}`, {
-    ...options,
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-      ...options.headers,
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}?action=${action}`, {
+      ...options,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        ...options.headers,
+      },
+    });
+  } catch (error) {
+    throw new Error(
+      `Could not connect to server at ${API_URL}. Ensure the backend is running and your device is on the same network.`,
+    );
+  }
+
   const result = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(result.error || `Request failed (${response.status})`);
   return result as T;
