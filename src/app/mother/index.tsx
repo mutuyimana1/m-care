@@ -3,7 +3,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
+  Alert,
   Image,
+  Linking,
   Modal,
   Pressable,
   ScrollView,
@@ -18,10 +20,6 @@ import { UI } from '@/components/mcare-ui';
 import { useAuth } from '@/contexts/auth-context';
 import { useClinic } from '@/contexts/clinic-context';
 import { useLanguage } from '@/contexts/language-context';
-import {
-  Alert,
-  Linking
-} from 'react-native';
 const BABY_IMAGE = require('@/assets/images/mother1.jpg');
 const MOTHER_IMAGE = require('@/assets/images/mother2.jpg');
 
@@ -35,37 +33,9 @@ function Glass({ style, children }: { style?: object | object[]; children: React
   return <View style={[styles.glass, style]}>{children}</View>;
 }
 
-function Vital({
-  icon,
-  label,
-  value,
-  unit,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  unit: string;
-}) {
-  const { width: screenWidth } = useWindowDimensions();
-  const vitalCardWidth = screenWidth < 360 ? '100%' : '47.5%';
-
-  return (
-    <Glass style={[styles.vital, { width: vitalCardWidth }]}>
-      <View style={styles.vitalHeader}>
-        <View style={styles.vitalIcon}>{icon}</View>
-        <Text style={styles.vitalLabel}>{label}</Text>
-      </View>
-      <Text style={styles.vitalValue}>
-        {value}
-        <Text style={styles.vitalUnit}> {unit}</Text>
-      </Text>
-    </Glass>
-  );
-}
-
 export default function MotherHomeScreen() {
   const { user, signOut } = useAuth();
-  const { patients, maternalActivities } = useClinic();
+  const { patients } = useClinic();
   const { language, setLanguage, t } = useLanguage();
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
@@ -97,12 +67,8 @@ export default function MotherHomeScreen() {
   const remaining =
     unit === 'Weeks' ? Math.max(TOTAL_WEEKS - currentWeek, 0) : Math.round(Math.max(TOTAL_WEEKS - currentWeek, 0) / 4.345);
   const noun = unit === 'Weeks' ? 'Week' : 'Month';
-  const recentActivity = maternalActivities
-    .filter((activity) => activity.patientId === patient?.id)
-    .sort((a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime())[0];
 
   const isPostpartum = patient?.postpartumStatus === 'postpartum';
-  const progressPercent = Math.min(Math.round((currentWeek / TOTAL_WEEKS) * 100), 100);
   const chwName = patient?.communityHealthWorker || 'Marie Claire';
   const chwPhone = patient?.emergencyContactPhone || '0788123456';
   const nextVisitDate = patient?.nextAppointmentDate || 'Friday, 21 Nov 2026';
